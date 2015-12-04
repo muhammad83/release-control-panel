@@ -1,0 +1,79 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            Product name: {{name}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <label>Select starting tag: </label>
+        </div>
+        <div class="col-md-5">
+            <select data-ng-model="startingTagIndex" data-convert-to-number>
+                <option data-ng-repeat="tag in tags" value="{{$index}}">{{tag.name}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <label>Select ending tag: </label>
+        </div>
+        <div class="col-md-5">
+            <select data-ng-model="endingTagIndex" data-convert-to-number>
+                <option data-ng-repeat="tag in endingTags" value="{{$index}}">{{tag.name}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-5">
+            <button data-ng-click="searchForJiraTickets()">Search</button>
+        </div>
+    </div>
+    <div class="row" data-ng-if="searchingInProgress">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-5">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                    <span class="sr-only">100% Complete</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" data-ng-show="jiraTickets.length > 0">
+        <div class="col-md-12">
+            <h2>Jira tickets</h2>
+            <table class="table">
+                <head>
+                    <tr>
+                        <th>#</th>
+                        <th>Message</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Author</th>
+                        <th>Hash</th>
+                    </tr>
+                </head>
+                <tbody>
+                    <tr data-ng-repeat="ticket in jiraTickets">
+                        <td>{{$index}}</td>
+                        <td>{{ticket.message}}</td>
+                        <td>{{ticket.dateTime}}</td>
+                        <td>
+                            <div data-ng-show="!!ticket.status">
+                                <span class="label label-default" data-ng-if="['Dev Ready', 'Dev Complete', 'Resolved', 'QA Complete'].indexOf(ticket.status) == -1">{{ticket.status}}</span>
+                                <span class="label label-danger" data-ng-if="['Dev Ready', 'Dev Complete'].indexOf(ticket.status) != -1">{{ticket.status}}</span>
+                                <span class="label label-warning" data-ng-if="['In QA'].indexOf(ticket.status) != -1">{{ticket.status}}</span>
+                                <span class="label label-success" data-ng-if="['QA Complete', 'Resolved'].indexOf(ticket.status) != -1">{{ticket.status}}</span>
+                            </div>
+                        </td>
+                        <td>{{ticket.author}}</td>
+                        <td>{{ticket.hash}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
