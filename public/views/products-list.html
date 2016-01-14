@@ -11,13 +11,13 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr data-ng-repeat="product in products">
-                    <td>{{$index + 1}}</td>
-                    <td>{{product.name}}</td>
-                    <td>
-                        <button type="button" data-ng-click="selectProduct(product)">Select</button>
-                    </td>
-                </tr>
+                    <tr data-ng-repeat="product in products">
+                        <td>{{$index + 1}}</td>
+                        <td>{{product.name}}</td>
+                        <td>
+                            <button class="btn btn-default" type="button" data-ng-click="selectProduct(product)">Select</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
