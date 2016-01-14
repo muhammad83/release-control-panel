@@ -8,7 +8,7 @@ var workspace = process.env.WORKSPACE;
 function requestJiraTicketInfo(id, ticketNumber)
 {
     var deferred = q.defer();
-    var getJiraStatus = "curl -s -u " + config.username + ":" + config.password + " -X GET -H \"Content-Type: application/json\" " + config.jiraUrl + "/rest/api/latest/issue/" + ticketNumber + "\?fields\=status";
+    var getJiraStatus = "curl -s -u \"" + config.username + "\":\"" + config.password + "\" -X GET -H \"Content-Type: application/json\" " + config.jiraUrl + "/rest/api/latest/issue/" + ticketNumber + "\?fields\=status";
 
     exec(getJiraStatus, function (error, stdout)
     {
