@@ -17,6 +17,7 @@
     "express": "^4.13.3",
     "gulp": "^3.9.0",
     "gulp-babel": "^6.1.1",
+    "gulp-watch": "^4.3.5",
     "history": "^1.17.0",
     "jquery": "^2.1.4",
     "morgan": "^1.6.1",

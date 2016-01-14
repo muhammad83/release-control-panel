@@ -19679,7 +19679,7 @@
 
 	var _productDetails2 = _interopRequireDefault(_productDetails);
 
-	var _productsList = __webpack_require__(169);
+	var _productsList = __webpack_require__(170);
 
 	var _productsList2 = _interopRequireDefault(_productsList);
 
@@ -19949,7 +19949,11 @@
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _tagsRepository = __webpack_require__(165);
+	var _storiesRepository = __webpack_require__(165);
+
+	var _storiesRepository2 = _interopRequireDefault(_storiesRepository);
+
+	var _tagsRepository = __webpack_require__(168);
 
 	var _tagsRepository2 = _interopRequireDefault(_tagsRepository);
 
@@ -20056,12 +20060,10 @@
 	            var serviceName = this.props.productName;
 	            var startTag = this.state.tags[this.state.startingTagIndex].name;
 	            var endTag = this.state.endingTags[this.state.endingTagIndex].name;
-	            var encodedStartTag = encodeURIComponent(startTag);
-	            var encodedEndTag = encodeURIComponent(endTag);
 
-	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
+	            _storiesRepository2.default.getStories(serviceName, startTag, endTag).then(function () {
 	                _this3.updateState({
-	                    jiraTickets: JSON.parse(data),
+	                    jiraTickets: data,
 	                    searchingInProgress: false
 	                });
 	            });
@@ -30196,65 +30198,34 @@
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _tag = __webpack_require__(168);
-
-	var _tag2 = _interopRequireDefault(_tag);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var TagsRepository = function () {
-	    function TagsRepository() {
-	        _classCallCheck(this, TagsRepository);
+	var StoriesRepository = function () {
+	    function StoriesRepository() {
+	        _classCallCheck(this, StoriesRepository);
 	    }
 
-	    _createClass(TagsRepository, null, [{
-	        key: "getStableTags",
-	        value: function getStableTags(productName) {
+	    _createClass(StoriesRepository, null, [{
+	        key: "getStories",
+	        value: function getStories(serviceName, startTag, endTag) {
 	            var deferred = _q2.default.defer();
+	            var encodedStartTag = encodeURIComponent(startTag);
+	            var encodedEndTag = encodeURIComponent(endTag);
 
-	            _jquery2.default.get("stable-tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
-	                var jsonData = JSON.parse(data);
-	                var tags = jsonData.tags.map(function (tag) {
-	                    return new _tag2.default(tag);
-	                }).sort(function (tag1, tag2) {
-	                    return tag2.compare(tag1);
-	                });
-	            });
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "getTags",
-	        value: function getTags(productName) {
-	            var deferred = _q2.default.defer();
-
-	            _jquery2.default.get("tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
-	                var jsonData = JSON.parse(data);
-	                var tags = jsonData.tags.map(function (tag) {
-	                    return new _tag2.default(tag);
-	                }).sort(function (tag1, tag2) {
-	                    return tag2.compare(tag1);
-	                });
-	                var startingTagIndex = jsonData.currentVersion ? tags.findIndex(function (tag) {
-	                    return tag.name == jsonData.currentVersion;
-	                }) : -1;
-
-	                deferred.resolve({
-	                    tags: tags,
-	                    startingTagIndex: startingTagIndex
-	                });
+	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
+	                deferred.resolve(JSON.parse(data));
 	            });
 
 	            return deferred.promise;
 	        }
 	    }]);
 
-	    return TagsRepository;
+	    return StoriesRepository;
 	}();
 
-	exports.default = TagsRepository;
+	exports.default = StoriesRepository;
 
 /***/ },
 /* 166 */
@@ -32395,6 +32366,86 @@
 
 /***/ },
 /* 168 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _jquery = __webpack_require__(164);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _q = __webpack_require__(166);
+
+	var _q2 = _interopRequireDefault(_q);
+
+	var _tag = __webpack_require__(169);
+
+	var _tag2 = _interopRequireDefault(_tag);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var TagsRepository = function () {
+	    function TagsRepository() {
+	        _classCallCheck(this, TagsRepository);
+	    }
+
+	    _createClass(TagsRepository, null, [{
+	        key: "getStableTags",
+	        value: function getStableTags(productName) {
+	            var deferred = _q2.default.defer();
+
+	            _jquery2.default.get("stable-tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
+	                var jsonData = JSON.parse(data);
+	                var tags = jsonData.tags.map(function (tag) {
+	                    return new _tag2.default(tag);
+	                }).sort(function (tag1, tag2) {
+	                    return tag2.compare(tag1);
+	                });
+	            });
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "getTags",
+	        value: function getTags(productName) {
+	            var deferred = _q2.default.defer();
+
+	            _jquery2.default.get("tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
+	                var jsonData = JSON.parse(data);
+	                var tags = jsonData.tags.map(function (tag) {
+	                    return new _tag2.default(tag);
+	                }).sort(function (tag1, tag2) {
+	                    return tag2.compare(tag1);
+	                });
+	                var startingTagIndex = jsonData.currentVersion ? tags.findIndex(function (tag) {
+	                    return tag.name == jsonData.currentVersion;
+	                }) : -1;
+
+	                deferred.resolve({
+	                    tags: tags,
+	                    startingTagIndex: startingTagIndex
+	                });
+	            });
+
+	            return deferred.promise;
+	        }
+	    }]);
+
+	    return TagsRepository;
+	}();
+
+	exports.default = TagsRepository;
+
+/***/ },
+/* 169 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32427,7 +32478,7 @@
 	exports.default = Tag;
 
 /***/ },
-/* 169 */
+/* 170 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";

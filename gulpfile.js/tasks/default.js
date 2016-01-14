@@ -2,4 +2,4 @@
 
 var gulp = require("gulp");
 
-gulp.task("default", ["webpack"]);
+gulp.task("default", ["webpack", "watch"]);

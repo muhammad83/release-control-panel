@@ -1,5 +1,6 @@
 import React from "react";
 import $ from "jquery";
+import StoriesRepository from "../repositories/stories-repository";
 import TagsRepository from "../repositories/tags-repository";
 
 export default class ProductDetails extends React.Component
@@ -99,14 +100,12 @@ export default class ProductDetails extends React.Component
         let serviceName = this.props.productName;
         let startTag = this.state.tags[this.state.startingTagIndex].name;
         let endTag = this.state.endingTags[this.state.endingTagIndex].name;
-        let encodedStartTag = encodeURIComponent(startTag);
-        let encodedEndTag = encodeURIComponent(endTag);
 
-        $.get(`/stories?serviceName=${serviceName}&startTag=${encodedStartTag}&endTag=${encodedEndTag}&timestamp=${+new Date()}`, (data) =>
+        StoriesRepository.getStories(serviceName, startTag, endTag).then(() =>
         {
             this.updateState(
             {
-                jiraTickets: JSON.parse(data),
+                jiraTickets: data,
                 searchingInProgress: false
             });
         });
