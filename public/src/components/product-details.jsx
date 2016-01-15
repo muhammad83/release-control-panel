@@ -2,6 +2,7 @@ import React from "react";
 import $ from "jquery";
 import StoriesRepository from "../repositories/stories-repository";
 import TagsRepository from "../repositories/tags-repository";
+import TicketsList from "./tickets-list.jsx";
 
 export default class ProductDetails extends React.Component
 {
@@ -15,6 +16,7 @@ export default class ProductDetails extends React.Component
             endingTagIndex: -1,
             jiraTickets: [],
             searchingInProgress: false,
+            showStableVersions: false,
             startingTagIndex: -1,
             tags: []
         };
@@ -46,17 +48,55 @@ export default class ProductDetails extends React.Component
         });
     }
 
-    handleStartingTagChange(event)
+    handleStableVersionChange(event)
     {
-        var startingTag = parseInt(event.target.value);
-        var endingTags = this.getEndingTagsForStartTag(startingTag);
-
         this.updateState(
         {
-            endingTags: endingTags,
+            endingTags: [],
             endingTagIndex: -1,
-            startingTagIndex: startingTag
+            jiraTickets: [],
+            showStableVersions: event.target.checked
         });
+
+        this.loadEndingTags();
+    }
+
+    handleStartingTagChange(event)
+    {
+        this.updateState(
+        {
+            startingTagIndex: parseInt(event.target.value)
+        });
+
+        this.loadEndingTags();
+    }
+
+    loadEndingTags()
+    {
+        if (this.state.showStableVersions)
+        {
+            this.updateState({ searchingInProgress: true });
+
+            TagsRepository.getStableTags(this.props.productName).then((data) =>
+            {
+                this.updateState(
+                {
+                    endingTagIndex: -1,
+                    endingTags: data,
+                    searchingInProgress: false
+                });
+            });
+        }
+        else
+        {
+            var endingTags = this.getEndingTagsForStartTag(this.state.startingTagIndex);
+
+            this.updateState(
+            {
+                endingTags: endingTags,
+                endingTagIndex: -1
+            });
+        }
     }
 
     loadTagsList(props)
@@ -101,7 +141,7 @@ export default class ProductDetails extends React.Component
         let startTag = this.state.tags[this.state.startingTagIndex].name;
         let endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-        StoriesRepository.getStories(serviceName, startTag, endTag).then(() =>
+        StoriesRepository.getStories(serviceName, startTag, endTag).then((data) =>
         {
             this.updateState(
             {
@@ -140,6 +180,15 @@ export default class ProductDetails extends React.Component
                                         })
                                     }
                                 </select>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <div className="col-sm-offset-2 col-sm-10">
+                                <div className="checkbox">
+                                    <label>
+                                        <input type="checkbox" onChange={this.handleStableVersionChange.bind(this)} checked={this.state.showStableVersions} /> Show only stable versions
+                                    </label>
+                                </div>
                             </div>
                         </div>
                         <div className="form-group">
@@ -188,57 +237,7 @@ export default class ProductDetails extends React.Component
                 {
                     if (this.state.jiraTickets.length > 0)
                     {
-                        return <div className="row">
-                            <div className="col-md-12">
-                                <h2>Jira tickets</h2>
-                                <table className="table">
-                                    <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Message</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>Author</th>
-                                        <th>Hash</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {
-                                        this.state.jiraTickets.map(function (ticket, ticketIndex)
-                                        {
-                                            return <tr key={ticketIndex}>
-                                                <td>{ticketIndex + 1}</td>
-                                                <td>{ticket.message}</td>
-                                                <td>{ticket.dateTime}</td>
-                                                <td>
-                                                    {
-                                                        (() =>
-                                                        {
-                                                            switch (ticket.status)
-                                                            {
-                                                                case "Dev Ready":
-                                                                case "Dev Complete":
-                                                                    return <span className="label label-danger">{ticket.status}</span>;
-                                                                case "In QA":
-                                                                    return <span className="label label-warning">{ticket.status}</span>;
-                                                                case "QA Complete":
-                                                                case "Resolved":
-                                                                    return <span className="label label-success">{ticket.status}</span>;
-                                                                default:
-                                                                    return <span className="label label-default">{ticket.status}</span>;
-                                                            }
-                                                        })()
-                                                    }
-                                                </td>
-                                                <td>{ticket.author}</td>
-                                                <td>{ticket.hash}</td>
-                                            </tr>;
-                                        })
-                                    }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>;
+                        return <TicketsList jiraTickets={this.state.jiraTickets} />;
                     }
                 })()
             }

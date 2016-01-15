@@ -8,13 +8,12 @@ export default class TagsRepository
     {
         let deferred = q.defer();
 
-        $.get(`stable-tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
+        $.get(`/stable-tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
         {
             let jsonData = JSON.parse(data);
-            let tags = jsonData.tags.map((tag) => new Tag(tag)).sort((tag1, tag2) =>
-            {
-                return tag2.compare(tag1);
-            });
+            let tags = jsonData.map((tag) => new Tag(tag));
+
+            deferred.resolve(tags);
         });
 
         return deferred.promise;
@@ -24,13 +23,10 @@ export default class TagsRepository
     {
         let deferred = q.defer();
 
-        $.get(`tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
+        $.get(`/tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
         {
             let jsonData = JSON.parse(data);
-            let tags = jsonData.tags.map((tag) => new Tag(tag)).sort((tag1, tag2) =>
-            {
-                return tag2.compare(tag1);
-            });
+            let tags = jsonData.tags.map((tag) => new Tag(tag));
             let startingTagIndex = jsonData.currentVersion ? tags.findIndex((tag) => { return tag.name == jsonData.currentVersion}) : -1;
 
             deferred.resolve({

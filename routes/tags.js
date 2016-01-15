@@ -7,6 +7,45 @@ var request = require("request");
 
 var workspace = process.env.WORKSPACE;
 
+function compareTags(tag1, tag2)
+{
+    var tag1Parts = tag1.split(".").map(function (part) { return parseInt(part.substring(part.indexOf("/") + 1)); });
+    var tag2Parts = tag2.split(".").map(function (part) { return parseInt(part.substring(part.indexOf("/") + 1)); });
+
+    var index = 0;
+    var result = 0;
+    for (; index < tag1Parts.length && index < tag2Parts.length; index++)
+    {
+        if (tag1Parts[index] === tag2Parts[index])
+            continue;
+
+        if (tag1Parts[index] < tag2Parts[index])
+        {
+            result = 1;
+            break;
+        }
+        else
+        {
+            result = -1;
+            break;
+        }
+    }
+
+    if (result === 0 && tag1Parts.length !== tag2Parts.length)
+    {
+        if (index === tag1Parts.length)
+        {
+            result = 1;
+        }
+        else if (index === tag2Parts.length)
+        {
+            result = -1;
+        }
+    }
+
+    return result;
+}
+
 function getTags(serviceName)
 {
     var deferred = q.defer();
@@ -18,7 +57,7 @@ function getTags(serviceName)
         {
             exec("git tag", serviceCmdOptions, function (error, stdout)
             {
-                var tags = stdout.split("\n").filter(function (tag) { return tag && tag.length > 0; });
+                var tags = stdout.split("\n").filter(function (tag) { return tag && tag.length > 0; }).sort(compareTags);
                 deferred.resolve(tags);
             });
         });
@@ -135,8 +174,12 @@ module.exports =
         {
             var applicationVersions = data.map(function (version)
             {
-                return (version.find(function (app) { return app.application_name == serviceName; }) || {}).version;
-            });
+                var foundApplication = version.find(function (app) { return app.application_name == serviceName; });
+                return foundApplication ? "release/" + foundApplication.version : null;
+            }).filter(function (version)
+            {
+                return version && version.indexOf(".") !== -1;
+            }).sort(compareTags);
             response.send(JSON.stringify(applicationVersions));
         }).catch(function(ex)
         {

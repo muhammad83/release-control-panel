@@ -19679,7 +19679,7 @@
 
 	var _productDetails2 = _interopRequireDefault(_productDetails);
 
-	var _productsList = __webpack_require__(170);
+	var _productsList = __webpack_require__(171);
 
 	var _productsList2 = _interopRequireDefault(_productsList);
 
@@ -19957,6 +19957,10 @@
 
 	var _tagsRepository2 = _interopRequireDefault(_tagsRepository);
 
+	var _ticketsList = __webpack_require__(170);
+
+	var _ticketsList2 = _interopRequireDefault(_ticketsList);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -19978,6 +19982,7 @@
 	            endingTagIndex: -1,
 	            jiraTickets: [],
 	            searchingInProgress: false,
+	            showStableVersions: false,
 	            startingTagIndex: -1,
 	            tags: []
 	        };
@@ -20009,26 +20014,59 @@
 	            });
 	        }
 	    }, {
+	        key: "handleStableVersionChange",
+	        value: function handleStableVersionChange(event) {
+	            this.updateState({
+	                endingTags: [],
+	                endingTagIndex: -1,
+	                jiraTickets: [],
+	                showStableVersions: event.target.checked
+	            });
+
+	            this.loadEndingTags();
+	        }
+	    }, {
 	        key: "handleStartingTagChange",
 	        value: function handleStartingTagChange(event) {
-	            var startingTag = parseInt(event.target.value);
-	            var endingTags = this.getEndingTagsForStartTag(startingTag);
-
 	            this.updateState({
-	                endingTags: endingTags,
-	                endingTagIndex: -1,
-	                startingTagIndex: startingTag
+	                startingTagIndex: parseInt(event.target.value)
 	            });
+
+	            this.loadEndingTags();
+	        }
+	    }, {
+	        key: "loadEndingTags",
+	        value: function loadEndingTags() {
+	            var _this2 = this;
+
+	            if (this.state.showStableVersions) {
+	                this.updateState({ searchingInProgress: true });
+
+	                _tagsRepository2.default.getStableTags(this.props.productName).then(function (data) {
+	                    _this2.updateState({
+	                        endingTagIndex: -1,
+	                        endingTags: data,
+	                        searchingInProgress: false
+	                    });
+	                });
+	            } else {
+	                var endingTags = this.getEndingTagsForStartTag(this.state.startingTagIndex);
+
+	                this.updateState({
+	                    endingTags: endingTags,
+	                    endingTagIndex: -1
+	                });
+	            }
 	        }
 	    }, {
 	        key: "loadTagsList",
 	        value: function loadTagsList(props) {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            this.updateState({ searchingInProgress: true });
 
 	            _tagsRepository2.default.getTags(props.productName).then(function (data) {
-	                _this2.updateState({
+	                _this3.updateState({
 	                    endingTagIndex: -1,
 	                    endingTags: [],
 	                    jiraTickets: [],
@@ -20038,8 +20076,8 @@
 	                });
 
 	                if (data.startingTagIndex !== -1) {
-	                    _this2.updateState({
-	                        endingTags: _this2.getEndingTagsForStartTag(data.startingTagIndex)
+	                    _this3.updateState({
+	                        endingTags: _this3.getEndingTagsForStartTag(data.startingTagIndex)
 	                    });
 	                }
 	            });
@@ -20047,7 +20085,7 @@
 	    }, {
 	        key: "searchJiraTikets",
 	        value: function searchJiraTikets() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            if (!(this.state.startingTagIndex >= 0) && !(this.state.endingTagIndex >= 0)) {
 	                return;
@@ -20061,8 +20099,8 @@
 	            var startTag = this.state.tags[this.state.startingTagIndex].name;
 	            var endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-	            _storiesRepository2.default.getStories(serviceName, startTag, endTag).then(function () {
-	                _this3.updateState({
+	            _storiesRepository2.default.getStories(serviceName, startTag, endTag).then(function (data) {
+	                _this4.updateState({
 	                    jiraTickets: data,
 	                    searchingInProgress: false
 	                });
@@ -20076,7 +20114,7 @@
 	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this4 = this;
+	            var _this5 = this;
 
 	            return _react2.default.createElement(
 	                "div",
@@ -20137,6 +20175,24 @@
 	                                "div",
 	                                { className: "form-group" },
 	                                _react2.default.createElement(
+	                                    "div",
+	                                    { className: "col-sm-offset-2 col-sm-10" },
+	                                    _react2.default.createElement(
+	                                        "div",
+	                                        { className: "checkbox" },
+	                                        _react2.default.createElement(
+	                                            "label",
+	                                            null,
+	                                            _react2.default.createElement("input", { type: "checkbox", onChange: this.handleStableVersionChange.bind(this), checked: this.state.showStableVersions }),
+	                                            " Show only stable versions"
+	                                        )
+	                                    )
+	                                )
+	                            ),
+	                            _react2.default.createElement(
+	                                "div",
+	                                { className: "form-group" },
+	                                _react2.default.createElement(
 	                                    "label",
 	                                    { htmlFor: "endingTag", className: "col-sm-2 control-label" },
 	                                    "Select ending tag:"
@@ -20179,7 +20235,7 @@
 	                    )
 	                ),
 	                function () {
-	                    if (_this4.state.searchingInProgress) {
+	                    if (_this5.state.searchingInProgress) {
 	                        return _react2.default.createElement(
 	                            "div",
 	                            { className: "row" },
@@ -20205,131 +20261,8 @@
 	                    }
 	                }(),
 	                function () {
-	                    if (_this4.state.jiraTickets.length > 0) {
-	                        return _react2.default.createElement(
-	                            "div",
-	                            { className: "row" },
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "col-md-12" },
-	                                _react2.default.createElement(
-	                                    "h2",
-	                                    null,
-	                                    "Jira tickets"
-	                                ),
-	                                _react2.default.createElement(
-	                                    "table",
-	                                    { className: "table" },
-	                                    _react2.default.createElement(
-	                                        "thead",
-	                                        null,
-	                                        _react2.default.createElement(
-	                                            "tr",
-	                                            null,
-	                                            _react2.default.createElement(
-	                                                "th",
-	                                                null,
-	                                                "#"
-	                                            ),
-	                                            _react2.default.createElement(
-	                                                "th",
-	                                                null,
-	                                                "Message"
-	                                            ),
-	                                            _react2.default.createElement(
-	                                                "th",
-	                                                null,
-	                                                "Date"
-	                                            ),
-	                                            _react2.default.createElement(
-	                                                "th",
-	                                                null,
-	                                                "Status"
-	                                            ),
-	                                            _react2.default.createElement(
-	                                                "th",
-	                                                null,
-	                                                "Author"
-	                                            ),
-	                                            _react2.default.createElement(
-	                                                "th",
-	                                                null,
-	                                                "Hash"
-	                                            )
-	                                        )
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "tbody",
-	                                        null,
-	                                        _this4.state.jiraTickets.map(function (ticket, ticketIndex) {
-	                                            return _react2.default.createElement(
-	                                                "tr",
-	                                                { key: ticketIndex },
-	                                                _react2.default.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    ticketIndex + 1
-	                                                ),
-	                                                _react2.default.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    ticket.message
-	                                                ),
-	                                                _react2.default.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    ticket.dateTime
-	                                                ),
-	                                                _react2.default.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    function () {
-	                                                        switch (ticket.status) {
-	                                                            case "Dev Ready":
-	                                                            case "Dev Complete":
-	                                                                return _react2.default.createElement(
-	                                                                    "span",
-	                                                                    { className: "label label-danger" },
-	                                                                    ticket.status
-	                                                                );
-	                                                            case "In QA":
-	                                                                return _react2.default.createElement(
-	                                                                    "span",
-	                                                                    { className: "label label-warning" },
-	                                                                    ticket.status
-	                                                                );
-	                                                            case "QA Complete":
-	                                                            case "Resolved":
-	                                                                return _react2.default.createElement(
-	                                                                    "span",
-	                                                                    { className: "label label-success" },
-	                                                                    ticket.status
-	                                                                );
-	                                                            default:
-	                                                                return _react2.default.createElement(
-	                                                                    "span",
-	                                                                    { className: "label label-default" },
-	                                                                    ticket.status
-	                                                                );
-	                                                        }
-	                                                    }()
-	                                                ),
-	                                                _react2.default.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    ticket.author
-	                                                ),
-	                                                _react2.default.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    ticket.hash
-	                                                )
-	                                            );
-	                                        })
-	                                    )
-	                                )
-	                            )
-	                        );
+	                    if (_this5.state.jiraTickets.length > 0) {
+	                        return _react2.default.createElement(_ticketsList2.default, { jiraTickets: _this5.state.jiraTickets });
 	                    }
 	                }()
 	            );
@@ -32402,13 +32335,13 @@
 	        value: function getStableTags(productName) {
 	            var deferred = _q2.default.defer();
 
-	            _jquery2.default.get("stable-tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
+	            _jquery2.default.get("/stable-tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
 	                var jsonData = JSON.parse(data);
-	                var tags = jsonData.tags.map(function (tag) {
+	                var tags = jsonData.map(function (tag) {
 	                    return new _tag2.default(tag);
-	                }).sort(function (tag1, tag2) {
-	                    return tag2.compare(tag1);
 	                });
+
+	                deferred.resolve(tags);
 	            });
 
 	            return deferred.promise;
@@ -32418,12 +32351,10 @@
 	        value: function getTags(productName) {
 	            var deferred = _q2.default.defer();
 
-	            _jquery2.default.get("tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
+	            _jquery2.default.get("/tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
 	                var jsonData = JSON.parse(data);
 	                var tags = jsonData.tags.map(function (tag) {
 	                    return new _tag2.default(tag);
-	                }).sort(function (tag1, tag2) {
-	                    return tag2.compare(tag1);
 	                });
 	                var startingTagIndex = jsonData.currentVersion ? tags.findIndex(function (tag) {
 	                    return tag.name == jsonData.currentVersion;
@@ -32450,35 +32381,194 @@
 
 	"use strict";
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Tag = function () {
-	    function Tag(serverTag) {
-	        _classCallCheck(this, Tag);
+	var Tag = function Tag(serverTag) {
+	    _classCallCheck(this, Tag);
 
-	        this.name = serverTag;
-	    }
-
-	    _createClass(Tag, [{
-	        key: "compare",
-	        value: function compare(otherTag) {
-	            return this.name.localeCompare(otherTag.name);
-	        }
-	    }]);
-
-	    return Tag;
-	}();
+	    this.name = serverTag;
+	};
 
 	exports.default = Tag;
 
 /***/ },
 /* 170 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _jquery = __webpack_require__(164);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var TicketsList = function (_React$Component) {
+	    _inherits(TicketsList, _React$Component);
+
+	    function TicketsList() {
+	        _classCallCheck(this, TicketsList);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).apply(this, arguments));
+	    }
+
+	    _createClass(TicketsList, [{
+	        key: "render",
+	        value: function render() {
+	            return _react2.default.createElement(
+	                "div",
+	                { className: "row" },
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "col-md-12" },
+	                    _react2.default.createElement(
+	                        "h2",
+	                        null,
+	                        "Jira tickets"
+	                    ),
+	                    _react2.default.createElement(
+	                        "table",
+	                        { className: "table" },
+	                        _react2.default.createElement(
+	                            "thead",
+	                            null,
+	                            _react2.default.createElement(
+	                                "tr",
+	                                null,
+	                                _react2.default.createElement(
+	                                    "th",
+	                                    null,
+	                                    "#"
+	                                ),
+	                                _react2.default.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Message"
+	                                ),
+	                                _react2.default.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Date"
+	                                ),
+	                                _react2.default.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Status"
+	                                ),
+	                                _react2.default.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Author"
+	                                ),
+	                                _react2.default.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Hash"
+	                                )
+	                            )
+	                        ),
+	                        _react2.default.createElement(
+	                            "tbody",
+	                            null,
+	                            this.props.jiraTickets.map(function (ticket, ticketIndex) {
+	                                return _react2.default.createElement(
+	                                    "tr",
+	                                    { key: ticketIndex },
+	                                    _react2.default.createElement(
+	                                        "td",
+	                                        null,
+	                                        ticketIndex + 1
+	                                    ),
+	                                    _react2.default.createElement(
+	                                        "td",
+	                                        null,
+	                                        ticket.message
+	                                    ),
+	                                    _react2.default.createElement(
+	                                        "td",
+	                                        null,
+	                                        ticket.dateTime
+	                                    ),
+	                                    _react2.default.createElement(
+	                                        "td",
+	                                        null,
+	                                        function () {
+	                                            switch (ticket.status) {
+	                                                case "Dev Ready":
+	                                                case "Dev Complete":
+	                                                    return _react2.default.createElement(
+	                                                        "span",
+	                                                        { className: "label label-danger" },
+	                                                        ticket.status
+	                                                    );
+	                                                case "In QA":
+	                                                    return _react2.default.createElement(
+	                                                        "span",
+	                                                        { className: "label label-warning" },
+	                                                        ticket.status
+	                                                    );
+	                                                case "QA Complete":
+	                                                case "Resolved":
+	                                                    return _react2.default.createElement(
+	                                                        "span",
+	                                                        { className: "label label-success" },
+	                                                        ticket.status
+	                                                    );
+	                                                default:
+	                                                    return _react2.default.createElement(
+	                                                        "span",
+	                                                        { className: "label label-default" },
+	                                                        ticket.status
+	                                                    );
+	                                            }
+	                                        }()
+	                                    ),
+	                                    _react2.default.createElement(
+	                                        "td",
+	                                        null,
+	                                        ticket.author
+	                                    ),
+	                                    _react2.default.createElement(
+	                                        "td",
+	                                        null,
+	                                        ticket.hash
+	                                    )
+	                                );
+	                            })
+	                        )
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return TicketsList;
+	}(_react2.default.Component);
+
+	exports.default = TicketsList;
+
+/***/ },
+/* 171 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";

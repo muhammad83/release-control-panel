@@ -4,9 +4,4 @@ export default class Tag
     {
         this.name = serverTag;
     }
-
-    compare(otherTag)
-    {
-        return this.name.localeCompare(otherTag.name);
-    }
 }
