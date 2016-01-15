@@ -2,46 +2,48 @@ var config = require("../config");
 var exec = require("child_process").exec;
 var path = require("path");
 var q = require("q");
+var parseXmlString= require("xml2js").parseString;
+var request = require("request");
 
 var workspace = process.env.WORKSPACE;
 
-function sortReleaseNumbers(input)
+function compareTags(tag1, tag2)
 {
-    var output,
-        i,
-        len;
+    var tag1Parts = tag1.split(".").map(function (part) { return parseInt(part.substring(part.indexOf("/") + 1)); });
+    var tag2Parts = tag2.split(".").map(function (part) { return parseInt(part.substring(part.indexOf("/") + 1)); });
 
-    output = [];
+    var index = 0;
+    var result = 0;
+    for (; index < tag1Parts.length && index < tag2Parts.length; index++)
+    {
+        if (tag1Parts[index] === tag2Parts[index])
+            continue;
 
-    // Unglue decimal parts
-    for (i = 0, len = input.length; i < len; i++) {
-        console.log(input[i]);
-        output.push(input[i].split('.'));
-    }
-
-    console.log(output);
-
-    // Apply custom sort
-    output.sort(function (a, b) {
-        for (i = 0, len = a.length; i < len; i++) {
-            // cast decimal part to int
-            a[i] = parseInt(a[i], 100);
-            b[i] = parseInt(b[i], 100);
-            //c[i] = parseInt(c[i], 100);
-
-            if (a[i] !== b[i]) {
-                return a[i] - b[i];
-            }
+        if (tag1Parts[index] < tag2Parts[index])
+        {
+            result = 1;
+            break;
         }
-    });
-
-    // Rejoin decimal parts
-    for (i = 0, len = input.length; i < len; i++) {
-
-        output[i].push(output[i].join("."));
+        else
+        {
+            result = -1;
+            break;
+        }
     }
 
-    return output;
+    if (result === 0 && tag1Parts.length !== tag2Parts.length)
+    {
+        if (index === tag1Parts.length)
+        {
+            result = 1;
+        }
+        else if (index === tag2Parts.length)
+        {
+            result = -1;
+        }
+    }
+
+    return result;
 }
 
 function getTags(serviceName)
@@ -55,11 +57,7 @@ function getTags(serviceName)
         {
             exec("git tag", serviceCmdOptions, function (error, stdout)
             {
-                var tags = stdout.split("\n");
-                var sorted = sortReleaseNumbers(tags);
-                console.log(sorted);
-                //tags.sort();
-                //console.log(tags)
+                var tags = stdout.split("\n").filter(function (tag) { return tag && tag.length > 0; }).sort(compareTags);
                 deferred.resolve(tags);
             });
         });
@@ -104,8 +102,90 @@ function getProdReleaseNumber(serviceName)
     return deferred.promise;
 }
 
+function getAllStableVersions()
+{
+    var deferred = q.defer();
+
+    var address = "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/maven-metadata.xml";
+    request(
+        {
+            method: "GET",
+            uri: address
+        },
+        function (error, response, body)
+        {
+            if (error)
+            {
+                deferred.reject(error);
+                return;
+            }
+
+            parseXmlString(body, function (error, result)
+            {
+                if (error)
+                {
+                    deferred.reject(error);
+                    return;
+                }
+
+                deferred.resolve(result.metadata.versioning[0].versions[0].version);
+            });
+        });
+
+    return deferred.promise;
+}
+
+function getStableApplications(version)
+{
+    var deferred = q.defer();
+
+    var address = "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/" + version + "/cato-" + version + ".manifest";
+    request(
+        {
+            method: "GET",
+            uri: address
+        },
+        function (error, response, data)
+        {
+            if (error)
+            {
+                deferred.reject(error);
+                return;
+            }
+
+            deferred.resolve(JSON.parse(data).applications);
+        }
+    );
+
+    return deferred.promise;
+}
+
 module.exports =
 {
+    getStableTags: function (request, response)
+    {
+        var serviceName = request.query.serviceName;
+
+        getAllStableVersions().then(function (versions)
+        {
+            var promises = versions.map(function (version) { return getStableApplications(version); });
+            return q.all(promises);
+        }).then(function (data)
+        {
+            var applicationVersions = data.map(function (version)
+            {
+                var foundApplication = version.find(function (app) { return app.application_name == serviceName; });
+                return foundApplication ? "release/" + foundApplication.version : null;
+            }).filter(function (version)
+            {
+                return version && version.indexOf(".") !== -1;
+            }).sort(compareTags);
+            response.send(JSON.stringify(applicationVersions));
+        }).catch(function(ex)
+        {
+            response.send(JSON.stringify(ex));
+        });
+    },
     getTags: function (request, response)
     {
         var serviceName = request.query.serviceName;
