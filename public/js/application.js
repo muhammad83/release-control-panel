@@ -19936,7 +19936,30 @@
 	    }, {
 	        key: "getProducts",
 	        value: function getProducts() {
-	            return [new _product2.default("cato-frontend"), new _product2.default("cato-filing"), new _product2.default("cato-submit"), new _product2.default("files"), new _product2.default("attachments")];
+	            return [new _product2.default("attachments"), new _product2.default("cato-filing"), new _product2.default("cato-frontend"), new _product2.default("cato-submit"), new _product2.default("files")];
+	        }
+	    }, {
+	        key: "getUpcomingReleases",
+	        value: function getUpcomingReleases() {
+	            var deferred = _q2.default.defer();
+	            var products = this.getProducts().map(function (p) {
+	                return p.name;
+	            });
+
+	            _jquery2.default.get("/releases?timestamp=" + +new Date(), function (data) {
+	                var jsonData = JSON.parse(data);
+	                var filteredRelases = jsonData.map(function (r) {
+	                    r.applications = r.applications.filter(function (a) {
+	                        return products.indexOf(a.application_name) !== -1;
+	                    });
+	                    return r;
+	                });
+	                deferred.resolve(filteredRelases);
+	            }).fail(function () {
+	                deferred.reject();
+	            });
+
+	            return deferred.promise;
 	        }
 	    }]);
 
@@ -32372,20 +32395,6 @@
 	    }
 
 	    _createClass(TagsRepository, null, [{
-	        key: "getReleases",
-	        value: function getReleases() {
-	            var deferred = _q2.default.defer();
-
-	            _jquery2.default.get("/releases?timestamp=" + +new Date(), function (data) {
-	                var jsonData = JSON.parse(data);
-	                deferred.resolve(jsonData);
-	            }).fail(function () {
-	                deferred.reject();
-	            });
-
-	            return deferred.promise;
-	        }
-	    }, {
 	        key: "getStableTags",
 	        value: function getStableTags(productName) {
 	            var deferred = _q2.default.defer();
@@ -32899,7 +32908,7 @@
 	                isLoadingReleases: true
 	            });
 
-	            _tagsRepository2.default.getReleases().then(function (releases) {
+	            _productsRepository2.default.getUpcomingReleases().then(function (releases) {
 	                _this3.setState({
 	                    releases: releases,
 	                    isLoadingReleases: false

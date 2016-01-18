@@ -84,7 +84,7 @@ export default class Releases extends React.Component
             isLoadingReleases: true
         });
 
-        TagsRepository.getReleases()
+        ProductsRepository.getUpcomingReleases()
             .then((releases) =>
             {
                 this.setState(
