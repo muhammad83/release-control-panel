@@ -42,7 +42,7 @@ export default class ProductDetails extends React.Component
 
     handleEndingTagChange(event)
     {
-        this.updateState(
+        this.setState(
         {
             endingTagIndex: parseInt(event.target.value)
         });
@@ -50,7 +50,7 @@ export default class ProductDetails extends React.Component
 
     handleStableVersionChange(event)
     {
-        this.updateState(
+        this.setState(
         {
             endingTags: [],
             endingTagIndex: -1,
@@ -58,29 +58,29 @@ export default class ProductDetails extends React.Component
             showStableVersions: event.target.checked
         });
 
-        this.loadEndingTags();
+        this.loadEndingTags(event.target.checked);
     }
 
     handleStartingTagChange(event)
     {
-        this.updateState(
+        this.setState(
         {
             startingTagIndex: parseInt(event.target.value)
         });
 
-        this.loadEndingTags();
+        this.loadEndingTags(this.state.showStableVersions);
     }
 
-    loadEndingTags()
+    loadEndingTags(showStableVersions)
     {
-        if (this.state.showStableVersions)
+        if (showStableVersions)
         {
-            this.updateState({ searchingInProgress: true });
+            this.setState({ searchingInProgress: true });
 
             TagsRepository.getStableTags(this.props.productName)
                 .then((data) =>
                 {
-                    this.updateState(
+                    this.setState(
                     {
                         endingTagIndex: -1,
                         endingTags: data,
@@ -89,7 +89,7 @@ export default class ProductDetails extends React.Component
                 })
                 .catch(() =>
                 {
-                    this.updateState(
+                    this.setState(
                     {
                         searchingInProgress: false
                     });
@@ -100,7 +100,7 @@ export default class ProductDetails extends React.Component
         {
             var endingTags = this.getEndingTagsForStartTag(this.state.startingTagIndex);
 
-            this.updateState(
+            this.setState(
             {
                 endingTags: endingTags,
                 endingTagIndex: -1
@@ -110,12 +110,12 @@ export default class ProductDetails extends React.Component
 
     loadTagsList(props)
     {
-        this.updateState({ searchingInProgress: true });
+        this.setState({ searchingInProgress: true });
 
         TagsRepository.getTags(props.productName)
             .then((data) =>
             {
-                this.updateState(
+                this.setState(
                 {
                     endingTagIndex: -1,
                     endingTags: [],
@@ -127,7 +127,7 @@ export default class ProductDetails extends React.Component
 
                 if (data.startingTagIndex !== -1)
                 {
-                    this.updateState(
+                    this.setState(
                     {
                         endingTags: this.getEndingTagsForStartTag(data.startingTagIndex)
                     });
@@ -135,7 +135,7 @@ export default class ProductDetails extends React.Component
             })
             .catch(() =>
             {
-                this.updateState(
+                this.setState(
                 {
                     searchingInProgress: false
                 });
@@ -152,7 +152,7 @@ export default class ProductDetails extends React.Component
             return;
         }
 
-        this.updateState(
+        this.setState(
         {
             searchingInProgress: true
         });
@@ -164,7 +164,7 @@ export default class ProductDetails extends React.Component
         StoriesRepository.getStories(serviceName, startTag, endTag)
             .then((data) =>
             {
-                this.updateState(
+                this.setState(
                 {
                     jiraTickets: data,
                     searchingInProgress: false
@@ -172,7 +172,7 @@ export default class ProductDetails extends React.Component
             })
             .catch(() =>
             {
-                this.updateState(
+                this.setState(
                 {
                     searchingInProgress: false
                 });
@@ -180,96 +180,66 @@ export default class ProductDetails extends React.Component
             });
     }
 
-    updateState(properties)
-    {
-        this.setState($.extend(this.state, properties));
-    }
-
     render()
     {
-        return <div className="container-fluid">
-            <div className="row">
-                <div className="col-md-12">
-                    <form className="form-horizontal" onSubmit={this.searchJiraTikets.bind(this)}>
-                        <div className="form-group">
-                            <label htmlFor="productName" className="col-sm-2 control-label">Product name:</label>
-                            <div className="col-sm-10">
-                                <input className="form-control" id="productName" value={this.props.productName} disabled="disabled" />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="startingTag" className="col-sm-2 control-label">Select starting tag:</label>
-                            <div className="col-sm-10">
-                                <select id="startingTag" className="form-control" onChange={this.handleStartingTagChange.bind(this)} value={this.state.startingTagIndex}>
-                                    <option value="-1"> </option>
-                                    {
-                                        this.state.tags.map(function (tag, tagIndex)
-                                        {
-                                            return <option key={tagIndex} value={tagIndex}>{tag.name}</option>
-                                        })
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <div className="col-sm-offset-2 col-sm-10">
-                                <div className="checkbox">
-                                    <label>
-                                        <input type="checkbox" onChange={this.handleStableVersionChange.bind(this)} checked={this.state.showStableVersions} /> Show only stable versions
-                                    </label>
+        return (
+            <div className="container-fluid">
+                <div className="row">
+                    <div className="col-md-12">
+                        <form className="form-horizontal" onSubmit={this.searchJiraTikets.bind(this)}>
+                            <div className="form-group">
+                                <label htmlFor="productName" className="col-sm-2 control-label">Product name:</label>
+                                <div className="col-sm-10">
+                                    <input className="form-control" id="productName" value={this.props.productName} disabled="disabled" />
                                 </div>
                             </div>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="endingTag" className="col-sm-2 control-label">Select ending tag:</label>
-                            <div className="col-sm-10">
-                                <select id="endingTag" className="form-control" onChange={this.handleEndingTagChange.bind(this)} value={this.state.endingTagIndex}>
-                                    <option value="-1"> </option>
-                                    {
-                                        this.state.endingTags.map(function (tag, tagIndex)
+                            <div className="form-group">
+                                <label htmlFor="startingTag" className="col-sm-2 control-label">Select starting tag:</label>
+                                <div className="col-sm-10">
+                                    <select id="startingTag" className="form-control" onChange={this.handleStartingTagChange.bind(this)} value={this.state.startingTagIndex}>
+                                        <option value="-1"> </option>
                                         {
-                                            return <option key={tagIndex} value={tagIndex}>{tag.name}</option>
-                                        })
-                                    }
-                                </select>
+                                            this.state.tags.map(function (tag, tagIndex)
+                                            {
+                                                return <option key={tagIndex} value={tagIndex}>{tag.name}</option>
+                                            })
+                                        }
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div className="form-group">
-                            <div className="col-sm-offset-2 col-sm-10">
-                                <button className="btn btn-default">Search</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            {
-                (() =>
-                {
-                    if (this.state.searchingInProgress)
-                    {
-                        return <div className="row">
-                            <div className="col-md-2">
-                            </div>
-                            <div className="col-md-5">
-                                <div className="progress">
-                                    <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
-                                        <span className="sr-only">100% Complete</span>
+                            <div className="form-group">
+                                <div className="col-sm-offset-2 col-sm-10">
+                                    <div className="checkbox">
+                                        <label>
+                                            <input type="checkbox" onChange={this.handleStableVersionChange.bind(this)} checked={this.state.showStableVersions} /> Show only stable versions
+                                        </label>
                                     </div>
                                 </div>
                             </div>
-                        </div>;
-                    }
-                })()
-            }
-            {
-                (() =>
-                {
-                    if (this.state.jiraTickets.length > 0)
-                    {
-                        return <TicketsList jiraTickets={this.state.jiraTickets} />;
-                    }
-                })()
-            }
-        </div>;
+                            <div className="form-group">
+                                <label htmlFor="endingTag" className="col-sm-2 control-label">Select ending tag:</label>
+                                <div className="col-sm-10">
+                                    <select id="endingTag" className="form-control" onChange={this.handleEndingTagChange.bind(this)} value={this.state.endingTagIndex}>
+                                        <option value="-1"> </option>
+                                        {
+                                            this.state.endingTags.map(function (tag, tagIndex)
+                                            {
+                                                return <option key={tagIndex} value={tagIndex}>{tag.name}</option>
+                                            })
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <div className="col-sm-offset-2 col-sm-10">
+                                    <button className="btn btn-default">Search</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <TicketsList jiraTickets={this.state.jiraTickets} isSearching={this.state.searchingInProgress} />
+            </div>
+        );
     }
 }

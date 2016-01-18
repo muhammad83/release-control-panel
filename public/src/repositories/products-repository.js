@@ -1,7 +1,25 @@
+import $ from "jquery";
+import q from "q";
 import Product from "../models/product";
 
 export default class ProductsRepository
 {
+    static getCurrentVersions()
+    {
+        let deferred = q.defer();
+        let productNames = this.getProducts().map((product) => product.name).join(",");
+
+        $.get(`/current-versions?projects=${productNames}`, (data) =>
+        {
+            deferred.resolve(JSON.parse(data));
+        }).fail(() =>
+        {
+            deferred.reject();
+        });
+
+        return deferred.promise;
+    }
+
     static getProducts()
     {
         return [

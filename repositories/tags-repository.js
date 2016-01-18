@@ -103,6 +103,13 @@ module.exports =
 
         exec(command, serviceCmdOptions, function (error, stdout)
         {
+            if (error)
+            {
+                serviceName.toString();
+                deferred.reject(error);
+                return;
+            }
+
             var versionNumber = getProdReleaseVer(stdout);
 
             if (versionNumber)
@@ -166,13 +173,31 @@ module.exports =
         var deferred = q.defer();
         var serviceCmdOptions = { cwd: path.join(workspace, serviceName) };
 
-        exec("git checkout master", serviceCmdOptions, function ()
+        exec("git checkout master", serviceCmdOptions, function (error)
         {
-            exec("git pull", serviceCmdOptions, function ()
+            if (error)
             {
-                exec("git tag", serviceCmdOptions, function (error, stdout)
+                deferred.reject(error);
+                return;
+            }
+
+            exec("git pull", serviceCmdOptions, function (error)
+            {
+                if (error)
                 {
-                    var tags = stdout.split("\n").filter(function (tag) { return tag && tag.length > 0; }).sort(compareTags);
+                    deferred.reject(error);
+                    return;
+                }
+
+                exec("git tag --sort -version:refname", serviceCmdOptions, function (error, stdout)
+                {
+                    if (error)
+                    {
+                        deferred.reject(error);
+                        return;
+                    }
+
+                    var tags = stdout.split("\n").filter(function (tag) { return tag && tag.length > 0; });
                     deferred.resolve(tags);
                 });
             });
