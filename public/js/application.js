@@ -20048,6 +20048,11 @@
 	                        endingTags: data,
 	                        searchingInProgress: false
 	                    });
+	                }).catch(function () {
+	                    _this2.updateState({
+	                        searchingInProgress: false
+	                    });
+	                    alert("An error has occurred. Could not load stories.");
 	                });
 	            } else {
 	                var endingTags = this.getEndingTagsForStartTag(this.state.startingTagIndex);
@@ -20080,14 +20085,21 @@
 	                        endingTags: _this3.getEndingTagsForStartTag(data.startingTagIndex)
 	                    });
 	                }
+	            }).catch(function () {
+	                _this3.updateState({
+	                    searchingInProgress: false
+	                });
+	                alert("An error has occurred. Could not load stories.");
 	            });
 	        }
 	    }, {
 	        key: "searchJiraTikets",
-	        value: function searchJiraTikets() {
+	        value: function searchJiraTikets(event) {
 	            var _this4 = this;
 
-	            if (!(this.state.startingTagIndex >= 0) && !(this.state.endingTagIndex >= 0)) {
+	            event.preventDefault();
+
+	            if (!(this.state.startingTagIndex >= 0) || !(this.state.endingTagIndex >= 0)) {
 	                return;
 	            }
 
@@ -20104,6 +20116,11 @@
 	                    jiraTickets: data,
 	                    searchingInProgress: false
 	                });
+	            }).catch(function () {
+	                _this4.updateState({
+	                    searchingInProgress: false
+	                });
+	                alert("An error has occurred. Could not load stories.");
 	            });
 	        }
 	    }, {
@@ -30149,6 +30166,8 @@
 
 	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
+	            }).fail(function () {
+	                deferred.reject();
 	            });
 
 	            return deferred.promise;
@@ -32342,6 +32361,8 @@
 	                });
 
 	                deferred.resolve(tags);
+	            }).fail(function () {
+	                deferred.reject();
 	            });
 
 	            return deferred.promise;
@@ -32364,6 +32385,8 @@
 	                    tags: tags,
 	                    startingTagIndex: startingTagIndex
 	                });
+	            }).fail(function () {
+	                deferred.reject();
 	            });
 
 	            return deferred.promise;

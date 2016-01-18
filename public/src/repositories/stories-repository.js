@@ -12,6 +12,10 @@ export default class StoriesRepository
         $.get(`/stories?serviceName=${serviceName}&startTag=${encodedStartTag}&endTag=${encodedEndTag}&timestamp=${+new Date()}`, (data) =>
         {
             deferred.resolve(JSON.parse(data));
+        })
+        .fail(() =>
+        {
+            deferred.reject();
         });
 
         return deferred.promise;

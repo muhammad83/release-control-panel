@@ -77,15 +77,24 @@ export default class ProductDetails extends React.Component
         {
             this.updateState({ searchingInProgress: true });
 
-            TagsRepository.getStableTags(this.props.productName).then((data) =>
-            {
-                this.updateState(
+            TagsRepository.getStableTags(this.props.productName)
+                .then((data) =>
                 {
-                    endingTagIndex: -1,
-                    endingTags: data,
-                    searchingInProgress: false
+                    this.updateState(
+                    {
+                        endingTagIndex: -1,
+                        endingTags: data,
+                        searchingInProgress: false
+                    });
+                })
+                .catch(() =>
+                {
+                    this.updateState(
+                    {
+                        searchingInProgress: false
+                    });
+                    alert("An error has occurred. Could not load stories.");
                 });
-            });
         }
         else
         {
@@ -103,31 +112,42 @@ export default class ProductDetails extends React.Component
     {
         this.updateState({ searchingInProgress: true });
 
-        TagsRepository.getTags(props.productName).then((data) =>
-        {
-            this.updateState(
-            {
-                endingTagIndex: -1,
-                endingTags: [],
-                jiraTickets: [],
-                searchingInProgress: false,
-                startingTagIndex: data.startingTagIndex,
-                tags: data.tags
-            });
-
-            if (data.startingTagIndex !== -1)
+        TagsRepository.getTags(props.productName)
+            .then((data) =>
             {
                 this.updateState(
                 {
-                    endingTags: this.getEndingTagsForStartTag(data.startingTagIndex)
+                    endingTagIndex: -1,
+                    endingTags: [],
+                    jiraTickets: [],
+                    searchingInProgress: false,
+                    startingTagIndex: data.startingTagIndex,
+                    tags: data.tags
                 });
-            }
-        });
+
+                if (data.startingTagIndex !== -1)
+                {
+                    this.updateState(
+                    {
+                        endingTags: this.getEndingTagsForStartTag(data.startingTagIndex)
+                    });
+                }
+            })
+            .catch(() =>
+            {
+                this.updateState(
+                {
+                    searchingInProgress: false
+                });
+                alert("An error has occurred. Could not load stories.");
+            });
     }
 
-    searchJiraTikets()
+    searchJiraTikets(event)
     {
-        if (!(this.state.startingTagIndex >= 0) && !(this.state.endingTagIndex >= 0))
+        event.preventDefault();
+
+        if (!(this.state.startingTagIndex >= 0) || !(this.state.endingTagIndex >= 0))
         {
             return;
         }
@@ -141,14 +161,23 @@ export default class ProductDetails extends React.Component
         let startTag = this.state.tags[this.state.startingTagIndex].name;
         let endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-        StoriesRepository.getStories(serviceName, startTag, endTag).then((data) =>
-        {
-            this.updateState(
+        StoriesRepository.getStories(serviceName, startTag, endTag)
+            .then((data) =>
             {
-                jiraTickets: data,
-                searchingInProgress: false
+                this.updateState(
+                {
+                    jiraTickets: data,
+                    searchingInProgress: false
+                });
+            })
+            .catch(() =>
+            {
+                this.updateState(
+                {
+                    searchingInProgress: false
+                });
+                alert("An error has occurred. Could not load stories.");
             });
-        });
     }
 
     updateState(properties)
