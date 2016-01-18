@@ -30166,6 +30166,8 @@
 
 	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
+	            }).fail(function () {
+	                deferred.reject();
 	            });
 
 	            return deferred.promise;
