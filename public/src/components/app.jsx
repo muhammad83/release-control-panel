@@ -2,6 +2,7 @@ import React from "react";
 import Navigation from "./navigation.jsx";
 import ProductDetails from "./product-details.jsx";
 import ProductsList from "./products-list.jsx"
+import Releases from "./releases.jsx";
 
 export default class App extends React.Component
 {
@@ -35,14 +36,20 @@ export default class App extends React.Component
                 productName: /\/product\/(.*)/.exec(this.state.route)[1]
             };
         }
+        else if (this.state.route == "/releases")
+        {
+            Child = Releases;
+        }
         else
         {
             Child = ProductsList;
         }
 
-        return <div>
-                    <Navigation />
-                    <Child {...childProps} />
-                </div>;
+        return (
+            <div>
+                <Navigation />
+                <Child {...childProps} />
+            </div>
+        );
     }
 }

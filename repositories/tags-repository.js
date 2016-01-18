@@ -188,7 +188,7 @@ module.exports =
                     return;
                 }
 
-                exec("git tag", serviceCmdOptions, function (error, stdout)
+                exec("git tag --sort -version:refname", serviceCmdOptions, function (error, stdout)
                 {
                     if (error)
                     {
@@ -196,7 +196,7 @@ module.exports =
                         return;
                     }
 
-                    var tags = stdout.split("\n").filter(function (tag) { return tag && tag.length > 0; }).sort(compareTags);
+                    var tags = stdout.split("\n").filter(function (tag) { return tag && tag.length > 0; });
                     deferred.resolve(tags);
                 });
             });

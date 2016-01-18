@@ -39,6 +39,7 @@ export default class Navigation extends React.Component
                                 }
                             </ul>
                         </li>
+                        <li><a href="#/releases">Releases</a></li>
                     </ul>
                 </div>
             </div>
