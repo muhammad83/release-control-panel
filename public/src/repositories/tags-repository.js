@@ -4,22 +4,6 @@ import Tag from "../models/tag.js";
 
 export default class TagsRepository
 {
-    static getReleases()
-    {
-        let deferred = q.defer();
-
-        $.get(`/releases?timestamp=${+new Date()}`, (data) =>
-        {
-            let jsonData = JSON.parse(data);
-            deferred.resolve(jsonData);
-        }).fail(() =>
-        {
-            deferred.reject();
-        });
-
-        return deferred.promise;
-    }
-
     static getStableTags(productName)
     {
         let deferred = q.defer();

@@ -23,11 +23,33 @@ export default class ProductsRepository
     static getProducts()
     {
         return [
-            new Product("cato-frontend"),
+            new Product("attachments"),
             new Product("cato-filing"),
+            new Product("cato-frontend"),
             new Product("cato-submit"),
-            new Product("files"),
-            new Product("attachments")
+            new Product("files")
         ];
+    }
+
+    static getUpcomingReleases()
+    {
+        let deferred = q.defer();
+        let products = this.getProducts().map((p) => p.name);
+
+        $.get(`/releases?timestamp=${+new Date()}`, (data) =>
+        {
+            let jsonData = JSON.parse(data);
+            let filteredRelases = jsonData.map(r =>
+            {
+                r.applications = r.applications.filter(a => products.indexOf(a.application_name) !== -1);
+                return r;
+            });
+            deferred.resolve(filteredRelases);
+        }).fail(() =>
+        {
+            deferred.reject();
+        });
+
+        return deferred.promise;
     }
 }
