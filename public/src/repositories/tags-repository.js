@@ -14,6 +14,9 @@ export default class TagsRepository
             let tags = jsonData.map((tag) => new Tag(tag));
 
             deferred.resolve(tags);
+        }).fail(() =>
+        {
+            deferred.reject();
         });
 
         return deferred.promise;
@@ -33,6 +36,9 @@ export default class TagsRepository
                 tags: tags,
                 startingTagIndex: startingTagIndex
             });
+        }).fail(() =>
+        {
+            deferred.reject();
         });
 
         return deferred.promise;
