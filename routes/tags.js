@@ -13,7 +13,7 @@ module.exports =
             })
             .catch(function (ex)
             {
-                response.status(500).send(ex);
+                response.status(500).send(JSON.stringify(ex) || "Unknown error.");
             });
     },
     getTags: function (request, response)
@@ -25,12 +25,17 @@ module.exports =
             tagsRepository.getProdReleaseNumber(serviceName)
         ];
 
-        q.all(promises).then(function (data)
-        {
-            response.send(JSON.stringify({
-                tags: data[0],
-                currentVersion: data[1]
-            }));
-        });
+        q.all(promises)
+            .then(function (data)
+            {
+                response.send(JSON.stringify({
+                    tags: data[0],
+                    currentVersion: data[1]
+                }));
+            })
+            .catch(function (error)
+            {
+                response.status(500).send(JSON.stringify(error || "Unknown error."));
+            });
     }
 };
