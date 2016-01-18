@@ -105,6 +105,7 @@ module.exports =
         {
             if (error)
             {
+                serviceName.toString();
                 deferred.reject(error);
                 return;
             }

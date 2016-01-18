@@ -58,7 +58,7 @@ export default class ProductDetails extends React.Component
             showStableVersions: event.target.checked
         });
 
-        this.loadEndingTags();
+        this.loadEndingTags(event.target.checked);
     }
 
     handleStartingTagChange(event)
@@ -68,12 +68,12 @@ export default class ProductDetails extends React.Component
             startingTagIndex: parseInt(event.target.value)
         });
 
-        this.loadEndingTags();
+        this.loadEndingTags(this.state.showStableVersions);
     }
 
-    loadEndingTags()
+    loadEndingTags(showStableVersions)
     {
-        if (this.state.showStableVersions)
+        if (showStableVersions)
         {
             this.setState({ searchingInProgress: true });
 
@@ -238,34 +238,7 @@ export default class ProductDetails extends React.Component
                         </form>
                     </div>
                 </div>
-                {
-                    (() =>
-                    {
-                        if (this.state.searchingInProgress)
-                        {
-                            return <div className="row">
-                                <div className="col-md-2">
-                                </div>
-                                <div className="col-md-5">
-                                    <div className="progress">
-                                        <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
-                                            <span className="sr-only">100% Complete</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>;
-                        }
-                    })()
-                }
-                {
-                    (() =>
-                    {
-                        if (this.state.jiraTickets.length > 0)
-                        {
-                            return <TicketsList jiraTickets={this.state.jiraTickets} />;
-                        }
-                    })()
-                }
+                <TicketsList jiraTickets={this.state.jiraTickets} isSearching={this.state.searchingInProgress} />
             </div>
         );
     }

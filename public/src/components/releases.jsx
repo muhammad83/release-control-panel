@@ -1,6 +1,8 @@
 import React from "react";
 import ProductsRepository from "../repositories/products-repository";
+import StoriesRepository from "../repositories/stories-repository";
 import TagsRepository from "../repositories/tags-repository";
+import TicketsList from "./tickets-list.jsx";
 
 export default class Releases extends React.Component
 {
@@ -13,6 +15,8 @@ export default class Releases extends React.Component
             currentVersions: [],
             isLoadingCurrentVersions: false,
             isLoadingReleases: false,
+            isLoadingStories: false,
+            jiraTickets: [],
             releases: [],
             selectedRelease: null,
             selectedReleaseIndex: -1
@@ -34,7 +38,30 @@ export default class Releases extends React.Component
             return;
         }
 
-        // TODO: Searching...
+        this.setState(
+        {
+            isLoadingStories: true,
+            jiraTickets: []
+        });
+
+        StoriesRepository.getStoriesForRelease(this.state.selectedRelease.name)
+            .then((data) =>
+            {
+                this.setState(
+                {
+                    isLoadingStories: false,
+                    jiraTickets: data
+                });
+            })
+            .catch(() =>
+            {
+                this.setState(
+                {
+                    isLoadingStories: false
+                });
+
+                alert("An error has occurred. Could not load releases.");
+            })
     }
 
     handleReleaseChange(event)
@@ -44,6 +71,7 @@ export default class Releases extends React.Component
 
         this.setState(
         {
+            jiraTickets: [],
             selectedRelease: selectedRelease,
             selectedReleaseIndex: selectedIndex
         });
@@ -109,7 +137,7 @@ export default class Releases extends React.Component
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-md-6">
-                        <h5>Current versions</h5>
+                        <h4>Current versions</h4>
                         <table className="table">
                             <thead>
                             <tr>
@@ -121,11 +149,25 @@ export default class Releases extends React.Component
                             {
                                 (() =>
                                 {
-                                    if (this.state.currentVersions.length == 0)
+                                    if (this.state.isLoadingCurrentVersions)
                                     {
                                         return (
                                             <tr>
-                                                <td colSpan="2">Current versions not yet loaded.</td>
+                                                <td colSpan="2">
+                                                    <div className="progress">
+                                                        <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
+                                                            <span className="sr-only">100% Complete</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    }
+                                    else if (this.state.currentVersions.length == 0)
+                                    {
+                                        return (
+                                            <tr>
+                                                <td colSpan="2">No versions found.</td>
                                             </tr>
                                         );
                                     }
@@ -145,6 +187,7 @@ export default class Releases extends React.Component
                         </table>
                     </div>
                     <div className="col-md-6">
+                        <h4>Upcoming versions</h4>
                         <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
                             <div className="form-group">
                                 <label htmlFor="release" className="col-sm-2 control-label">Release:</label>
@@ -163,48 +206,61 @@ export default class Releases extends React.Component
                                 </div>
                             </div>
                             <div className="form-group">
-                                <table className="table">
-                                    <thead>
-                                    <tr>
-                                        <th>Project name</th>
-                                        <th>Version</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {
-                                        (() =>
-                                        {
-                                            if (!this.state.selectedRelease)
-                                            {
-                                                return (
-                                                    <tr>
-                                                        <td colSpan="2">No release selected.</td>
-                                                    </tr>
-                                                );
-                                            }
-
-                                            return this.state.selectedRelease.applications.map((application, index) =>
-                                            {
-                                                return (
-                                                    <tr key={index}>
-                                                        <td>{application.application_name}</td>
-                                                        <td>{application.version}</td>
-                                                    </tr>
-                                                );
-                                            });
-                                        })()
-                                    }
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="form-group">
                                 <div className="col-sm-offset-2 col-sm-10">
                                     <button className="btn btn-default">Search</button>
                                 </div>
                             </div>
                         </form>
+                        <table className="table">
+                            <thead>
+                            <tr>
+                                <th>Project name</th>
+                                <th>Version</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {
+                                (() =>
+                                {
+                                    if (this.state.isLoadingReleases)
+                                    {
+                                        return (
+                                            <tr>
+                                                <td colSpan="2">
+                                                    <div className="progress">
+                                                        <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
+                                                            <span className="sr-only">100% Complete</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    }
+                                    else if (!this.state.selectedRelease)
+                                    {
+                                        return (
+                                            <tr>
+                                                <td colSpan="2">No release selected.</td>
+                                            </tr>
+                                        );
+                                    }
+
+                                    return this.state.selectedRelease.applications.map((application, index) =>
+                                    {
+                                        return (
+                                            <tr key={index}>
+                                                <td>{application.application_name}</td>
+                                                <td>{application.version}</td>
+                                            </tr>
+                                        );
+                                    });
+                                })()
+                            }
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+                <TicketsList jiraTickets={this.state.jiraTickets} isSearching={this.state.isLoadingStories} />
             </div>
         );
     }

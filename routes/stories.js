@@ -33,32 +33,35 @@ module.exports =
     },
     getStoriesForRelease: function(request, response)
     {
+        var version = request.query.version;
         var projects = (request.query.projects || "").split(",");
-        var projectTagPromises = projects.map(function (project) { return tagsRepository.getProdReleaseNumber(project); });
+        var versions;
         var projectProdReleaseNumbers;
-        var projectStableTags;
 
-        q.all(projectTagPromises)
-            .then(function (versions)
+        tagsRepository.getStableApplications(version)
+            .then(function (projectsVersions)
             {
-                projectProdReleaseNumbers = versions;
+                versions = projects.map(function (project)
+                {
+                    return "release/" + projectsVersions.find(function (pv) { return pv.application_name == project; }).version;
+                });
 
-                var stableTagPromises = projects.map(function (project) { return tagsRepository.getStableTags(project); });
-                return q.all(stableTagPromises);
+                var promises = projects.map(function (project) { return tagsRepository.getProdReleaseNumber(project); });
+                return q.all(promises);
             })
-            .then(function (stableTags)
+            .then(function (prodVersions)
             {
-                projectStableTags = stableTags.map(function (projectTags) { return projectTags[0]; });
+                projectProdReleaseNumbers = prodVersions;
 
-                var projectTagsPromises = projects.map(function (project) { return tagsRepository.getTags(project); });
-                return q.all(projectTagsPromises);
+                var promises = projects.map(function (project) { return tagsRepository.getTags(project); });
+                return q.all(promises);
             })
             .then(function (allTags)
             {
                 var projectTags = allTags.map(function (tags, projectIndex)
                 {
                     var tagsToFind = tags.slice(
-                        tags.indexOf(projectStableTags[projectIndex]),
+                        tags.indexOf(versions[projectIndex]),
                         tags.indexOf(projectProdReleaseNumbers[projectIndex])
                     ).map(function (tag) { return tag.replace("release/", ""); });
 
@@ -71,18 +74,7 @@ module.exports =
             })
             .then(function (data)
             {
-                var resultData = {
-                    projects: projects.map(function (project, index)
-                    {
-                        return {
-                            name: project,
-                            startTag: projectProdReleaseNumbers[index],
-                            endingTag: projectStableTags[index]
-                        };
-                    }),
-                    stories: data
-                };
-                response.send(JSON.stringify(resultData));
+                response.send(JSON.stringify(data));
             })
             .catch(function (ex)
             {

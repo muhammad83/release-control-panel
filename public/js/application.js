@@ -32036,7 +32036,7 @@
 	                showStableVersions: event.target.checked
 	            });
 
-	            this.loadEndingTags();
+	            this.loadEndingTags(event.target.checked);
 	        }
 	    }, {
 	        key: "handleStartingTagChange",
@@ -32045,14 +32045,14 @@
 	                startingTagIndex: parseInt(event.target.value)
 	            });
 
-	            this.loadEndingTags();
+	            this.loadEndingTags(this.state.showStableVersions);
 	        }
 	    }, {
 	        key: "loadEndingTags",
-	        value: function loadEndingTags() {
+	        value: function loadEndingTags(showStableVersions) {
 	            var _this2 = this;
 
-	            if (this.state.showStableVersions) {
+	            if (showStableVersions) {
 	                this.setState({ searchingInProgress: true });
 
 	                _tagsRepository2.default.getStableTags(this.props.productName).then(function (data) {
@@ -32139,8 +32139,6 @@
 	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this5 = this;
-
 	            return _react2.default.createElement(
 	                "div",
 	                { className: "container-fluid" },
@@ -32259,37 +32257,7 @@
 	                        )
 	                    )
 	                ),
-	                function () {
-	                    if (_this5.state.searchingInProgress) {
-	                        return _react2.default.createElement(
-	                            "div",
-	                            { className: "row" },
-	                            _react2.default.createElement("div", { className: "col-md-2" }),
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "col-md-5" },
-	                                _react2.default.createElement(
-	                                    "div",
-	                                    { className: "progress" },
-	                                    _react2.default.createElement(
-	                                        "div",
-	                                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                        _react2.default.createElement(
-	                                            "span",
-	                                            { className: "sr-only" },
-	                                            "100% Complete"
-	                                        )
-	                                    )
-	                                )
-	                            )
-	                        );
-	                    }
-	                }(),
-	                function () {
-	                    if (_this5.state.jiraTickets.length > 0) {
-	                        return _react2.default.createElement(_ticketsList2.default, { jiraTickets: _this5.state.jiraTickets });
-	                    }
-	                }()
+	                _react2.default.createElement(_ticketsList2.default, { jiraTickets: this.state.jiraTickets, isSearching: this.state.searchingInProgress })
 	            );
 	        }
 	    }]);
@@ -32319,6 +32287,10 @@
 
 	var _q2 = _interopRequireDefault(_q);
 
+	var _productsRepository = __webpack_require__(161);
+
+	var _productsRepository2 = _interopRequireDefault(_productsRepository);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -32336,6 +32308,22 @@
 	            var encodedEndTag = encodeURIComponent(endTag);
 
 	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
+	                deferred.resolve(JSON.parse(data));
+	            }).fail(function () {
+	                deferred.reject();
+	            });
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "getStoriesForRelease",
+	        value: function getStoriesForRelease(releaseName) {
+	            var deferred = _q2.default.defer();
+	            var products = _productsRepository2.default.getProducts().map(function (p) {
+	                return p.name;
+	            }).join(",");
+
+	            _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function () {
 	                deferred.reject();
@@ -32506,6 +32494,8 @@
 	    _createClass(TicketsList, [{
 	        key: "render",
 	        value: function render() {
+	            var _this2 = this;
+
 	            return _react2.default.createElement(
 	                "div",
 	                { className: "row" },
@@ -32561,71 +32551,103 @@
 	                        _react2.default.createElement(
 	                            "tbody",
 	                            null,
-	                            this.props.jiraTickets.map(function (ticket, ticketIndex) {
-	                                return _react2.default.createElement(
-	                                    "tr",
-	                                    { key: ticketIndex },
-	                                    _react2.default.createElement(
-	                                        "td",
+	                            function () {
+	                                if (_this2.props.isSearching) {
+	                                    return _react2.default.createElement(
+	                                        "tr",
 	                                        null,
-	                                        ticketIndex + 1
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "td",
-	                                        null,
-	                                        ticket.message
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "td",
-	                                        null,
-	                                        ticket.dateTime
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "td",
-	                                        null,
-	                                        function () {
-	                                            switch (ticket.status) {
-	                                                case "Dev Ready":
-	                                                case "Dev Complete":
-	                                                    return _react2.default.createElement(
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            { colSpan: "6" },
+	                                            _react2.default.createElement(
+	                                                "div",
+	                                                { className: "progress" },
+	                                                _react2.default.createElement(
+	                                                    "div",
+	                                                    { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
+	                                                    _react2.default.createElement(
 	                                                        "span",
-	                                                        { className: "label label-danger" },
-	                                                        ticket.status
-	                                                    );
-	                                                case "In QA":
-	                                                    return _react2.default.createElement(
-	                                                        "span",
-	                                                        { className: "label label-warning" },
-	                                                        ticket.status
-	                                                    );
-	                                                case "QA Complete":
-	                                                case "Resolved":
-	                                                    return _react2.default.createElement(
-	                                                        "span",
-	                                                        { className: "label label-success" },
-	                                                        ticket.status
-	                                                    );
-	                                                default:
-	                                                    return _react2.default.createElement(
-	                                                        "span",
-	                                                        { className: "label label-default" },
-	                                                        ticket.status
-	                                                    );
-	                                            }
-	                                        }()
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "td",
-	                                        null,
-	                                        ticket.author
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "td",
-	                                        null,
-	                                        ticket.hash
-	                                    )
-	                                );
-	                            })
+	                                                        { className: "sr-only" },
+	                                                        "100% Complete"
+	                                                    )
+	                                                )
+	                                            )
+	                                        )
+	                                    );
+	                                }
+
+	                                return _this2.props.jiraTickets.map(function (ticket, ticketIndex) {
+	                                    return _react2.default.createElement(
+	                                        "tr",
+	                                        { key: ticketIndex },
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            null,
+	                                            ticketIndex + 1
+	                                        ),
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            null,
+	                                            _react2.default.createElement(
+	                                                "a",
+	                                                { href: ticket.url, target: "_blank", rel: "external" },
+	                                                ticket.ticketNumber,
+	                                                ": ",
+	                                                ticket.message
+	                                            )
+	                                        ),
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            null,
+	                                            ticket.dateTime
+	                                        ),
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            null,
+	                                            function () {
+	                                                switch (ticket.status) {
+	                                                    case "Dev Ready":
+	                                                    case "Dev Complete":
+	                                                        return _react2.default.createElement(
+	                                                            "span",
+	                                                            { className: "label label-danger" },
+	                                                            ticket.status
+	                                                        );
+	                                                    case "In QA":
+	                                                        return _react2.default.createElement(
+	                                                            "span",
+	                                                            { className: "label label-warning" },
+	                                                            ticket.status
+	                                                        );
+	                                                    case "QA Complete":
+	                                                    case "Resolved":
+	                                                        return _react2.default.createElement(
+	                                                            "span",
+	                                                            { className: "label label-success" },
+	                                                            ticket.status
+	                                                        );
+	                                                    default:
+	                                                        return _react2.default.createElement(
+	                                                            "span",
+	                                                            { className: "label label-default" },
+	                                                            ticket.status
+	                                                        );
+	                                                }
+	                                            }()
+	                                        ),
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            null,
+	                                            ticket.author
+	                                        ),
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            null,
+	                                            ticket.hash
+	                                        )
+	                                    );
+	                                });
+	                            }()
 	                        )
 	                    )
 	                )
@@ -32780,9 +32802,17 @@
 
 	var _productsRepository2 = _interopRequireDefault(_productsRepository);
 
+	var _storiesRepository = __webpack_require__(167);
+
+	var _storiesRepository2 = _interopRequireDefault(_storiesRepository);
+
 	var _tagsRepository = __webpack_require__(168);
 
 	var _tagsRepository2 = _interopRequireDefault(_tagsRepository);
+
+	var _ticketsList = __webpack_require__(170);
+
+	var _ticketsList2 = _interopRequireDefault(_ticketsList);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -32804,6 +32834,8 @@
 	            currentVersions: [],
 	            isLoadingCurrentVersions: false,
 	            isLoadingReleases: false,
+	            isLoadingStories: false,
+	            jiraTickets: [],
 	            releases: [],
 	            selectedRelease: null,
 	            selectedReleaseIndex: -1
@@ -32820,13 +32852,31 @@
 	    }, {
 	        key: "handleFormSubmit",
 	        value: function handleFormSubmit(event) {
+	            var _this2 = this;
+
 	            event.preventDefault();
 
 	            if (!this.state.selectedRelease) {
 	                return;
 	            }
 
-	            // TODO: Searching...
+	            this.setState({
+	                isLoadingStories: true,
+	                jiraTickets: []
+	            });
+
+	            _storiesRepository2.default.getStoriesForRelease(this.state.selectedRelease.name).then(function (data) {
+	                _this2.setState({
+	                    isLoadingStories: false,
+	                    jiraTickets: data
+	                });
+	            }).catch(function () {
+	                _this2.setState({
+	                    isLoadingStories: false
+	                });
+
+	                alert("An error has occurred. Could not load releases.");
+	            });
 	        }
 	    }, {
 	        key: "handleReleaseChange",
@@ -32835,6 +32885,7 @@
 	            var selectedRelease = selectedIndex > -1 ? this.state.releases[selectedIndex] : null;
 
 	            this.setState({
+	                jiraTickets: [],
 	                selectedRelease: selectedRelease,
 	                selectedReleaseIndex: selectedIndex
 	            });
@@ -32842,19 +32893,19 @@
 	    }, {
 	        key: "loadAvailableReleases",
 	        value: function loadAvailableReleases() {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            this.setState({
 	                isLoadingReleases: true
 	            });
 
 	            _tagsRepository2.default.getReleases().then(function (releases) {
-	                _this2.setState({
+	                _this3.setState({
 	                    releases: releases,
 	                    isLoadingReleases: false
 	                });
 	            }).catch(function () {
-	                _this2.setState({
+	                _this3.setState({
 	                    isLoadingReleases: false
 	                });
 
@@ -32864,19 +32915,19 @@
 	    }, {
 	        key: "loadCurrentVersions",
 	        value: function loadCurrentVersions() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            this.setState({
 	                isLoadingCurrentVersions: true
 	            });
 
 	            _productsRepository2.default.getCurrentVersions().then(function (versions) {
-	                _this3.setState({
+	                _this4.setState({
 	                    currentVersions: versions,
 	                    isLoadingCurrentVersions: false
 	                });
 	            }).catch(function () {
-	                _this3.setState({
+	                _this4.setState({
 	                    isLoadingCurrentVersions: false
 	                });
 
@@ -32886,7 +32937,7 @@
 	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this4 = this;
+	            var _this5 = this;
 
 	            return _react2.default.createElement(
 	                "div",
@@ -32898,7 +32949,7 @@
 	                        "div",
 	                        { className: "col-md-6" },
 	                        _react2.default.createElement(
-	                            "h5",
+	                            "h4",
 	                            null,
 	                            "Current versions"
 	                        ),
@@ -32927,19 +32978,41 @@
 	                                "tbody",
 	                                null,
 	                                function () {
-	                                    if (_this4.state.currentVersions.length == 0) {
+	                                    if (_this5.state.isLoadingCurrentVersions) {
 	                                        return _react2.default.createElement(
 	                                            "tr",
 	                                            null,
 	                                            _react2.default.createElement(
 	                                                "td",
 	                                                { colSpan: "2" },
-	                                                "Current versions not yet loaded."
+	                                                _react2.default.createElement(
+	                                                    "div",
+	                                                    { className: "progress" },
+	                                                    _react2.default.createElement(
+	                                                        "div",
+	                                                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
+	                                                        _react2.default.createElement(
+	                                                            "span",
+	                                                            { className: "sr-only" },
+	                                                            "100% Complete"
+	                                                        )
+	                                                    )
+	                                                )
+	                                            )
+	                                        );
+	                                    } else if (_this5.state.currentVersions.length == 0) {
+	                                        return _react2.default.createElement(
+	                                            "tr",
+	                                            null,
+	                                            _react2.default.createElement(
+	                                                "td",
+	                                                { colSpan: "2" },
+	                                                "No versions found."
 	                                            )
 	                                        );
 	                                    }
 
-	                                    return _this4.state.currentVersions.map(function (application, index) {
+	                                    return _this5.state.currentVersions.map(function (application, index) {
 	                                        return _react2.default.createElement(
 	                                            "tr",
 	                                            { key: index },
@@ -32962,6 +33035,11 @@
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-6" },
+	                        _react2.default.createElement(
+	                            "h4",
+	                            null,
+	                            "Upcoming versions"
+	                        ),
 	                        _react2.default.createElement(
 	                            "form",
 	                            { className: "form-horizontal", onSubmit: this.handleFormSubmit.bind(this) },
@@ -32998,66 +33076,6 @@
 	                                "div",
 	                                { className: "form-group" },
 	                                _react2.default.createElement(
-	                                    "table",
-	                                    { className: "table" },
-	                                    _react2.default.createElement(
-	                                        "thead",
-	                                        null,
-	                                        _react2.default.createElement(
-	                                            "tr",
-	                                            null,
-	                                            _react2.default.createElement(
-	                                                "th",
-	                                                null,
-	                                                "Project name"
-	                                            ),
-	                                            _react2.default.createElement(
-	                                                "th",
-	                                                null,
-	                                                "Version"
-	                                            )
-	                                        )
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "tbody",
-	                                        null,
-	                                        function () {
-	                                            if (!_this4.state.selectedRelease) {
-	                                                return _react2.default.createElement(
-	                                                    "tr",
-	                                                    null,
-	                                                    _react2.default.createElement(
-	                                                        "td",
-	                                                        { colSpan: "2" },
-	                                                        "No release selected."
-	                                                    )
-	                                                );
-	                                            }
-
-	                                            return _this4.state.selectedRelease.applications.map(function (application, index) {
-	                                                return _react2.default.createElement(
-	                                                    "tr",
-	                                                    { key: index },
-	                                                    _react2.default.createElement(
-	                                                        "td",
-	                                                        null,
-	                                                        application.application_name
-	                                                    ),
-	                                                    _react2.default.createElement(
-	                                                        "td",
-	                                                        null,
-	                                                        application.version
-	                                                    )
-	                                                );
-	                                            });
-	                                        }()
-	                                    )
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "form-group" },
-	                                _react2.default.createElement(
 	                                    "div",
 	                                    { className: "col-sm-offset-2 col-sm-10" },
 	                                    _react2.default.createElement(
@@ -33067,9 +33085,88 @@
 	                                    )
 	                                )
 	                            )
+	                        ),
+	                        _react2.default.createElement(
+	                            "table",
+	                            { className: "table" },
+	                            _react2.default.createElement(
+	                                "thead",
+	                                null,
+	                                _react2.default.createElement(
+	                                    "tr",
+	                                    null,
+	                                    _react2.default.createElement(
+	                                        "th",
+	                                        null,
+	                                        "Project name"
+	                                    ),
+	                                    _react2.default.createElement(
+	                                        "th",
+	                                        null,
+	                                        "Version"
+	                                    )
+	                                )
+	                            ),
+	                            _react2.default.createElement(
+	                                "tbody",
+	                                null,
+	                                function () {
+	                                    if (_this5.state.isLoadingReleases) {
+	                                        return _react2.default.createElement(
+	                                            "tr",
+	                                            null,
+	                                            _react2.default.createElement(
+	                                                "td",
+	                                                { colSpan: "2" },
+	                                                _react2.default.createElement(
+	                                                    "div",
+	                                                    { className: "progress" },
+	                                                    _react2.default.createElement(
+	                                                        "div",
+	                                                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
+	                                                        _react2.default.createElement(
+	                                                            "span",
+	                                                            { className: "sr-only" },
+	                                                            "100% Complete"
+	                                                        )
+	                                                    )
+	                                                )
+	                                            )
+	                                        );
+	                                    } else if (!_this5.state.selectedRelease) {
+	                                        return _react2.default.createElement(
+	                                            "tr",
+	                                            null,
+	                                            _react2.default.createElement(
+	                                                "td",
+	                                                { colSpan: "2" },
+	                                                "No release selected."
+	                                            )
+	                                        );
+	                                    }
+
+	                                    return _this5.state.selectedRelease.applications.map(function (application, index) {
+	                                        return _react2.default.createElement(
+	                                            "tr",
+	                                            { key: index },
+	                                            _react2.default.createElement(
+	                                                "td",
+	                                                null,
+	                                                application.application_name
+	                                            ),
+	                                            _react2.default.createElement(
+	                                                "td",
+	                                                null,
+	                                                application.version
+	                                            )
+	                                        );
+	                                    });
+	                                }()
+	                            )
 	                        )
 	                    )
-	                )
+	                ),
+	                _react2.default.createElement(_ticketsList2.default, { jiraTickets: this.state.jiraTickets, isSearching: this.state.isLoadingStories })
 	            );
 	        }
 	    }]);

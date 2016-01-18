@@ -32,7 +32,8 @@ module.exports =
                 pass: config.password
             },
             qs: {
-                jql: prepareJQLForTags(projectsAndTags)
+                jql: prepareJQLForTags(projectsAndTags),
+                maxResults: 99999
             },
             headers: {
                 "Content-Type": "application/json"
@@ -46,6 +47,12 @@ module.exports =
             }
 
             var parsedData = JSON.parse(data);
+            if (!parsedData.issues)
+            {
+                deferred.reject();
+                return;
+            }
+
             var jiraStories = parsedData.issues.map(function (issue)
             {
                 return {
