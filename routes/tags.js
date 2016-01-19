@@ -1,7 +1,7 @@
 "use strict";
 
-let q = require("q");
-let tagsRepository = require("../repositories/tags-repository");
+const q = require("q");
+const tagsRepository = require("../repositories/tags-repository");
 
 class Tags
 {

@@ -1,44 +1,35 @@
-var config = require("../config");
-var q = require("q");
-var request = require("request");
+"use strict";
 
-function action(name)
-{
-    return config.jiraUrl + "/" + name;
-}
+const config = require("../config");
+const q = require("q");
+const request = require("request");
 
-function prepareJQLForTags(projectsAndTags)
+class StoriesRepository
 {
-    var query = "project = \"Company Accounts Tax Online\" AND \"Git Tag\" in (";
-    query += projectsAndTags.map(function (projectAndTags)
+    static getAction(name)
     {
-        return projectAndTags.tags.map(function (tag) { return projectAndTags.name + "-" + tag; }).join(", ");
-    }).join(", ");
-    query += ") ORDER BY status ASC, team ASC, key DESC";
-    return query;
-}
+        return `${config.jiraUrl}/${name}`;
+    }
 
-module.exports =
-{
-    getStoriesBetweenTagsForProjects: function(projectsAndTags)
+    static getStoriesBetweenTagsForProjects(projectsAndTags)
     {
-        var deferred = q.defer();
+        let deferred = q.defer();
 
         request({
             method: "GET",
-            url: action("rest/api/2/search"),
+            url: this.getAction("rest/api/2/search"),
             auth: {
                 user: config.username,
                 pass: config.password
             },
             qs: {
-                jql: prepareJQLForTags(projectsAndTags),
+                jql: this.prepareJQLForTags(projectsAndTags),
                 maxResults: 99999
             },
             headers: {
                 "Content-Type": "application/json"
             }
-        }, function (error, response, data)
+        }, (error, response, data) =>
         {
             if (error)
             {
@@ -46,14 +37,14 @@ module.exports =
                 return;
             }
 
-            var parsedData = JSON.parse(data);
+            let parsedData = JSON.parse(data);
             if (!parsedData.issues)
             {
                 deferred.reject();
                 return;
             }
 
-            var jiraStories = parsedData.issues.map(function (issue)
+            let jiraStories = parsedData.issues.map(issue =>
             {
                 return {
                     ticketNumber: issue.key,
@@ -61,7 +52,7 @@ module.exports =
                     dateTime: issue.fields.updated,
                     author: issue.fields.creator.displayName,
                     status: issue.fields.status.name,
-                    url: config.jiraUrl + "/browse/" + issue.key
+                    url: `${config.jiraUrl}/browse/${issue.key}`
                 };
             });
 
@@ -70,4 +61,17 @@ module.exports =
 
         return deferred.promise;
     }
-};
+
+    static prepareJQLForTags(projectsAndTags)
+    {
+        let query = "project = \"Company Accounts Tax Online\" AND \"Git Tag\" in (";
+        query += projectsAndTags.map(projectAndTags =>
+        {
+            return projectAndTags.tags.map(tag => projectAndTags.name + "-" + tag).join(", ");
+        }).join(", ");
+        query += ") ORDER BY status ASC, team ASC, key DESC";
+        return query;
+    }
+}
+
+module.exports = StoriesRepository;

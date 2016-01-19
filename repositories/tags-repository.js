@@ -1,64 +1,66 @@
-var config = require("../config");
-var exec = require("child_process").exec;
-var path = require("path");
-var q = require("q");
-var parseXmlString= require("xml2js").parseString;
-var request = require("request");
+"use strict";
 
-var workspace = process.env.WORKSPACE;
+const config = require("../config");
+const exec = require("child_process").exec;
+const path = require("path");
+const q = require("q");
+const parseXmlString = require("xml2js").parseString;
+const request = require("request");
 
-function compareTags(tag1, tag2)
+const workspace = process.env.WORKSPACE;
+
+class TagsRepository
 {
-    var tag1Parts = tag1.split(".").map(function (part) { return parseInt(part.substring(part.indexOf("/") + 1)); });
-    var tag2Parts = tag2.split(".").map(function (part) { return parseInt(part.substring(part.indexOf("/") + 1)); });
-
-    var index = 0;
-    var result = 0;
-    for (; index < tag1Parts.length && index < tag2Parts.length; index++)
+    static compareTags(tag1, tag2)
     {
-        if (tag1Parts[index] === tag2Parts[index])
-            continue;
+        let tag1Parts = tag1.split(".").map(part => parseInt(part.substring(part.indexOf("/") + 1)));
+        let tag2Parts = tag2.split(".").map(part => parseInt(part.substring(part.indexOf("/") + 1)));
 
-        if (tag1Parts[index] < tag2Parts[index])
+        let index = 0;
+        let result = 0;
+        for (; index < tag1Parts.length && index < tag2Parts.length; index++)
         {
-            result = 1;
-            break;
+            if (tag1Parts[index] === tag2Parts[index])
+                continue;
+
+            if (tag1Parts[index] < tag2Parts[index])
+            {
+                result = 1;
+                break;
+            }
+            else
+            {
+                result = -1;
+                break;
+            }
         }
-        else
+
+        if (result === 0 && tag1Parts.length !== tag2Parts.length)
         {
-            result = -1;
-            break;
+            if (index === tag1Parts.length)
+            {
+                result = 1;
+            }
+            else if (index === tag2Parts.length)
+            {
+                result = -1;
+            }
         }
+
+        return result;
     }
 
-    if (result === 0 && tag1Parts.length !== tag2Parts.length)
+    static getAllStableVersions()
     {
-        if (index === tag1Parts.length)
-        {
-            result = 1;
-        }
-        else if (index === tag2Parts.length)
-        {
-            result = -1;
-        }
-    }
+        let deferred = q.defer();
 
-    return result;
-}
-
-module.exports =
-{
-    getAllStableVersions: function()
-    {
-        var deferred = q.defer();
-
-        var address = "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/maven-metadata.xml";
+        let address = "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/maven-metadata.xml";
         request(
             {
                 method: "GET",
                 uri: address
             },
-            function (error, response, body)
+            (error, response, body) =>
             {
                 if (error)
                 {
@@ -66,7 +68,7 @@ module.exports =
                     return;
                 }
 
-                parseXmlString(body, function (error, result)
+                parseXmlString(body, (error, result) =>
                 {
                     if (error)
                     {
@@ -79,18 +81,13 @@ module.exports =
             });
 
         return deferred.promise;
-    },
-    getProdReleaseNumber: function(serviceName)
+    }
+    static getProdReleaseNumber(serviceName)
     {
-        function getProdReleaseVer(outputFromServer)
-        {
-            return (/(\d.\d*.\d)/.exec(outputFromServer)|| [])[0] || null;
-        }
+        let deferred = q.defer();
+        let serviceCmdOptions = { cwd: path.join(workspace, serviceName) };
 
-        var deferred = q.defer();
-        var serviceCmdOptions = { cwd: path.join(workspace, serviceName) };
-
-        var command = null;
+        let command = null;
 
         if(serviceName === "cato-frontend" || serviceName === "cato-submit" || serviceName === "attachments")
         {
@@ -101,7 +98,7 @@ module.exports =
             command = "curl -s \"" + config.prodRightUrl + "\" | grep -E " + serviceName + " --after-context=2";
         }
 
-        exec(command, serviceCmdOptions, function (error, stdout)
+        exec(command, serviceCmdOptions, (error, stdout) =>
         {
             if (error)
             {
@@ -110,7 +107,7 @@ module.exports =
                 return;
             }
 
-            var versionNumber = getProdReleaseVer(stdout);
+            let versionNumber = this.getProdReleaseVer(stdout);
 
             if (versionNumber)
             {
@@ -121,18 +118,24 @@ module.exports =
         });
 
         return deferred.promise;
-    },
-    getStableApplications: function(version)
-    {
-        var deferred = q.defer();
+    }
 
-        var address = "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/" + version + "/cato-" + version + ".manifest";
+    static getProdReleaseVer(outputFromServer)
+    {
+        return (/(\d.\d*.\d)/.exec(outputFromServer)|| [])[0] || null;
+    }
+
+    static getStableApplications(version)
+    {
+        let deferred = q.defer();
+
+        let address = "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/" + version + "/cato-" + version + ".manifest";
         request(
             {
                 method: "GET",
                 uri: address
             },
-            function (error, response, data)
+            (error, response, data) =>
             {
                 if (error)
                 {
@@ -145,35 +148,33 @@ module.exports =
         );
 
         return deferred.promise;
-    },
-    getStableTags: function (serviceName)
+    }
+
+    static getStableTags(serviceName)
     {
         return this.getAllStableVersions()
-            .then(function (versions)
+            .then(versions =>
             {
-                var promises = versions.map(function (version) { return this.getStableApplications(version); }.bind(this));
+                let promises = versions.map(version => this.getStableApplications(version));
                 return q.all(promises);
-            }.bind(this))
-            .then(function (data)
+            })
+            .then(data =>
             {
-                return data.map(function (version)
+                return data.map(version =>
                     {
-                        var foundApplication = version.find(function (app) { return app.application_name == serviceName; });
+                        let foundApplication = version.find(app => app.application_name == serviceName);
                         return foundApplication ? "release/" + foundApplication.version : null;
                     })
-                    .filter(function (version)
-                    {
-                        return version && version.indexOf(".") !== -1;
-                    })
-                    .sort(compareTags);
+                    .filter(version => version && version.indexOf(".") !== -1)
+                    .sort(this.compareTags.bind(this));
             });
-    },
-    getTags: function(serviceName)
+    }
+    static getTags(serviceName)
     {
-        var deferred = q.defer();
-        var serviceCmdOptions = { cwd: path.join(workspace, serviceName) };
+        let deferred = q.defer();
+        let serviceCmdOptions = { cwd: path.join(workspace, serviceName) };
 
-        exec("git checkout master", serviceCmdOptions, function (error)
+        exec("git checkout master", serviceCmdOptions, error =>
         {
             if (error)
             {
@@ -181,7 +182,7 @@ module.exports =
                 return;
             }
 
-            exec("git pull", serviceCmdOptions, function (error)
+            exec("git pull", serviceCmdOptions, error =>
             {
                 if (error)
                 {
@@ -189,7 +190,7 @@ module.exports =
                     return;
                 }
 
-                exec("git tag --sort -version:refname", serviceCmdOptions, function (error, stdout)
+                exec("git tag --sort -version:refname", serviceCmdOptions, (error, stdout) =>
                 {
                     if (error)
                     {
@@ -197,7 +198,7 @@ module.exports =
                         return;
                     }
 
-                    var tags = stdout.split("\n").filter(function (tag) { return tag && tag.length > 0; });
+                    let tags = stdout.split("\n").filter(tag => tag && tag.length > 0);
                     deferred.resolve(tags);
                 });
             });
@@ -205,4 +206,6 @@ module.exports =
 
         return deferred.promise;
     }
-};
+}
+
+module.exports = TagsRepository;

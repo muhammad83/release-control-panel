@@ -1,9 +1,9 @@
 "use strict";
 
-let storiesController = require("./stories");
-let tagsController = require("./tags");
+const storiesController = require("./stories");
+const tagsController = require("./tags");
 
-module.exports = function (app)
+module.exports = (app) =>
 {
     app.get("/current-versions", tagsController.getCurrentVersions);
     app.get("/releases", tagsController.getReleases);

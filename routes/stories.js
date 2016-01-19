@@ -1,8 +1,8 @@
 "use strict";
 
-let q = require("q");
-let storiesRepository = require("../repositories/stories-repository");
-let tagsRepository = require("../repositories/tags-repository");
+const q = require("q");
+const storiesRepository = require("../repositories/stories-repository");
+const tagsRepository = require("../repositories/tags-repository");
 
 class Stories
 {

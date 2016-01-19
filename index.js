@@ -1,9 +1,9 @@
 "use strict";
 
-let express = require("express");
-let morgan = require("morgan");
+const express = require("express");
+const morgan = require("morgan");
 
-let app = express();
+const app = express();
 
 app.use(morgan("combined"));
 
