@@ -1,5 +1,7 @@
-var storiesController = require("./stories");
-var tagsController = require("./tags");
+"use strict";
+
+let storiesController = require("./stories");
+let tagsController = require("./tags");
 
 module.exports = function (app)
 {

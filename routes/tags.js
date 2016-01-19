@@ -1,20 +1,19 @@
-var q = require("q");
-var tagsRepository = require("../repositories/tags-repository");
+"use strict";
 
-module.exports =
+let q = require("q");
+let tagsRepository = require("../repositories/tags-repository");
+
+class Tags
 {
-    getCurrentVersions: function (request, response)
+    static getCurrentVersions(request, response)
     {
-        var projects = (request.query.projects || "").split(",");
-        var promises = projects.map(function (project)
-        {
-            return tagsRepository.getProdReleaseNumber(project);
-        });
+        let projects = (request.query.projects || "").split(",");
+        let promises = projects.map(project => tagsRepository.getProdReleaseNumber(project));
 
         q.all(promises)
-            .then(function (versions)
+            .then(versions =>
             {
-                var data = projects.map(function (project, index)
+                let data = projects.map((project, index) =>
                 {
                     return {
                         name: project,
@@ -24,42 +23,41 @@ module.exports =
 
                 response.send(JSON.stringify(data));
             })
-            .catch(function (ex)
+            .catch(ex =>
             {
                 response.status(500).send(JSON.stringify(ex || "Unknown error."));
             });
-    },
-    getStableTags: function (request, response)
+    }
+
+    static getStableTags(request, response)
     {
-        var serviceName = request.query.serviceName;
+        let serviceName = request.query.serviceName;
         tagsRepository.getStableTags(serviceName)
-            .then(function (data)
+            .then(data =>
             {
                 response.send(JSON.stringify(data));
             })
-            .catch(function (ex)
+            .catch(ex =>
             {
                 response.status(500).send(JSON.stringify(ex || "Unknown error."));
             });
-    },
-    getReleases: function (request, response)
+    }
+
+    static getReleases(request, response)
     {
-        var releaseVersions;
+        let releaseVersions;
 
         tagsRepository.getAllStableVersions()
-            .then(function (versions)
+            .then(versions =>
             {
                 releaseVersions = versions;
 
-                var promises = versions.map(function (version)
-                {
-                    return tagsRepository.getStableApplications(version);
-                });
+                let promises = versions.map(version => tagsRepository.getStableApplications(version));
                 return q.all(promises);
             })
-            .then(function (applicationVersions)
+            .then(applicationVersions =>
             {
-                var data = releaseVersions.map(function (version, index)
+                let data = releaseVersions.map((version, index) =>
                 {
                     return {
                         name: version,
@@ -69,31 +67,34 @@ module.exports =
 
                 response.send(JSON.stringify(data));
             })
-            .catch(function (ex)
+            .catch(ex =>
             {
                 response.status(500).send(JSON.stringify(ex || "Unknown error."));
             });
-    },
-    getTags: function (request, response)
-    {
-        var serviceName = request.query.serviceName;
+    }
 
-        var promises = [
+    static getTags(request, response)
+    {
+        let serviceName = request.query.serviceName;
+
+        let promises = [
             tagsRepository.getTags(serviceName),
             tagsRepository.getProdReleaseNumber(serviceName)
         ];
 
         q.all(promises)
-            .then(function (data)
+            .then(data =>
             {
                 response.send(JSON.stringify({
                     tags: data[0],
                     currentVersion: data[1]
                 }));
             })
-            .catch(function (error)
+            .catch(error =>
             {
                 response.status(500).send(JSON.stringify(error || "Unknown error."));
             });
     }
-};
+}
+
+module.exports = Tags;
