@@ -1,69 +1,71 @@
-var q = require("q");
-var storiesRepository = require("../repositories/stories-repository");
-var tagsRepository = require("../repositories/tags-repository");
+"use strict";
 
-module.exports =
+const q = require("q");
+const storiesRepository = require("../repositories/stories-repository");
+const tagsRepository = require("../repositories/tags-repository");
+
+class Stories
 {
-    getStories: function (request, response)
+    static getStories(request, response)
     {
-        var serviceName = request.query.serviceName;
-        var endTag = request.query.endTag;
-        var startTag = request.query.startTag;
+        let serviceName = request.query.serviceName;
+        let endTag = request.query.endTag;
+        let startTag = request.query.startTag;
 
         tagsRepository.getTags(serviceName)
-            .then(function (tags)
+            .then(tags =>
             {
-                var startTagIndex = tags.indexOf(startTag);
-                var endTagIndex = tags.indexOf(endTag);
-                var tagsToLookUpInJira = tags.slice(endTagIndex, startTagIndex + 1);
-                tagsToLookUpInJira = tagsToLookUpInJira.map(function (tag)
-                {
-                    return tag.replace("release/", "");
-                });
+                let startTagIndex = tags.indexOf(startTag);
+                let endTagIndex = tags.indexOf(endTag);
+                let tagsToLookUpInJira = tags.slice(endTagIndex, startTagIndex + 1);
+
+                tagsToLookUpInJira = tagsToLookUpInJira.map(tag => tag.replace("release/", ""));
+
                 return storiesRepository.getStoriesBetweenTagsForProjects([{ name: serviceName, tags: tagsToLookUpInJira }]);
             })
-            .then(function (data)
+            .then(data =>
             {
                 response.send(JSON.stringify(data));
             })
-            .catch(function (error)
+            .catch(error =>
             {
                 response.status(500).send(JSON.stringify(error || "Unknown error."));
             });
-    },
-    getStoriesForRelease: function(request, response)
+    }
+
+    static getStoriesForRelease(request, response)
     {
-        var version = request.query.version;
-        var projects = (request.query.projects || "").split(",");
-        var versions;
-        var projectProdReleaseNumbers;
+        let version = request.query.version;
+        let projects = (request.query.projects || "").split(",");
+        let versions;
+        let projectProdReleaseNumbers;
 
         tagsRepository.getStableApplications(version)
-            .then(function (projectsVersions)
+            .then(projectsVersions =>
             {
-                versions = projects.map(function (project)
+                versions = projects.map(project =>
                 {
-                    return "release/" + projectsVersions.find(function (pv) { return pv.application_name == project; }).version;
+                    return "release/" + projectsVersions.find(pv => pv.application_name == project).version;
                 });
 
-                var promises = projects.map(function (project) { return tagsRepository.getProdReleaseNumber(project); });
+                let promises = projects.map(project => tagsRepository.getProdReleaseNumber(project));
                 return q.all(promises);
             })
-            .then(function (prodVersions)
+            .then(prodVersions =>
             {
                 projectProdReleaseNumbers = prodVersions;
 
-                var promises = projects.map(function (project) { return tagsRepository.getTags(project); });
+                let promises = projects.map(project => tagsRepository.getTags(project));
                 return q.all(promises);
             })
-            .then(function (allTags)
+            .then(allTags =>
             {
-                var projectTags = allTags.map(function (tags, projectIndex)
+                let projectTags = allTags.map((tags, projectIndex) =>
                 {
-                    var tagsToFind = tags.slice(
+                    let tagsToFind = tags.slice(
                         tags.indexOf(versions[projectIndex]),
                         tags.indexOf(projectProdReleaseNumbers[projectIndex])
-                    ).map(function (tag) { return tag.replace("release/", ""); });
+                    ).map(tag => tag.replace("release/", ""));
 
                     return {
                         name: projects[projectIndex],
@@ -72,13 +74,15 @@ module.exports =
                 });
                 return storiesRepository.getStoriesBetweenTagsForProjects(projectTags);
             })
-            .then(function (data)
+            .then(data =>
             {
                 response.send(JSON.stringify(data));
             })
-            .catch(function (ex)
+            .catch(ex =>
             {
                 response.status(500).send(JSON.stringify(ex || "Unknown error."));
             });
     }
-};
+}
+
+module.exports = Stories;

@@ -1,7 +1,9 @@
-var storiesController = require("./stories");
-var tagsController = require("./tags");
+"use strict";
 
-module.exports = function (app)
+const storiesController = require("./stories");
+const tagsController = require("./tags");
+
+module.exports = (app) =>
 {
     app.get("/current-versions", tagsController.getCurrentVersions);
     app.get("/releases", tagsController.getReleases);
