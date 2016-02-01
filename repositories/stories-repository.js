@@ -104,7 +104,8 @@ class StoriesRepository
                     dateTime: issue.fields.updated,
                     author: issue.fields.creator.displayName,
                     status: issue.fields.status.name,
-                    url: `${config.jiraUrl}/browse/${issue.key}`
+                    url: `${config.jiraUrl}/browse/${issue.key}`,
+                    gitTags: issue.fields.customfield_10900
                 };
             });
 
