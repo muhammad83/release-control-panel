@@ -21,7 +21,7 @@ class Stories
 
                 tagsToLookUpInJira = tagsToLookUpInJira.map(tag => tag.replace("release/", ""));
 
-                return storiesRepository.getStoriesBetweenTagsForProjects([{ name: serviceName, tags: tagsToLookUpInJira }]);
+                return storiesRepository.getStories([{ name: serviceName, tags: tagsToLookUpInJira }]);
             })
             .then(data =>
             {
@@ -72,7 +72,7 @@ class Stories
                         tags: tagsToFind
                     };
                 });
-                return storiesRepository.getStoriesBetweenTagsForProjects(projectTags);
+                return storiesRepository.getStories(projectTags);
             })
             .then(data =>
             {

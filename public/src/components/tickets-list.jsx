@@ -14,10 +14,10 @@ export default class TicketsList extends React.Component
                         <tr>
                             <th>#</th>
                             <th>Message</th>
+                            <th>Git tags</th>
                             <th>Date</th>
                             <th>Status</th>
                             <th>Author</th>
-                            <th>Hash</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -39,12 +39,35 @@ export default class TicketsList extends React.Component
                                     );
                                 }
 
+                                if (!this.props.jiraTickets || !this.props.jiraTickets.length)
+                                {
+                                    return (
+                                        <tr>
+                                            <td colSpan="6">
+                                                <p>No JIRA tickets found. Please change search criteria and hit "Search" button.</p>
+                                            </td>
+                                        </tr>
+                                    );
+                                }
+
                                 return this.props.jiraTickets.map(function (ticket, ticketIndex)
                                 {
                                     return (
                                         <tr key={ticketIndex}>
                                             <td>{ticketIndex + 1}</td>
                                             <td><a href={ticket.url} target="_blank" rel="external">{ticket.ticketNumber}: {ticket.message}</a></td>
+                                            <td>
+                                                <ul className="list-unstyled">
+                                                    {
+                                                        (ticket.gitTags||[]).map((tag, tagIndex) =>
+                                                        {
+                                                            return (
+                                                                <li key={tagIndex}>{tag}</li>
+                                                            );
+                                                        })
+                                                    }
+                                                </ul>
+                                            </td>
                                             <td>{ticket.dateTime}</td>
                                             <td>
                                                 {
@@ -67,7 +90,6 @@ export default class TicketsList extends React.Component
                                                 }
                                             </td>
                                             <td>{ticket.author}</td>
-                                            <td>{ticket.hash}</td>
                                         </tr>
                                     );
                                 });

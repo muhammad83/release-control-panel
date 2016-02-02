@@ -32538,6 +32538,11 @@
 	                                _react2.default.createElement(
 	                                    "th",
 	                                    null,
+	                                    "Git tags"
+	                                ),
+	                                _react2.default.createElement(
+	                                    "th",
+	                                    null,
 	                                    "Date"
 	                                ),
 	                                _react2.default.createElement(
@@ -32549,11 +32554,6 @@
 	                                    "th",
 	                                    null,
 	                                    "Author"
-	                                ),
-	                                _react2.default.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Hash"
 	                                )
 	                            )
 	                        ),
@@ -32585,6 +32585,22 @@
 	                                    );
 	                                }
 
+	                                if (!_this2.props.jiraTickets || !_this2.props.jiraTickets.length) {
+	                                    return _react2.default.createElement(
+	                                        "tr",
+	                                        null,
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            { colSpan: "6" },
+	                                            _react2.default.createElement(
+	                                                "p",
+	                                                null,
+	                                                "No JIRA tickets found. Please change search criteria and hit \"Search\" button."
+	                                            )
+	                                        )
+	                                    );
+	                                }
+
 	                                return _this2.props.jiraTickets.map(function (ticket, ticketIndex) {
 	                                    return _react2.default.createElement(
 	                                        "tr",
@@ -32603,6 +32619,21 @@
 	                                                ticket.ticketNumber,
 	                                                ": ",
 	                                                ticket.message
+	                                            )
+	                                        ),
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            null,
+	                                            _react2.default.createElement(
+	                                                "ul",
+	                                                { className: "list-unstyled" },
+	                                                (ticket.gitTags || []).map(function (tag, tagIndex) {
+	                                                    return _react2.default.createElement(
+	                                                        "li",
+	                                                        { key: tagIndex },
+	                                                        tag
+	                                                    );
+	                                                })
 	                                            )
 	                                        ),
 	                                        _react2.default.createElement(
@@ -32648,11 +32679,6 @@
 	                                            "td",
 	                                            null,
 	                                            ticket.author
-	                                        ),
-	                                        _react2.default.createElement(
-	                                            "td",
-	                                            null,
-	                                            ticket.hash
 	                                        )
 	                                    );
 	                                });

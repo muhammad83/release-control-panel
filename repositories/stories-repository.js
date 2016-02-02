@@ -1,35 +1,87 @@
 "use strict";
 
 const config = require("../config");
+const exec = require("child_process").exec;
+const path = require("path");
 const q = require("q");
 const request = require("request");
+const workspace = process.env.WORKSPACE;
 
 class StoriesRepository
 {
-    static getAction(name)
+    static getStories(projectsAndTags)
     {
-        return `${config.jiraUrl}/${name}`;
+        return this.getStoryNumbersFromGitLogs(projectsAndTags).then(jiraNumbers => this.getStoriesBetweenTagsForProjects(projectsAndTags, jiraNumbers));
     }
 
-    static getStoriesBetweenTagsForProjects(projectsAndTags)
+    static getStoryNumbersFromGitLogs(projectsAndTags)
+    {
+        let promises = projectsAndTags.map(project => this.getStoryNumbersFromProjectGitLog(project));
+        return q.all(promises).then(results =>
+        {
+            return results.reduce((left, right) => left.concat(right), [])
+        });
+    }
+
+    static getStoryNumbersFromProjectGitLog(project)
     {
         let deferred = q.defer();
 
-        request({
+        let serviceCmdOptions = {cwd: path.join(workspace, project.name)};
+        let startTag = project.tags[project.tags.length - 1];
+        let endTag = project.tags[0];
+        let command = `git log --date-order --pretty=format:"%s----__-----%h----__-----%aI----__-----%an" release/${startTag}...release/${endTag} | grep -v "Merge" | sort`;
+        exec(command, serviceCmdOptions, function (error, stdout)
+        {
+            if (error)
+            {
+                deferred.reject(error);
+                return;
+            }
+
+            let jiraNumbers = stdout.split("\n")
+                .map(line =>
+                {
+                    let numbers = [];
+                    let regex = /[A-Z]+[-_]\d+/gi;
+                    if (regex.test(line))
+                    {
+                        regex.lastIndex = 0;
+                        var result;
+                        while (result = regex.exec(line))
+                        {
+                            numbers.push(result[0]);
+                        }
+                    }
+                    return numbers;
+                })
+                .reduce((left, right) => left.concat(right), []);
+
+            deferred.resolve(jiraNumbers);
+        });
+
+        return deferred.promise;
+    }
+
+    static getStoriesBetweenTagsForProjects(projectsAndTags, jiraNumbers)
+    {
+        let deferred = q.defer();
+        let requestOptions = {
             method: "GET",
-            url: this.getAction("rest/api/2/search"),
+            url: `${config.jiraUrl}/rest/api/2/search`,
             auth: {
                 user: config.username,
                 pass: config.password
             },
             qs: {
-                jql: this.prepareJQLForTags(projectsAndTags),
+                jql: this.prepareJQLForTags(projectsAndTags, jiraNumbers),
                 maxResults: 99999
             },
             headers: {
                 "Content-Type": "application/json"
             }
-        }, (error, response, data) =>
+        };
+        let responseHandler = (error, response, data) =>
         {
             if (error)
             {
@@ -52,25 +104,32 @@ class StoriesRepository
                     dateTime: issue.fields.updated,
                     author: issue.fields.creator.displayName,
                     status: issue.fields.status.name,
-                    url: `${config.jiraUrl}/browse/${issue.key}`
+                    url: `${config.jiraUrl}/browse/${issue.key}`,
+                    gitTags: issue.fields.customfield_10900
                 };
             });
 
             deferred.resolve(jiraStories);
-        });
+        };
+
+        request(requestOptions, responseHandler);
 
         return deferred.promise;
     }
 
-    static prepareJQLForTags(projectsAndTags)
+    static prepareJQLForTags(projectsAndTags, jiraNumbers)
     {
-        let query = "project = \"Company Accounts Tax Online\" AND \"Git Tag\" in (";
-        query += projectsAndTags.map(projectAndTags =>
+        const separator = ", ";
+        let gitTags = projectsAndTags.map(projectAndTags => projectAndTags.tags.map(tag => projectAndTags.name + "-" + tag).join(separator)).join(separator);
+        if (jiraNumbers.length > 0)
         {
-            return projectAndTags.tags.map(tag => projectAndTags.name + "-" + tag).join(", ");
-        }).join(", ");
-        query += ") ORDER BY status ASC, team ASC, key DESC";
-        return query;
+            let jiraNumbersString = jiraNumbers.join(separator);
+            return `project = "Company Accounts Tax Online" AND ("Git Tag" in (${gitTags}) OR Key in (${jiraNumbersString})) ORDER BY status ASC, team ASC, key DESC`;
+        }
+        else
+        {
+            return `project = "Company Accounts Tax Online" AND "Git Tag" in (${gitTags}) ORDER BY status ASC, team ASC, key DESC`;
+        }
     }
 }
 
