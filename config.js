@@ -2,8 +2,8 @@ var config = {
     username: "",
     password: "",
     jiraUrl: "https://jira.tools.tax.service.gov.uk",
-    prodLeftUrl: "https://releases.tax.service.gov.uk/env/prod-left-a",
-    prodRightUrl: "https://releases.tax.service.gov.uk/env/prod-right"
+    prodLeftUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
+    prodRightUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough"
 };
 
 if (!config.username || config.username.length == 0)
