@@ -23,7 +23,6 @@ export default class ProductsRepository
     static getProducts()
     {
         return [
-            new Product("attachments"),
             new Product("cato-filing"),
             new Product("cato-frontend"),
             new Product("cato-submit"),

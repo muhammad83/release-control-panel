@@ -19936,7 +19936,7 @@
 	    }, {
 	        key: "getProducts",
 	        value: function getProducts() {
-	            return [new _product2.default("attachments"), new _product2.default("cato-filing"), new _product2.default("cato-frontend"), new _product2.default("cato-submit"), new _product2.default("files")];
+	            return [new _product2.default("cato-filing"), new _product2.default("cato-frontend"), new _product2.default("cato-submit"), new _product2.default("files")];
 	        }
 	    }, {
 	        key: "getUpcomingReleases",

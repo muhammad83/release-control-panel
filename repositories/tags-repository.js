@@ -54,7 +54,7 @@ class TagsRepository
     {
         let deferred = q.defer();
 
-        let address = "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/maven-metadata.xml";
+        let address = config.nexus;
         request(
             {
                 method: "GET",
@@ -89,7 +89,7 @@ class TagsRepository
 
         let command = null;
 
-        if(serviceName === "cato-frontend" || serviceName === "cato-submit" || serviceName === "attachments")
+        if(serviceName === "cato-frontend" || serviceName === "cato-submit")
         {
             command = "curl -s \"" + config.prodLeftUrl + "\" | grep -E " + serviceName + " --after-context=2";
         }

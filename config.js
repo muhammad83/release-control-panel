@@ -3,7 +3,8 @@ var config = {
     password: "",
     jiraUrl: "https://jira.tools.tax.service.gov.uk",
     prodLeftUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
-    prodRightUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough"
+    prodRightUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
+    nexus: "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/maven-metadata.xml"
 };
 
 if (!config.username || config.username.length == 0)
