@@ -8,29 +8,15 @@ const request = require("request");
 const workspace = process.env.WORKSPACE;
 
 class StoriesRepository
-{
-    static getStories(projectsAndTags)
-    {
-        return this.getStoryNumbersFromGitLogs(projectsAndTags).then(jiraNumbers => this.getStoriesBetweenTagsForProjects(projectsAndTags, jiraNumbers));
-    }
-
-    static getStoryNumbersFromGitLogs(projectsAndTags)
-    {
-        let promises = projectsAndTags.map(project => this.getStoryNumbersFromProjectGitLog(project));
-        return q.all(promises).then(results =>
-        {
-            return results.reduce((left, right) => left.concat(right), [])
-        });
-    }
-
-    static getStoryNumbersFromProjectGitLog(project)
+{   
+    static findJiraKeysInProjectsGitLog(project)
     {
         let deferred = q.defer();
-
         let serviceCmdOptions = {cwd: path.join(workspace, project.name)};
         let startTag = project.tags[project.tags.length - 1];
         let endTag = project.tags[0];
         let command = `git log --date-order --pretty=format:"%s----__-----%h----__-----%aI----__-----%an" release/${startTag}...release/${endTag} | grep -v "Merge" | sort`;
+        
         exec(command, serviceCmdOptions, function (error, stdout)
         {
             if (error)
@@ -62,8 +48,28 @@ class StoriesRepository
 
         return deferred.promise;
     }
+    
+    static getStories(projectsAndTags)
+    {
+        return this.getStoriesFromGitLog(projectsAndTags)
+            .then(jiraNumbers =>
+            {
+                let jql = this.prepareJQLForTags(projectsAndTags, jiraNumbers);
+                return this.getStoriesFromJira(jql);
+            })
+            .then(stories => this.linkEpicsToStories(stories));
+    }
 
-    static getStoriesBetweenTagsForProjects(projectsAndTags, jiraNumbers)
+    static getStoriesFromGitLog(projectsAndTags)
+    {
+        let promises = projectsAndTags.map(project => this.findJiraKeysInProjectsGitLog(project));
+        return q.all(promises).then(results =>
+        {
+            return results.reduce((left, right) => left.concat(right), [])
+        });
+    }
+
+    static getStoriesFromJira(jql)
     {
         let deferred = q.defer();
         let requestOptions = {
@@ -74,7 +80,7 @@ class StoriesRepository
                 pass: config.password
             },
             qs: {
-                jql: this.prepareJQLForTags(projectsAndTags, jiraNumbers),
+                jql: jql,
                 maxResults: 99999
             },
             headers: {
@@ -105,7 +111,8 @@ class StoriesRepository
                     author: issue.fields.creator.displayName,
                     status: issue.fields.status.name,
                     url: `${config.jiraUrl}/browse/${issue.key}`,
-                    gitTags: issue.fields.customfield_10900
+                    gitTags: issue.fields.customfield_10900,
+                    epicKey: issue.fields.customfield_10008
                 };
             });
 
@@ -115,6 +122,34 @@ class StoriesRepository
         request(requestOptions, responseHandler);
 
         return deferred.promise;
+    }
+    
+    static linkEpicsToStories(storiesList)
+    {
+        let epicsList = storiesList.map(story => story.epicKey).filter(key => !!key);
+        if (epicsList.length == 0)
+        {
+            return storiesList;
+        }
+        
+        let jql = this.prepareJQLForEpics(epicsList);
+        return this.getStoriesFromJira(jql)
+            .then(epics =>
+            {
+                storiesList.forEach(story =>
+                {
+                    if (!story.epicKey)
+                        return;
+                        
+                    story.epic = epics.find(epic => epic.ticketNumber == story.epicKey);
+                });
+                return storiesList;
+            });
+    }
+    
+    static prepareJQLForEpics(epicsKeys)
+    {
+        return `Key in (${epicsKeys.join(", ")})`;
     }
 
     static prepareJQLForTags(projectsAndTags, jiraNumbers)

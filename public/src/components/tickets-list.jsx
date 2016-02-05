@@ -13,7 +13,8 @@ export default class TicketsList extends React.Component
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>Message</th>
+                            <th>Summary</th>
+                            <th>Epic</th>
                             <th>Git tags</th>
                             <th>Date</th>
                             <th>Status</th>
@@ -28,7 +29,7 @@ export default class TicketsList extends React.Component
                                 {
                                     return (
                                         <tr>
-                                            <td colSpan="6">
+                                            <td colSpan="7">
                                                 <div className="progress">
                                                     <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
                                                         <span className="sr-only">100% Complete</span>
@@ -43,7 +44,7 @@ export default class TicketsList extends React.Component
                                 {
                                     return (
                                         <tr>
-                                            <td colSpan="6">
+                                            <td colSpan="7">
                                                 <p>No JIRA tickets found. Please change search criteria and hit "Search" button.</p>
                                             </td>
                                         </tr>
@@ -56,6 +57,17 @@ export default class TicketsList extends React.Component
                                         <tr key={ticketIndex}>
                                             <td>{ticketIndex + 1}</td>
                                             <td><a href={ticket.url} target="_blank" rel="external">{ticket.ticketNumber}: {ticket.message}</a></td>
+                                            <td>
+                                                {
+                                                    (() =>
+                                                    { 
+                                                        if (ticket.epic)
+                                                        {
+                                                            return <a href={ticket.epic.url} target="_blank" rel="external">{ticket.epic.ticketNumber}: {ticket.epic.message}</a>
+                                                        }
+                                                    })()
+                                                }
+                                            </td>
                                             <td>
                                                 <ul className="list-unstyled">
                                                     {

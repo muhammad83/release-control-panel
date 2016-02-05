@@ -32533,7 +32533,12 @@
 	                                _react2.default.createElement(
 	                                    "th",
 	                                    null,
-	                                    "Message"
+	                                    "Summary"
+	                                ),
+	                                _react2.default.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Epic"
 	                                ),
 	                                _react2.default.createElement(
 	                                    "th",
@@ -32567,7 +32572,7 @@
 	                                        null,
 	                                        _react2.default.createElement(
 	                                            "td",
-	                                            { colSpan: "6" },
+	                                            { colSpan: "7" },
 	                                            _react2.default.createElement(
 	                                                "div",
 	                                                { className: "progress" },
@@ -32591,7 +32596,7 @@
 	                                        null,
 	                                        _react2.default.createElement(
 	                                            "td",
-	                                            { colSpan: "6" },
+	                                            { colSpan: "7" },
 	                                            _react2.default.createElement(
 	                                                "p",
 	                                                null,
@@ -32620,6 +32625,21 @@
 	                                                ": ",
 	                                                ticket.message
 	                                            )
+	                                        ),
+	                                        _react2.default.createElement(
+	                                            "td",
+	                                            null,
+	                                            function () {
+	                                                if (ticket.epic) {
+	                                                    return _react2.default.createElement(
+	                                                        "a",
+	                                                        { href: ticket.epic.url, target: "_blank", rel: "external" },
+	                                                        ticket.epic.ticketNumber,
+	                                                        ": ",
+	                                                        ticket.epic.message
+	                                                    );
+	                                                }
+	                                            }()
 	                                        ),
 	                                        _react2.default.createElement(
 	                                            "td",
