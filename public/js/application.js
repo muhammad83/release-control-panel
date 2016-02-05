@@ -19950,7 +19950,7 @@
 	                var jsonData = JSON.parse(data);
 	                var filteredRelases = jsonData.map(function (r) {
 	                    r.applications = r.applications.filter(function (a) {
-	                        return products.indexOf(a.application_name) !== -1;
+	                        return products.indexOf(a.name) !== -1;
 	                    });
 	                    return r;
 	                });
@@ -32865,9 +32865,17 @@
 
 	var _tagsRepository2 = _interopRequireDefault(_tagsRepository);
 
+	var _currentVersionsList = __webpack_require__(173);
+
+	var _currentVersionsList2 = _interopRequireDefault(_currentVersionsList);
+
 	var _ticketsList = __webpack_require__(170);
 
 	var _ticketsList2 = _interopRequireDefault(_ticketsList);
+
+	var _upcomingVersionsList = __webpack_require__(175);
+
+	var _upcomingVersionsList2 = _interopRequireDefault(_upcomingVersionsList);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -32886,41 +32894,29 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Releases).call(this, props));
 
 	        _this.state = {
-	            currentVersions: [],
-	            isLoadingCurrentVersions: false,
-	            isLoadingReleases: false,
 	            isLoadingStories: false,
-	            jiraTickets: [],
-	            releases: [],
-	            selectedRelease: null,
-	            selectedReleaseIndex: -1
+	            jiraTickets: []
 	        };
 	        return _this;
 	    }
 
 	    _createClass(Releases, [{
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            this.loadAvailableReleases();
-	            this.loadCurrentVersions();
-	        }
-	    }, {
-	        key: "handleFormSubmit",
-	        value: function handleFormSubmit(event) {
-	            var _this2 = this;
-
-	            event.preventDefault();
-
-	            if (!this.state.selectedRelease) {
-	                return;
-	            }
-
+	        key: "onSelectedReleaseChanged",
+	        value: function onSelectedReleaseChanged(selectedRelease) {
 	            this.setState({
-	                isLoadingStories: true,
 	                jiraTickets: []
 	            });
+	        }
+	    }, {
+	        key: "onSearchStoriesClick",
+	        value: function onSearchStoriesClick(selectedRelease) {
+	            var _this2 = this;
 
-	            _storiesRepository2.default.getStoriesForRelease(this.state.selectedRelease.name).then(function (data) {
+	            this.setState({
+	                isLoadingStories: true
+	            });
+
+	            _storiesRepository2.default.getStoriesForRelease(selectedRelease.name).then(function (data) {
 	                _this2.setState({
 	                    isLoadingStories: false,
 	                    jiraTickets: data
@@ -32934,66 +32930,8 @@
 	            });
 	        }
 	    }, {
-	        key: "handleReleaseChange",
-	        value: function handleReleaseChange(event) {
-	            var selectedIndex = parseInt(event.target.value);
-	            var selectedRelease = selectedIndex > -1 ? this.state.releases[selectedIndex] : null;
-
-	            this.setState({
-	                jiraTickets: [],
-	                selectedRelease: selectedRelease,
-	                selectedReleaseIndex: selectedIndex
-	            });
-	        }
-	    }, {
-	        key: "loadAvailableReleases",
-	        value: function loadAvailableReleases() {
-	            var _this3 = this;
-
-	            this.setState({
-	                isLoadingReleases: true
-	            });
-
-	            _productsRepository2.default.getUpcomingReleases().then(function (releases) {
-	                _this3.setState({
-	                    releases: releases,
-	                    isLoadingReleases: false
-	                });
-	            }).catch(function () {
-	                _this3.setState({
-	                    isLoadingReleases: false
-	                });
-
-	                alert("An error has occurred. Could not load releases.");
-	            });
-	        }
-	    }, {
-	        key: "loadCurrentVersions",
-	        value: function loadCurrentVersions() {
-	            var _this4 = this;
-
-	            this.setState({
-	                isLoadingCurrentVersions: true
-	            });
-
-	            _productsRepository2.default.getCurrentVersions().then(function (versions) {
-	                _this4.setState({
-	                    currentVersions: versions,
-	                    isLoadingCurrentVersions: false
-	                });
-	            }).catch(function () {
-	                _this4.setState({
-	                    isLoadingCurrentVersions: false
-	                });
-
-	                alert("An error has occurred. Could not load current versions.");
-	            });
-	        }
-	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this5 = this;
-
 	            return _react2.default.createElement(
 	                "div",
 	                { className: "container-fluid" },
@@ -33003,222 +32941,12 @@
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-6" },
-	                        _react2.default.createElement(
-	                            "h4",
-	                            null,
-	                            "Current versions"
-	                        ),
-	                        _react2.default.createElement(
-	                            "table",
-	                            { className: "table" },
-	                            _react2.default.createElement(
-	                                "thead",
-	                                null,
-	                                _react2.default.createElement(
-	                                    "tr",
-	                                    null,
-	                                    _react2.default.createElement(
-	                                        "th",
-	                                        null,
-	                                        "Project name"
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "th",
-	                                        null,
-	                                        "Version"
-	                                    )
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                "tbody",
-	                                null,
-	                                function () {
-	                                    if (_this5.state.isLoadingCurrentVersions) {
-	                                        return _react2.default.createElement(
-	                                            "tr",
-	                                            null,
-	                                            _react2.default.createElement(
-	                                                "td",
-	                                                { colSpan: "2" },
-	                                                _react2.default.createElement(
-	                                                    "div",
-	                                                    { className: "progress" },
-	                                                    _react2.default.createElement(
-	                                                        "div",
-	                                                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                                        _react2.default.createElement(
-	                                                            "span",
-	                                                            { className: "sr-only" },
-	                                                            "100% Complete"
-	                                                        )
-	                                                    )
-	                                                )
-	                                            )
-	                                        );
-	                                    } else if (_this5.state.currentVersions.length == 0) {
-	                                        return _react2.default.createElement(
-	                                            "tr",
-	                                            null,
-	                                            _react2.default.createElement(
-	                                                "td",
-	                                                { colSpan: "2" },
-	                                                "No versions found."
-	                                            )
-	                                        );
-	                                    }
-
-	                                    return _this5.state.currentVersions.map(function (application, index) {
-	                                        return _react2.default.createElement(
-	                                            "tr",
-	                                            { key: index },
-	                                            _react2.default.createElement(
-	                                                "td",
-	                                                null,
-	                                                application.name
-	                                            ),
-	                                            _react2.default.createElement(
-	                                                "td",
-	                                                null,
-	                                                application.version
-	                                            )
-	                                        );
-	                                    });
-	                                }()
-	                            )
-	                        )
+	                        _react2.default.createElement(_currentVersionsList2.default, null)
 	                    ),
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-6" },
-	                        _react2.default.createElement(
-	                            "h4",
-	                            null,
-	                            "Upcoming versions"
-	                        ),
-	                        _react2.default.createElement(
-	                            "form",
-	                            { className: "form-horizontal", onSubmit: this.handleFormSubmit.bind(this) },
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "form-group" },
-	                                _react2.default.createElement(
-	                                    "label",
-	                                    { htmlFor: "release", className: "col-sm-2 control-label" },
-	                                    "Release:"
-	                                ),
-	                                _react2.default.createElement(
-	                                    "div",
-	                                    { className: "col-sm-10" },
-	                                    _react2.default.createElement(
-	                                        "select",
-	                                        { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
-	                                        _react2.default.createElement(
-	                                            "option",
-	                                            { value: "-1" },
-	                                            " "
-	                                        ),
-	                                        this.state.releases.map(function (release, index) {
-	                                            return _react2.default.createElement(
-	                                                "option",
-	                                                { key: index, value: index },
-	                                                release.name
-	                                            );
-	                                        })
-	                                    )
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "form-group" },
-	                                _react2.default.createElement(
-	                                    "div",
-	                                    { className: "col-sm-offset-2 col-sm-10" },
-	                                    _react2.default.createElement(
-	                                        "button",
-	                                        { className: "btn btn-default" },
-	                                        "Search"
-	                                    )
-	                                )
-	                            )
-	                        ),
-	                        _react2.default.createElement(
-	                            "table",
-	                            { className: "table" },
-	                            _react2.default.createElement(
-	                                "thead",
-	                                null,
-	                                _react2.default.createElement(
-	                                    "tr",
-	                                    null,
-	                                    _react2.default.createElement(
-	                                        "th",
-	                                        null,
-	                                        "Project name"
-	                                    ),
-	                                    _react2.default.createElement(
-	                                        "th",
-	                                        null,
-	                                        "Version"
-	                                    )
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                "tbody",
-	                                null,
-	                                function () {
-	                                    if (_this5.state.isLoadingReleases) {
-	                                        return _react2.default.createElement(
-	                                            "tr",
-	                                            null,
-	                                            _react2.default.createElement(
-	                                                "td",
-	                                                { colSpan: "2" },
-	                                                _react2.default.createElement(
-	                                                    "div",
-	                                                    { className: "progress" },
-	                                                    _react2.default.createElement(
-	                                                        "div",
-	                                                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                                        _react2.default.createElement(
-	                                                            "span",
-	                                                            { className: "sr-only" },
-	                                                            "100% Complete"
-	                                                        )
-	                                                    )
-	                                                )
-	                                            )
-	                                        );
-	                                    } else if (!_this5.state.selectedRelease) {
-	                                        return _react2.default.createElement(
-	                                            "tr",
-	                                            null,
-	                                            _react2.default.createElement(
-	                                                "td",
-	                                                { colSpan: "2" },
-	                                                "No release selected."
-	                                            )
-	                                        );
-	                                    }
-
-	                                    return _this5.state.selectedRelease.applications.map(function (application, index) {
-	                                        return _react2.default.createElement(
-	                                            "tr",
-	                                            { key: index },
-	                                            _react2.default.createElement(
-	                                                "td",
-	                                                null,
-	                                                application.application_name
-	                                            ),
-	                                            _react2.default.createElement(
-	                                                "td",
-	                                                null,
-	                                                application.version
-	                                            )
-	                                        );
-	                                    });
-	                                }()
-	                            )
-	                        )
+	                        _react2.default.createElement(_upcomingVersionsList2.default, { onSearch: this.onSearchStoriesClick.bind(this), onSelectedReleaseChanged: this.onSelectedReleaseChanged.bind(this) })
 	                    )
 	                ),
 	                _react2.default.createElement(_ticketsList2.default, { jiraTickets: this.state.jiraTickets, isSearching: this.state.isLoadingStories })
@@ -33230,6 +32958,473 @@
 	}(_react2.default.Component);
 
 	exports.default = Releases;
+
+/***/ },
+/* 173 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _productsRepository = __webpack_require__(161);
+
+	var _productsRepository2 = _interopRequireDefault(_productsRepository);
+
+	var _projectVersionsList = __webpack_require__(174);
+
+	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var CurrentVersionsList = function (_React$Component) {
+	    _inherits(CurrentVersionsList, _React$Component);
+
+	    function CurrentVersionsList(props) {
+	        _classCallCheck(this, CurrentVersionsList);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CurrentVersionsList).call(this, props));
+
+	        _this.state = {
+	            currentVersions: [],
+	            isLoadingCurrentVersions: false
+	        };
+	        return _this;
+	    }
+
+	    _createClass(CurrentVersionsList, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            this.loadCurrentVersions();
+	        }
+	    }, {
+	        key: "loadCurrentVersions",
+	        value: function loadCurrentVersions() {
+	            var _this2 = this;
+
+	            this.setState({
+	                isLoadingCurrentVersions: true
+	            });
+
+	            _productsRepository2.default.getCurrentVersions().then(function (versions) {
+	                _this2.setState({
+	                    currentVersions: versions,
+	                    isLoadingCurrentVersions: false
+	                });
+	            }).catch(function () {
+	                _this2.setState({
+	                    isLoadingCurrentVersions: false
+	                });
+
+	                alert("An error has occurred. Could not load current versions.");
+	            });
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            return _react2.default.createElement(
+	                "div",
+	                null,
+	                _react2.default.createElement(
+	                    "h4",
+	                    null,
+	                    "Current versions"
+	                ),
+	                _react2.default.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingCurrentVersions, projects: this.state.currentVersions })
+	            );
+	        }
+	    }]);
+
+	    return CurrentVersionsList;
+	}(_react2.default.Component);
+
+	exports.default = CurrentVersionsList;
+
+/***/ },
+/* 174 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var ProjectVersionsList = function (_React$Component) {
+	    _inherits(ProjectVersionsList, _React$Component);
+
+	    function ProjectVersionsList(props) {
+	        _classCallCheck(this, ProjectVersionsList);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectVersionsList).call(this, props));
+	    }
+
+	    _createClass(ProjectVersionsList, [{
+	        key: "render",
+	        value: function render() {
+	            var _this2 = this;
+
+	            return _react2.default.createElement(
+	                "table",
+	                { className: "table" },
+	                _react2.default.createElement(
+	                    "thead",
+	                    null,
+	                    _react2.default.createElement(
+	                        "tr",
+	                        null,
+	                        _react2.default.createElement(
+	                            "th",
+	                            null,
+	                            "Project name"
+	                        ),
+	                        _react2.default.createElement(
+	                            "th",
+	                            null,
+	                            "Version"
+	                        )
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "tbody",
+	                    null,
+	                    function () {
+	                        if (_this2.props.isLoading) {
+	                            return _react2.default.createElement(
+	                                "tr",
+	                                null,
+	                                _react2.default.createElement(
+	                                    "td",
+	                                    { colSpan: "2" },
+	                                    _react2.default.createElement(
+	                                        "div",
+	                                        { className: "progress" },
+	                                        _react2.default.createElement(
+	                                            "div",
+	                                            { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
+	                                            _react2.default.createElement(
+	                                                "span",
+	                                                { className: "sr-only" },
+	                                                "100% Complete"
+	                                            )
+	                                        )
+	                                    )
+	                                )
+	                            );
+	                        } else if (!_this2.props.projects.length) {
+	                            return _react2.default.createElement(
+	                                "tr",
+	                                null,
+	                                _react2.default.createElement(
+	                                    "td",
+	                                    { colSpan: "2" },
+	                                    "Nothing to show here."
+	                                )
+	                            );
+	                        }
+
+	                        return _this2.props.projects.map(function (application, index) {
+	                            return _react2.default.createElement(
+	                                "tr",
+	                                { key: index },
+	                                _react2.default.createElement(
+	                                    "td",
+	                                    null,
+	                                    application.name
+	                                ),
+	                                _react2.default.createElement(
+	                                    "td",
+	                                    null,
+	                                    application.version
+	                                )
+	                            );
+	                        });
+	                    }()
+	                )
+	            );
+	        }
+	    }]);
+
+	    return ProjectVersionsList;
+	}(_react2.default.Component);
+
+	exports.default = ProjectVersionsList;
+
+/***/ },
+/* 175 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _productsRepository = __webpack_require__(161);
+
+	var _productsRepository2 = _interopRequireDefault(_productsRepository);
+
+	var _projectVersionsList = __webpack_require__(174);
+
+	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var UpcomingVersionsList = function (_React$Component) {
+	    _inherits(UpcomingVersionsList, _React$Component);
+
+	    function UpcomingVersionsList(props) {
+	        _classCallCheck(this, UpcomingVersionsList);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(UpcomingVersionsList).call(this, props));
+
+	        _this.state = {
+	            commandLineScript: "",
+	            isLoadingReleases: false,
+	            releases: [],
+	            selectedRelease: null,
+	            selectedReleaseIndex: -1
+	        };
+	        return _this;
+	    }
+
+	    _createClass(UpcomingVersionsList, [{
+	        key: "getCommandLineScript",
+	        value: function getCommandLineScript(selectedRelease) {
+	            var applications = selectedRelease ? selectedRelease.applications || [] : [];
+	            return applications.map(function (project) {
+	                var smProjectName = project.name.toUpperCase().replace(/-/g, "_");
+	                return "sm --restart " + smProjectName + " -r " + project.version;
+	            }).join(" & ");
+	        }
+	    }, {
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            this.loadAvailableReleases();
+	        }
+	    }, {
+	        key: "copyCommandLineScript",
+	        value: function copyCommandLineScript() {
+	            var commandLineScript = document.getElementById("commandLineScript");
+	            var range = document.createRange();
+	            range.selectNode(commandLineScript);
+	            window.getSelection().addRange(range);
+
+	            try {
+	                document.execCommand("copy");
+	            } catch (ex) {
+	                console.error("Oops - something went wrong.");
+	            }
+
+	            if (window.getSelection) {
+	                if (window.getSelection().empty) // Chrome
+	                    {
+	                        window.getSelection().empty();
+	                    } else if (window.getSelection().removeAllRanges) // Firefox
+	                    {
+	                        window.getSelection().removeAllRanges();
+	                    }
+	            } else if (document.selection) // IE?
+	                {
+	                    document.selection.empty();
+	                }
+	        }
+	    }, {
+	        key: "getSelectedReleaseApplications",
+	        value: function getSelectedReleaseApplications() {
+	            if (!this.state.selectedRelease) {
+	                return [];
+	            }
+
+	            return this.state.selectedRelease.applications || [];
+	        }
+	    }, {
+	        key: "handleFormSubmit",
+	        value: function handleFormSubmit(event) {
+	            event.preventDefault();
+
+	            if (!this.state.selectedRelease) {
+	                return;
+	            }
+
+	            if (!this.props.onSearch) {
+	                return;
+	            }
+
+	            this.props.onSearch(this.state.selectedRelease);
+	        }
+	    }, {
+	        key: "handleReleaseChange",
+	        value: function handleReleaseChange(event) {
+	            var selectedIndex = parseInt(event.target.value);
+	            var selectedRelease = selectedIndex > -1 ? this.state.releases[selectedIndex] : null;
+
+	            this.setState({
+	                commandLineScript: this.getCommandLineScript(selectedRelease),
+	                selectedRelease: selectedRelease,
+	                selectedReleaseIndex: selectedIndex
+	            });
+
+	            if (!this.props.onSelectedReleaseChanged) {
+	                return;
+	            }
+
+	            this.props.onSelectedReleaseChanged(this.state.selectedRelease);
+	        }
+	    }, {
+	        key: "loadAvailableReleases",
+	        value: function loadAvailableReleases() {
+	            var _this2 = this;
+
+	            this.setState({
+	                isLoadingReleases: true
+	            });
+
+	            _productsRepository2.default.getUpcomingReleases().then(function (releases) {
+	                _this2.setState({
+	                    releases: releases,
+	                    isLoadingReleases: false
+	                });
+	            }).catch(function () {
+	                _this2.setState({
+	                    isLoadingReleases: false
+	                });
+
+	                alert("An error has occurred. Could not load releases.");
+	            });
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            var _this3 = this;
+
+	            return _react2.default.createElement(
+	                "div",
+	                null,
+	                _react2.default.createElement(
+	                    "h4",
+	                    null,
+	                    "Upcoming versions"
+	                ),
+	                _react2.default.createElement(
+	                    "form",
+	                    { className: "form-horizontal", onSubmit: this.handleFormSubmit.bind(this) },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "form-group" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            { htmlFor: "release", className: "col-sm-2 control-label" },
+	                            "Release:"
+	                        ),
+	                        _react2.default.createElement(
+	                            "div",
+	                            { className: "col-sm-10" },
+	                            _react2.default.createElement(
+	                                "select",
+	                                { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
+	                                _react2.default.createElement(
+	                                    "option",
+	                                    { value: "-1" },
+	                                    " "
+	                                ),
+	                                this.state.releases.map(function (release, index) {
+	                                    return _react2.default.createElement(
+	                                        "option",
+	                                        { key: index, value: index },
+	                                        release.name
+	                                    );
+	                                })
+	                            )
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "form-group" },
+	                        _react2.default.createElement(
+	                            "div",
+	                            { className: "col-sm-offset-2 col-sm-10" },
+	                            function () {
+	                                if (!_this3.state.isLoadingReleases && _this3.state.selectedRelease) {
+	                                    return _react2.default.createElement(
+	                                        "div",
+	                                        { className: "input-group" },
+	                                        _react2.default.createElement(
+	                                            "span",
+	                                            { className: "input-group-btn" },
+	                                            _react2.default.createElement(
+	                                                "button",
+	                                                { className: "btn btn-primary" },
+	                                                "Search"
+	                                            ),
+	                                            _react2.default.createElement(
+	                                                "button",
+	                                                { className: "btn btn-default", onClick: _this3.copyCommandLineScript.bind(_this3), type: "button" },
+	                                                "Copy 'sm' start script"
+	                                            )
+	                                        ),
+	                                        _react2.default.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true", value: _this3.state.commandLineScript, type: "text" })
+	                                    );
+	                                } else {
+	                                    return _react2.default.createElement(
+	                                        "button",
+	                                        { className: "btn btn-primary" },
+	                                        "Search"
+	                                    );
+	                                }
+	                            }()
+	                        )
+	                    )
+	                ),
+	                _react2.default.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingReleases, projects: this.getSelectedReleaseApplications() })
+	            );
+	        }
+	    }]);
+
+	    return UpcomingVersionsList;
+	}(_react2.default.Component);
+
+	exports.default = UpcomingVersionsList;
 
 /***/ }
 /******/ ]);

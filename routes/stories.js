@@ -45,7 +45,7 @@ class Stories
             {
                 versions = projects.map(project =>
                 {
-                    return "release/" + projectsVersions.find(pv => pv.application_name == project).version;
+                    return "release/" + projectsVersions.find(pv => pv.name == project).version;
                 });
 
                 let promises = projects.map(project => tagsRepository.getProdReleaseNumber(project));

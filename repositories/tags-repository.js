@@ -143,7 +143,15 @@ class TagsRepository
                     return;
                 }
 
-                deferred.resolve(JSON.parse(data).applications);
+                let applications = JSON.parse(data).applications.map(app =>
+                {
+                    return {
+                        name: app.application_name,
+                        version: app.version
+                    };
+                });
+
+                deferred.resolve(applications);
             }
         );
 
@@ -162,7 +170,7 @@ class TagsRepository
             {
                 return data.map(version =>
                     {
-                        let foundApplication = version.find(app => app.application_name == serviceName);
+                        let foundApplication = version.find(app => app.name == serviceName);
                         return foundApplication ? "release/" + foundApplication.version : null;
                     })
                     .filter(version => version && version.indexOf(".") !== -1)

@@ -40,7 +40,7 @@ export default class ProductsRepository
             let jsonData = JSON.parse(data);
             let filteredRelases = jsonData.map(r =>
             {
-                r.applications = r.applications.filter(a => products.indexOf(a.application_name) !== -1);
+                r.applications = r.applications.filter(a => products.indexOf(a.name) !== -1);
                 return r;
             });
             deferred.resolve(filteredRelases);
