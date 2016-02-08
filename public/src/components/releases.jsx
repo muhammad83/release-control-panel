@@ -1,4 +1,5 @@
 import React from "react";
+import ErrorHandler from "../handlers/error-handler";
 import ProductsRepository from "../repositories/products-repository";
 import StoriesRepository from "../repositories/stories-repository";
 import TagsRepository from "../repositories/tags-repository";
@@ -50,7 +51,7 @@ export default class Releases extends React.Component
                     isLoadingStories: false
                 });
 
-                alert(error.message);
+                ErrorHandler.showErrorMessage(error);
             });
     }
 

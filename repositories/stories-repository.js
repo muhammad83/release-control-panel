@@ -87,8 +87,8 @@ class StoriesRepository
             method: "GET",
             url: `${config.jiraUrl}/rest/api/2/search`,
             auth: {
-                user: config.username,
-                pass: config.password
+                user: config.jiraUserName,
+                pass: config.jiraPassword
             },
             qs: {
                 jql: jql,

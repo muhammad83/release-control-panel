@@ -1,8 +1,9 @@
 import $ from "jquery";
 import q from "q";
+import BaseRepository from "./base-repository";
 import ProductsRepository from "./products-repository";
 
-export default class StoriesRepository
+export default class StoriesRepository extends BaseRepository
 {
     static getStories(serviceName, startTag, endTag)
     {
@@ -37,26 +38,5 @@ export default class StoriesRepository
         });
 
         return deferred.promise;
-    }
-
-    static processRequestFailure(response)
-    {
-        let data;
-
-        if (response.responseText)
-        {
-            try
-            {
-                data = JSON.parse(response.responseText);
-            }
-            catch (ex)
-            {
-                data = { };
-            }
-        }
-
-        data.status = response.status;
-
-        return data;
     }
 }

@@ -1,10 +1,22 @@
 "use strict";
 
+const bodyParser = require('body-parser');
 const express = require("express");
 const morgan = require("morgan");
+const config = require("./config"
+
+);
+
+if (!config.isValid)
+{
+    console.error("One or many configuration errors found. Please correct them and restart the app.");
+    return;
+}
 
 const app = express();
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("combined"));
 
 require("./routes/routes")(app);

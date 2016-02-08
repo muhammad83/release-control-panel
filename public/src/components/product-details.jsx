@@ -1,5 +1,6 @@
 import React from "react";
 import $ from "jquery";
+import ErrorHandler from "../handlers/error-handler";
 import StoriesRepository from "../repositories/stories-repository";
 import TagsRepository from "../repositories/tags-repository";
 import TicketsList from "./tickets-list.jsx";
@@ -78,7 +79,7 @@ export default class ProductDetails extends React.Component
             this.setState({ searchingInProgress: true });
 
             TagsRepository.getStableTags(this.props.productName)
-                .then((data) =>
+                .then(data =>
                 {
                     this.setState(
                     {
@@ -87,13 +88,14 @@ export default class ProductDetails extends React.Component
                         searchingInProgress: false
                     });
                 })
-                .catch(() =>
+                .catch(error =>
                 {
                     this.setState(
                     {
                         searchingInProgress: false
                     });
-                    alert("An error has occurred. Could not load stories.");
+
+                    ErrorHandler.showErrorMessage(error);
                 });
         }
         else
@@ -113,7 +115,7 @@ export default class ProductDetails extends React.Component
         this.setState({ searchingInProgress: true });
 
         TagsRepository.getTags(props.productName)
-            .then((data) =>
+            .then(data =>
             {
                 this.setState(
                 {
@@ -133,13 +135,14 @@ export default class ProductDetails extends React.Component
                     });
                 }
             })
-            .catch(() =>
+            .catch(error =>
             {
                 this.setState(
                 {
                     searchingInProgress: false
                 });
-                alert("An error has occurred. Could not load stories.");
+
+                ErrorHandler.showErrorMessage(error);
             });
     }
 
@@ -162,7 +165,7 @@ export default class ProductDetails extends React.Component
         let endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
         StoriesRepository.getStories(serviceName, startTag, endTag)
-            .then((data) =>
+            .then(data =>
             {
                 this.setState(
                 {
@@ -170,13 +173,14 @@ export default class ProductDetails extends React.Component
                     searchingInProgress: false
                 });
             })
-            .catch(() =>
+            .catch(error =>
             {
                 this.setState(
                 {
                     searchingInProgress: false
                 });
-                alert("An error has occurred. Could not load stories.");
+
+                ErrorHandler.showErrorMessage(error);
             });
     }
 
