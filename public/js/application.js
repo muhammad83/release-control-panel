@@ -33446,7 +33446,7 @@
 	                    } else {
 	                        return _react2.default.createElement(
 	                            "button",
-	                            { className: "btn btn-primary", onClick: _this.handleStartBuildClick.bind(_this, project) },
+	                            { className: "btn btn-default", onClick: _this.handleStartBuildClick.bind(_this, project) },
 	                            "Start build"
 	                        );
 	                    }
@@ -33482,8 +33482,10 @@
 	        value: function copyCommandLineScript() {
 	            var commandLineScript = document.getElementById("commandLineScript");
 	            var range = document.createRange();
+	            var selection = window.getSelection();
 	            range.selectNode(commandLineScript);
-	            window.getSelection().addRange(range);
+	            selection.removeAllRanges();
+	            selection.addRange(range);
 
 	            try {
 	                document.execCommand("copy");

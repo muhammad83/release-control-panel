@@ -43,7 +43,7 @@ export default class UpcomingVersionsList extends React.Component
                         }
                         else
                         {
-                            return <button className="btn btn-primary" onClick={this.handleStartBuildClick.bind(this, project)}>Start build</button>;
+                            return <button className="btn btn-default" onClick={this.handleStartBuildClick.bind(this, project)}>Start build</button>;
                         }
                     }
                 }
@@ -79,8 +79,10 @@ export default class UpcomingVersionsList extends React.Component
     {
         let commandLineScript = document.getElementById("commandLineScript");
         let range = document.createRange();
+        let selection = window.getSelection();
         range.selectNode(commandLineScript);
-        window.getSelection().addRange(range);
+        selection.removeAllRanges();
+        selection.addRange(range);
         
         try
         {
