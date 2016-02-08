@@ -1,4 +1,6 @@
 import React from "react";
+import ErrorHandler from "../handlers/error-handler";
+import BuildsRepository from "../repositories/builds-repository";
 import ProductsRepository from "../repositories/products-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
 
@@ -11,10 +13,47 @@ export default class UpcomingVersionsList extends React.Component
         this.state =
         {
             commandLineScript: "",
+            extraColumns:
+            [
+                {
+                    heading: "Build number",
+                    type: "template",
+                    template: project =>
+                    {
+                        if (project.isBuilding || this.state.isLoadingBuilds)
+                        {
+                            return (
+                                <div className="progress">
+                                    <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
+                                        <span className="sr-only">100% Complete</span>
+                                    </div>
+                                </div>
+                            );
+                        }
+
+                        let projectBuilds = this.state.successfulBuilds[project.name];
+
+                        if (!projectBuilds)
+                        {
+                            return <span className="label label-danger">Project not found</span>;
+                        }
+                        else if (projectBuilds.hasOwnProperty(project.version))
+                        {
+                            return <span>{projectBuilds[project.version].buildNumber}</span>;
+                        }
+                        else
+                        {
+                            return <button className="btn btn-primary" onClick={this.handleStartBuildClick.bind(this, project)}>Start build</button>;
+                        }
+                    }
+                }
+            ],
+            isLoadingBuilds: false,
             isLoadingReleases: false,
             releases: [],
             selectedRelease: null,
-            selectedReleaseIndex: -1
+            selectedReleaseIndex: -1,
+            successfulBuilds :[]
         };
     }
     
@@ -33,6 +72,7 @@ export default class UpcomingVersionsList extends React.Component
     componentDidMount()
     {
         this.loadAvailableReleases();
+        this.loadSuccessfulBuilds();
     }
     
     copyCommandLineScript()
@@ -114,7 +154,19 @@ export default class UpcomingVersionsList extends React.Component
         
         this.props.onSelectedReleaseChanged(this.state.selectedRelease);
     }
-    
+
+    handleStartBuildClick(project)
+    {
+        project.isBuilding = true;
+
+        this.setState(
+        {
+            selectedRelease: this.state.selectedRelease
+        });
+
+        BuildsRepository.startBuild(project.name, project.version);
+    }
+
     loadAvailableReleases()
     {
         this.setState(
@@ -123,7 +175,7 @@ export default class UpcomingVersionsList extends React.Component
         });
 
         ProductsRepository.getUpcomingReleases()
-            .then((releases) =>
+            .then(releases =>
             {
                 this.setState(
                 {
@@ -131,14 +183,41 @@ export default class UpcomingVersionsList extends React.Component
                     isLoadingReleases: false
                 });
             })
-            .catch(() =>
+            .catch(error =>
             {
                 this.setState(
                 {
                     isLoadingReleases: false
                 });
 
-                alert("An error has occurred. Could not load releases.");
+                ErrorHandler.showErrorMessage(error);
+            });
+    }
+
+    loadSuccessfulBuilds()
+    {
+        this.setState(
+        {
+            isLoadingBuilds: true
+        });
+
+        BuildsRepository.getSuccessfulBuildsForProjects()
+            .then(builds =>
+            {
+                this.setState(
+                {
+                    isLoadingBuilds: false,
+                    successfulBuilds: builds
+                });
+            })
+            .catch(error =>
+            {
+                this.setState(
+                {
+                    isLoadingBuilds: false
+                });
+
+                ErrorHandler.showErrorMessage(error);
             });
     }
     
@@ -190,7 +269,9 @@ export default class UpcomingVersionsList extends React.Component
                         </div>
                     </div>
                 </form>
-                <ProjectVersionsList isLoading={this.state.isLoadingReleases} projects={this.getSelectedReleaseApplications()} />
+                <ProjectVersionsList isLoading={this.state.isLoadingReleases}
+                                     projects={this.getSelectedReleaseApplications()}
+                                     extraColumns={ this.state.extraColumns } />
             </div>
         );
     }

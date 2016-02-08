@@ -1,4 +1,5 @@
 import React from "react";
+import ErrorHandler from "../handlers/error-handler";
 import ProductsRepository from "../repositories/products-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
 
@@ -28,7 +29,7 @@ export default class CurrentVersionsList extends React.Component
         });
 
         ProductsRepository.getCurrentVersions()
-            .then((versions) =>
+            .then(versions =>
             {
                 this.setState(
                 {
@@ -36,14 +37,14 @@ export default class CurrentVersionsList extends React.Component
                     isLoadingCurrentVersions: false
                 });
             })
-            .catch(() =>
+            .catch(error =>
             {
                 this.setState(
                 {
                     isLoadingCurrentVersions: false
                 });
 
-                alert("An error has occurred. Could not load current versions.");
+                ErrorHandler.showErrorMessage(error);
             });
     }
     

@@ -1,8 +1,9 @@
 import $ from "jquery";
 import q from "q";
 import Tag from "../models/tag.js";
+import BaseRepository from "./base-repository";
 
-export default class TagsRepository
+export default class TagsRepository extends BaseRepository
 {
     static getStableTags(productName)
     {
@@ -14,9 +15,9 @@ export default class TagsRepository
             let tags = jsonData.map((tag) => new Tag(tag));
 
             deferred.resolve(tags);
-        }).fail(() =>
+        }).fail(error =>
         {
-            deferred.reject();
+            deferred.reject(this.processRequestFailure(error));
         });
 
         return deferred.promise;
@@ -32,13 +33,14 @@ export default class TagsRepository
             let tags = jsonData.tags.map((tag) => new Tag(tag));
             let startingTagIndex = jsonData.currentVersion ? tags.findIndex((tag) => { return tag.name == jsonData.currentVersion}) : -1;
 
-            deferred.resolve({
+            deferred.resolve(
+            {
                 tags: tags,
                 startingTagIndex: startingTagIndex
             });
-        }).fail(() =>
+        }).fail(error =>
         {
-            deferred.reject();
+            deferred.reject(this.processRequestFailure(error));
         });
 
         return deferred.promise;

@@ -21,7 +21,12 @@ class StoriesRepository
         {
             if (error)
             {
-                deferred.reject(error);
+                deferred.reject(
+                {
+                    data: error,
+                    message: "Unknown error when looking for JIRA tickets in GIT log. Check if your $WORKSPACE path contains GIT repositories of the projects.",
+                    status: 500
+                });
                 return;
             }
 
@@ -54,6 +59,12 @@ class StoriesRepository
         return this.getStoriesFromGitLog(projectsAndTags)
             .then(jiraNumbers =>
             {
+                let containsTags = projectsAndTags.some(project => project.tags.length);
+                if (!jiraNumbers.length && !containsTags)
+                {
+                    return [];
+                }
+
                 let jql = this.prepareJQLForTags(projectsAndTags, jiraNumbers);
                 return this.getStoriesFromJira(jql);
             })
@@ -76,8 +87,8 @@ class StoriesRepository
             method: "GET",
             url: `${config.jiraUrl}/rest/api/2/search`,
             auth: {
-                user: config.username,
-                pass: config.password
+                user: config.jiraUserName,
+                pass: config.jiraPassword
             },
             qs: {
                 jql: jql,
@@ -91,14 +102,63 @@ class StoriesRepository
         {
             if (error)
             {
-                deferred.reject(error);
+                deferred.reject(
+                {
+                    data: error,
+                    message: "Unknown error when searching JIRA tickets.",
+                    status: 500
+                });
                 return;
             }
 
-            let parsedData = JSON.parse(data);
+            if (response.statusCode !== 200)
+            {
+                let message = null;
+
+                switch (response.statusCode)
+                {
+                    case 401:
+                        message = "Incorrect JIRA username or password. Please change it in configuration to correct value.";
+                        break;
+                    case 403:
+                        message = "JIRA rejected your login request. Please try logging in in the browser first - captcha might be blocking your login requests."
+                        break;
+                }
+
+                deferred.reject(
+                {
+                    data: response.body,
+                    message: message,
+                    status: response.statusCode
+                });
+                return;
+            }
+
+            let parsedData;
+
+            try
+            {
+                parsedData = JSON.parse(data);
+            }
+            catch (ex)
+            {
+                deferred.reject(
+                {
+                    data: data,
+                    message: "Could not parse JSON data from JIRA.",
+                    status: 500
+                });
+                return;
+            }
+
             if (!parsedData.issues)
             {
-                deferred.reject();
+                deferred.reject(
+                {
+                    data: data,
+                    message: "Parsed JIRA data does not contain issues.",
+                    status: 500
+                });
                 return;
             }
 

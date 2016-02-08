@@ -1,4 +1,5 @@
 import React from "react";
+import ErrorHandler from "../handlers/error-handler";
 import ProductsRepository from "../repositories/products-repository";
 import StoriesRepository from "../repositories/stories-repository";
 import TagsRepository from "../repositories/tags-repository";
@@ -43,14 +44,14 @@ export default class Releases extends React.Component
                     jiraTickets: data
                 });
             })
-            .catch(() =>
+            .catch(error =>
             {
                 this.setState(
                 {
                     isLoadingStories: false
                 });
 
-                alert("An error has occurred. Could not load releases.");
+                ErrorHandler.showErrorMessage(error);
             });
     }
 

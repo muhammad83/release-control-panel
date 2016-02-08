@@ -1,8 +1,9 @@
 import $ from "jquery";
 import q from "q";
 import Product from "../models/product";
+import BaseRepository from "./base-repository";
 
-export default class ProductsRepository
+export default class ProductsRepository extends BaseRepository
 {
     static getCurrentVersions()
     {
@@ -12,9 +13,9 @@ export default class ProductsRepository
         $.get(`/current-versions?projects=${productNames}`, (data) =>
         {
             deferred.resolve(JSON.parse(data));
-        }).fail(() =>
+        }).fail(error =>
         {
-            deferred.reject();
+            deferred.reject(this.processRequestFailure(error));
         });
 
         return deferred.promise;
@@ -44,9 +45,9 @@ export default class ProductsRepository
                 return r;
             });
             deferred.resolve(filteredRelases);
-        }).fail(() =>
+        }).fail(error =>
         {
-            deferred.reject();
+            deferred.reject(this.processRequestFailure(error));
         });
 
         return deferred.promise;
