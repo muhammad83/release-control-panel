@@ -80,7 +80,16 @@ class Stories
             })
             .catch(ex =>
             {
-                response.status(500).send(JSON.stringify(ex || "Unknown error."));
+                let data = (ex && ex.data) || null;
+                let message = (ex && ex.message) || "Something went wrong.";
+                let status = (ex && ex.status) || 500;
+                let responseData =
+                {
+                    message: message,
+                    data: data
+                };
+
+                response.status(status).send(JSON.stringify(responseData));
             });
     }
 }

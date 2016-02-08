@@ -43,14 +43,14 @@ export default class Releases extends React.Component
                     jiraTickets: data
                 });
             })
-            .catch(() =>
+            .catch(error =>
             {
                 this.setState(
                 {
                     isLoadingStories: false
                 });
 
-                alert("An error has occurred. Could not load releases.");
+                alert(error.message);
             });
     }
 

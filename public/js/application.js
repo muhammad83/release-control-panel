@@ -32326,14 +32326,16 @@
 	    _createClass(StoriesRepository, null, [{
 	        key: "getStories",
 	        value: function getStories(serviceName, startTag, endTag) {
+	            var _this = this;
+
 	            var deferred = _q2.default.defer();
 	            var encodedStartTag = encodeURIComponent(startTag);
 	            var encodedEndTag = encodeURIComponent(endTag);
 
 	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
-	            }).fail(function () {
-	                deferred.reject();
+	            }).fail(function (response) {
+	                deferred.reject(_this.processRequestFailure(response));
 	            });
 
 	            return deferred.promise;
@@ -32341,6 +32343,8 @@
 	    }, {
 	        key: "getStoriesForRelease",
 	        value: function getStoriesForRelease(releaseName) {
+	            var _this2 = this;
+
 	            var deferred = _q2.default.defer();
 	            var products = _productsRepository2.default.getProducts().map(function (p) {
 	                return p.name;
@@ -32348,11 +32352,28 @@
 
 	            _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
-	            }).fail(function () {
-	                deferred.reject();
+	            }).fail(function (response) {
+	                deferred.reject(_this2.processRequestFailure(response));
 	            });
 
 	            return deferred.promise;
+	        }
+	    }, {
+	        key: "processRequestFailure",
+	        value: function processRequestFailure(response) {
+	            var data = undefined;
+
+	            if (response.responseText) {
+	                try {
+	                    data = JSON.parse(response.responseText);
+	                } catch (ex) {
+	                    data = {};
+	                }
+	            }
+
+	            data.status = response.status;
+
+	            return data;
 	        }
 	    }]);
 
@@ -32921,12 +32942,12 @@
 	                    isLoadingStories: false,
 	                    jiraTickets: data
 	                });
-	            }).catch(function () {
+	            }).catch(function (error) {
 	                _this2.setState({
 	                    isLoadingStories: false
 	                });
 
-	                alert("An error has occurred. Could not load releases.");
+	                alert(error.message);
 	            });
 	        }
 	    }, {
