@@ -33473,6 +33473,19 @@
 	            this.props.onSearch(this.state.selectedRelease);
 	        }
 	    }, {
+	        key: "handleRefreshClick",
+	        value: function handleRefreshClick() {
+	            this.setState({
+	                releases: [],
+	                selectedRelease: null,
+	                selectedReleaseIndex: -1
+	            });
+
+	            this.props.onSelectedReleaseChanged && this.props.onSelectedReleaseChanged(-1);
+
+	            this.loadAvailableReleases();
+	        }
+	    }, {
 	        key: "handleReleaseChange",
 	        value: function handleReleaseChange(event) {
 	            var selectedIndex = parseInt(event.target.value);
@@ -33573,20 +33586,33 @@
 	                            "div",
 	                            { className: "col-sm-10" },
 	                            _react2.default.createElement(
-	                                "select",
-	                                { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
+	                                "div",
+	                                { className: "input-group" },
 	                                _react2.default.createElement(
-	                                    "option",
-	                                    { value: "-1" },
-	                                    " "
-	                                ),
-	                                this.state.releases.map(function (release, index) {
-	                                    return _react2.default.createElement(
+	                                    "select",
+	                                    { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
+	                                    _react2.default.createElement(
 	                                        "option",
-	                                        { key: index, value: index },
-	                                        release.name
-	                                    );
-	                                })
+	                                        { value: "-1" },
+	                                        " "
+	                                    ),
+	                                    this.state.releases.map(function (release, index) {
+	                                        return _react2.default.createElement(
+	                                            "option",
+	                                            { key: index, value: index },
+	                                            release.name
+	                                        );
+	                                    })
+	                                ),
+	                                _react2.default.createElement(
+	                                    "span",
+	                                    { className: "input-group-btn" },
+	                                    _react2.default.createElement(
+	                                        "button",
+	                                        { className: "btn btn-default", onClick: this.handleRefreshClick.bind(this) },
+	                                        _react2.default.createElement("i", { className: "glyphicon glyphicon-refresh" })
+	                                    )
+	                                )
 	                            )
 	                        )
 	                    ),

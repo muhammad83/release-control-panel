@@ -80,6 +80,20 @@ export default class UpcomingVersionsList extends React.Component
         
         this.props.onSearch(this.state.selectedRelease);
     }
+
+    handleRefreshClick()
+    {
+        this.setState(
+        {
+            releases: [],
+            selectedRelease: null,
+            selectedReleaseIndex: -1
+        });
+
+        this.props.onSelectedReleaseChanged && this.props.onSelectedReleaseChanged(-1);
+
+        this.loadAvailableReleases();
+    }
     
     handleReleaseChange(event)
     {
@@ -176,17 +190,24 @@ export default class UpcomingVersionsList extends React.Component
                     <div className="form-group">
                         <label htmlFor="release" className="col-sm-2 control-label">Release:</label>
                         <div className="col-sm-10">
-                            <select id="release" className="form-control" onChange={this.handleReleaseChange.bind(this)} value={this.state.selectedReleaseIndex}>
-                                <option value="-1"> </option>
-                                {
-                                    this.state.releases.map((release, index) =>
+                            <div className="input-group">
+                                <select id="release" className="form-control" onChange={this.handleReleaseChange.bind(this)} value={this.state.selectedReleaseIndex}>
+                                    <option value="-1"> </option>
                                     {
-                                        return (
-                                            <option key={index} value={index}>{release.name}</option>
-                                        );
-                                    })
-                                }
-                            </select>
+                                        this.state.releases.map((release, index) =>
+                                        {
+                                            return (
+                                                <option key={index} value={index}>{release.name}</option>
+                                            );
+                                        })
+                                    }
+                                </select>
+                                <span className="input-group-btn">
+                                    <button className="btn btn-default" onClick={this.handleRefreshClick.bind(this)}>
+                                        <i className="glyphicon glyphicon-refresh"></i>
+                                    </button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div className="form-group">
