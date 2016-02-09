@@ -3,6 +3,7 @@ import ErrorHandler from "../handlers/error-handler";
 import BuildsRepository from "../repositories/builds-repository";
 import ProductsRepository from "../repositories/products-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
+import copyContent from "../utils/copy-content";
 
 export default class UpcomingVersionsList extends React.Component
 {
@@ -18,34 +19,7 @@ export default class UpcomingVersionsList extends React.Component
                 {
                     heading: "Build number",
                     type: "template",
-                    template: project =>
-                    {
-                        if (project.isBuilding || this.state.isLoadingBuilds)
-                        {
-                            return (
-                                <div className="progress">
-                                    <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
-                                        <span className="sr-only">100% Complete</span>
-                                    </div>
-                                </div>
-                            );
-                        }
-
-                        let projectBuilds = this.state.successfulBuilds[project.name];
-
-                        if (!projectBuilds)
-                        {
-                            return <span className="label label-danger">Project not found</span>;
-                        }
-                        else if (projectBuilds.hasOwnProperty(project.version))
-                        {
-                            return <span>{projectBuilds[project.version].buildNumber}</span>;
-                        }
-                        else
-                        {
-                            return <button className="btn btn-default" onClick={this.handleStartBuildClick.bind(this, project)}>Start build</button>;
-                        }
-                    }
+                    template: this.renderBuildNumberCell.bind(this)
                 }
             ],
             isLoadingBuilds: false,
@@ -77,37 +51,7 @@ export default class UpcomingVersionsList extends React.Component
     
     copyCommandLineScript()
     {
-        let commandLineScript = document.getElementById("commandLineScript");
-        let range = document.createRange();
-        let selection = window.getSelection();
-        range.selectNode(commandLineScript);
-        selection.removeAllRanges();
-        selection.addRange(range);
-        
-        try
-        {
-            document.execCommand("copy");
-        }
-        catch (ex)
-        {
-            console.error("Oops - something went wrong.");
-        }
-
-        if (window.getSelection)
-        {
-            if (window.getSelection().empty)// Chrome
-            {
-                window.getSelection().empty();
-            }
-            else if (window.getSelection().removeAllRanges)  // Firefox
-            {
-                window.getSelection().removeAllRanges();
-            }
-        }
-        else if (document.selection) // IE?
-        {
-            document.selection.empty();
-        }
+        copyContent("#commandLineScript");
     }
     
     getSelectedReleaseApplications()
@@ -276,5 +220,34 @@ export default class UpcomingVersionsList extends React.Component
                                      extraColumns={ this.state.extraColumns } />
             </div>
         );
+    }
+
+    renderBuildNumberCell(project)
+    {
+        if (project.isBuilding || this.state.isLoadingBuilds)
+        {
+            return (
+                <div className="progress">
+                    <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
+                        <span className="sr-only">100% Complete</span>
+                    </div>
+                </div>
+            );
+        }
+
+        let projectBuilds = this.state.successfulBuilds[project.name];
+
+        if (!projectBuilds)
+        {
+            return <span className="label label-danger">Project not found</span>;
+        }
+        else if (projectBuilds.hasOwnProperty(project.version))
+        {
+            return <span>{projectBuilds[project.version].buildNumber}</span>;
+        }
+        else
+        {
+            return <button className="btn btn-default" onClick={this.handleStartBuildClick.bind(this, project)}>Start build</button>;
+        }
     }
 }

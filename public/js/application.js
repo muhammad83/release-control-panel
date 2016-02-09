@@ -33391,6 +33391,10 @@
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
+	var _copyContent = __webpack_require__(179);
+
+	var _copyContent2 = _interopRequireDefault(_copyContent);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -33412,45 +33416,7 @@
 	            extraColumns: [{
 	                heading: "Build number",
 	                type: "template",
-	                template: function template(project) {
-	                    if (project.isBuilding || _this.state.isLoadingBuilds) {
-	                        return _react2.default.createElement(
-	                            "div",
-	                            { className: "progress" },
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                _react2.default.createElement(
-	                                    "span",
-	                                    { className: "sr-only" },
-	                                    "100% Complete"
-	                                )
-	                            )
-	                        );
-	                    }
-
-	                    var projectBuilds = _this.state.successfulBuilds[project.name];
-
-	                    if (!projectBuilds) {
-	                        return _react2.default.createElement(
-	                            "span",
-	                            { className: "label label-danger" },
-	                            "Project not found"
-	                        );
-	                    } else if (projectBuilds.hasOwnProperty(project.version)) {
-	                        return _react2.default.createElement(
-	                            "span",
-	                            null,
-	                            projectBuilds[project.version].buildNumber
-	                        );
-	                    } else {
-	                        return _react2.default.createElement(
-	                            "button",
-	                            { className: "btn btn-default", onClick: _this.handleStartBuildClick.bind(_this, project) },
-	                            "Start build"
-	                        );
-	                    }
-	                }
+	                template: _this.renderBuildNumberCell.bind(_this)
 	            }],
 	            isLoadingBuilds: false,
 	            isLoadingReleases: false,
@@ -33480,31 +33446,7 @@
 	    }, {
 	        key: "copyCommandLineScript",
 	        value: function copyCommandLineScript() {
-	            var commandLineScript = document.getElementById("commandLineScript");
-	            var range = document.createRange();
-	            var selection = window.getSelection();
-	            range.selectNode(commandLineScript);
-	            selection.removeAllRanges();
-	            selection.addRange(range);
-
-	            try {
-	                document.execCommand("copy");
-	            } catch (ex) {
-	                console.error("Oops - something went wrong.");
-	            }
-
-	            if (window.getSelection) {
-	                if (window.getSelection().empty) // Chrome
-	                    {
-	                        window.getSelection().empty();
-	                    } else if (window.getSelection().removeAllRanges) // Firefox
-	                    {
-	                        window.getSelection().removeAllRanges();
-	                    }
-	            } else if (document.selection) // IE?
-	                {
-	                    document.selection.empty();
-	                }
+	            (0, _copyContent2.default)("#commandLineScript");
 	        }
 	    }, {
 	        key: "getSelectedReleaseApplications",
@@ -33691,6 +33633,47 @@
 	                    extraColumns: this.state.extraColumns })
 	            );
 	        }
+	    }, {
+	        key: "renderBuildNumberCell",
+	        value: function renderBuildNumberCell(project) {
+	            if (project.isBuilding || this.state.isLoadingBuilds) {
+	                return _react2.default.createElement(
+	                    "div",
+	                    { className: "progress" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
+	                        _react2.default.createElement(
+	                            "span",
+	                            { className: "sr-only" },
+	                            "100% Complete"
+	                        )
+	                    )
+	                );
+	            }
+
+	            var projectBuilds = this.state.successfulBuilds[project.name];
+
+	            if (!projectBuilds) {
+	                return _react2.default.createElement(
+	                    "span",
+	                    { className: "label label-danger" },
+	                    "Project not found"
+	                );
+	            } else if (projectBuilds.hasOwnProperty(project.version)) {
+	                return _react2.default.createElement(
+	                    "span",
+	                    null,
+	                    projectBuilds[project.version].buildNumber
+	                );
+	            } else {
+	                return _react2.default.createElement(
+	                    "button",
+	                    { className: "btn btn-default", onClick: this.handleStartBuildClick.bind(this, project) },
+	                    "Start build"
+	                );
+	            }
+	        }
 	    }]);
 
 	    return UpcomingVersionsList;
@@ -33786,6 +33769,47 @@
 	}(_baseRepository2.default);
 
 	exports.default = BuildsRepository;
+
+/***/ },
+/* 179 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = copyContent;
+	function clearSelection() {
+	    if (window.getSelection) {
+	        if (window.getSelection().empty) {
+	            window.getSelection().empty();
+	        } else if (window.getSelection().removeAllRanges) {
+	            window.getSelection().removeAllRanges();
+	        }
+	    } else if (document.selection) {
+	        document.selection.empty();
+	    }
+	}
+
+	function copyContent(selector) {
+	    var commandLineScript = document.querySelector(selector);
+	    var range = document.createRange();
+	    var selection = window.getSelection();
+
+	    clearSelection();
+
+	    range.selectNode(commandLineScript);
+	    selection.addRange(range);
+
+	    try {
+	        document.execCommand("copy");
+	    } catch (ex) {
+	        console.error("Sorry bro, your browser does not support 'copy' command. Move on and get something which actually works!");
+	    }
+
+	    clearSelection();
+	}
 
 /***/ }
 /******/ ]);
