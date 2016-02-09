@@ -19679,11 +19679,11 @@
 
 	var _productDetails2 = _interopRequireDefault(_productDetails);
 
-	var _productsList = __webpack_require__(175);
+	var _productsList = __webpack_require__(176);
 
 	var _productsList2 = _interopRequireDefault(_productsList);
 
-	var _releases = __webpack_require__(176);
+	var _releases = __webpack_require__(177);
 
 	var _releases2 = _interopRequireDefault(_releases);
 
@@ -32458,9 +32458,27 @@
 	    }
 
 	    _createClass(StoriesRepository, [{
+	        key: "createReleaseFilter",
+	        value: function createReleaseFilter(releaseName) {
+	            var _this2 = this;
+
+	            var deferred = _q2.default.defer();
+	            var products = _productsRepository2.default.instance.getProducts().map(function (p) {
+	                return p.name;
+	            }).join(",");
+
+	            _jquery2.default.post("/create-release-filter?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (response) {
+	                deferred.reject(_this2.processRequestFailure(response));
+	            });
+
+	            return deferred.promise;
+	        }
+	    }, {
 	        key: "getStories",
 	        value: function getStories(serviceName, startTag, endTag) {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            var deferred = _q2.default.defer();
 	            var encodedStartTag = encodeURIComponent(startTag);
@@ -32469,7 +32487,7 @@
 	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (response) {
-	                deferred.reject(_this2.processRequestFailure(response));
+	                deferred.reject(_this3.processRequestFailure(response));
 	            });
 
 	            return deferred.promise;
@@ -32477,7 +32495,7 @@
 	    }, {
 	        key: "getStoriesForRelease",
 	        value: function getStoriesForRelease(releaseName) {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            var deferred = _q2.default.defer();
 	            var products = _productsRepository2.default.instance.getProducts().map(function (p) {
@@ -32487,7 +32505,7 @@
 	            _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (response) {
-	                deferred.reject(_this3.processRequestFailure(response));
+	                deferred.reject(_this4.processRequestFailure(response));
 	            });
 
 	            return deferred.promise;
@@ -32673,6 +32691,10 @@
 
 	var _globalEventEmitter = __webpack_require__(173);
 
+	var _infiniteLoading = __webpack_require__(175);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -32690,6 +32712,9 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).call(this, props));
 
 	        _this.state = {
+	            createdFilterName: null,
+	            createdFilterUrl: null,
+	            isCreatingFilter: false,
 	            isLoadingStories: false,
 	            jiraTickets: [],
 	            selectedRelease: null
@@ -32713,9 +32738,36 @@
 	            _globalEventEmitter.GlobalEventEmitter.instance.removeListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
 	        }
 	    }, {
+	        key: "handleCreateReleaseFilterClick",
+	        value: function handleCreateReleaseFilterClick() {
+	            var _this2 = this;
+
+	            if (!this.state.selectedRelease) {
+	                alert("Please select release first.");
+	                return;
+	            }
+
+	            this.setState({
+	                isCreatingFilter: true
+	            });
+
+	            _storiesRepository2.default.instance.createReleaseFilter(this.state.selectedRelease.name).then(function (data) {
+	                _this2.setState({
+	                    createdFilterName: data.name,
+	                    createdFilterUrl: data.url
+	                });
+	            }).catch(function (error) {
+	                _errorHandler2.default.showErrorMessage(error);
+	            }).finally(function () {
+	                _this2.setState({
+	                    isCreatingFilter: false
+	                });
+	            });
+	        }
+	    }, {
 	        key: "onSearchStoriesClick",
 	        value: function onSearchStoriesClick(selectedRelease) {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            this.setState({
 	                isLoadingStories: true,
@@ -32726,12 +32778,12 @@
 	            if (!selectedRelease) return;
 
 	            _storiesRepository2.default.instance.getStoriesForRelease(selectedRelease.name).then(function (data) {
-	                _this2.setState({
+	                _this3.setState({
 	                    isLoadingStories: false,
 	                    jiraTickets: data
 	                });
 	            }).catch(function (error) {
-	                _this2.setState({
+	                _this3.setState({
 	                    isLoadingStories: false
 	                });
 
@@ -32749,7 +32801,7 @@
 	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            return _react2.default.createElement(
 	                "div",
@@ -32763,16 +32815,42 @@
 	                        "Jira tickets"
 	                    ),
 	                    function () {
-	                        if (_this3.state.selectedRelease) {
-	                            return _react2.default.createElement(
-	                                "div",
-	                                { className: "btn-group", role: "group" },
-	                                _react2.default.createElement(
-	                                    "button",
-	                                    { className: "btn btn-default" },
-	                                    "Create release filter"
-	                                )
-	                            );
+	                        if (_this4.state.selectedRelease) {
+	                            if (_this4.state.createdFilterName) {
+	                                return _react2.default.createElement(
+	                                    "p",
+	                                    null,
+	                                    "Created JIRA filter: ",
+	                                    _react2.default.createElement(
+	                                        "a",
+	                                        { href: _this4.state.createdFilterUrl, target: "_blank", rel: "external" },
+	                                        _this4.state.createdFilterName
+	                                    )
+	                                );
+	                            } else {
+	                                return _react2.default.createElement(
+	                                    "div",
+	                                    { className: "row" },
+	                                    _react2.default.createElement(
+	                                        "div",
+	                                        { className: "col-md-1" },
+	                                        _react2.default.createElement(
+	                                            "div",
+	                                            { className: "btn-group", role: "group" },
+	                                            _react2.default.createElement(
+	                                                "button",
+	                                                { className: "btn btn-default", onClick: _this4.handleCreateReleaseFilterClick.bind(_this4) },
+	                                                "Create release filter"
+	                                            )
+	                                        )
+	                                    ),
+	                                    _react2.default.createElement(
+	                                        "div",
+	                                        { className: "col-md-1" },
+	                                        _react2.default.createElement(_infiniteLoading2.default, { isLoading: _this4.state.isCreatingFilter })
+	                                    )
+	                                );
+	                            }
 	                        }
 	                    }(),
 	                    _react2.default.createElement(
@@ -32825,31 +32903,19 @@
 	                            "tbody",
 	                            null,
 	                            function () {
-	                                if (_this3.state.isLoadingStories) {
+	                                if (_this4.state.isLoadingStories) {
 	                                    return _react2.default.createElement(
 	                                        "tr",
 	                                        null,
 	                                        _react2.default.createElement(
 	                                            "td",
 	                                            { colSpan: "7" },
-	                                            _react2.default.createElement(
-	                                                "div",
-	                                                { className: "progress" },
-	                                                _react2.default.createElement(
-	                                                    "div",
-	                                                    { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                                    _react2.default.createElement(
-	                                                        "span",
-	                                                        { className: "sr-only" },
-	                                                        "100% Complete"
-	                                                    )
-	                                                )
-	                                            )
+	                                            _react2.default.createElement(_infiniteLoading2.default, null)
 	                                        )
 	                                    );
 	                                }
 
-	                                if (!_this3.state.jiraTickets || !_this3.state.jiraTickets.length) {
+	                                if (!_this4.state.jiraTickets || !_this4.state.jiraTickets.length) {
 	                                    return _react2.default.createElement(
 	                                        "tr",
 	                                        null,
@@ -32865,7 +32931,7 @@
 	                                    );
 	                                }
 
-	                                return _this3.state.jiraTickets.map(function (ticket, ticketIndex) {
+	                                return _this4.state.jiraTickets.map(function (ticket, ticketIndex) {
 	                                    return _react2.default.createElement(
 	                                        "tr",
 	                                        { key: ticketIndex },
@@ -33355,6 +33421,69 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var CurrentVersionsList = function (_React$Component) {
+	    _inherits(CurrentVersionsList, _React$Component);
+
+	    function CurrentVersionsList() {
+	        _classCallCheck(this, CurrentVersionsList);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(CurrentVersionsList).apply(this, arguments));
+	    }
+
+	    _createClass(CurrentVersionsList, [{
+	        key: "render",
+	        value: function render() {
+	            var isLoadingProp = this.props.isLoading;
+
+	            if (isLoadingProp == undefined || isLoadingProp == null || isLoadingProp) {
+	                return _react2.default.createElement(
+	                    "div",
+	                    { className: "progress" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
+	                        _react2.default.createElement(
+	                            "span",
+	                            { className: "sr-only" },
+	                            "100% Complete"
+	                        )
+	                    )
+	                );
+	            } else {
+	                return null;
+	            }
+	        }
+	    }]);
+
+	    return CurrentVersionsList;
+	}(_react2.default.Component);
+
+	exports.default = CurrentVersionsList;
+
+/***/ },
+/* 176 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
 	var _productsRepository = __webpack_require__(161);
 
 	var _productsRepository2 = _interopRequireDefault(_productsRepository);
@@ -33462,7 +33591,7 @@
 	exports.default = ProductsList;
 
 /***/ },
-/* 176 */
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33493,7 +33622,7 @@
 
 	var _tagsRepository2 = _interopRequireDefault(_tagsRepository);
 
-	var _currentVersionsList = __webpack_require__(177);
+	var _currentVersionsList = __webpack_require__(178);
 
 	var _currentVersionsList2 = _interopRequireDefault(_currentVersionsList);
 
@@ -33501,7 +33630,7 @@
 
 	var _ticketsList2 = _interopRequireDefault(_ticketsList);
 
-	var _upcomingVersionsList = __webpack_require__(179);
+	var _upcomingVersionsList = __webpack_require__(180);
 
 	var _upcomingVersionsList2 = _interopRequireDefault(_upcomingVersionsList);
 
@@ -33553,7 +33682,7 @@
 	exports.default = Releases;
 
 /***/ },
-/* 177 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33576,7 +33705,7 @@
 
 	var _productsRepository2 = _interopRequireDefault(_productsRepository);
 
-	var _projectVersionsList = __webpack_require__(178);
+	var _projectVersionsList = __webpack_require__(179);
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
@@ -33652,7 +33781,7 @@
 	exports.default = CurrentVersionsList;
 
 /***/ },
-/* 178 */
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33666,6 +33795,10 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
+
+	var _infiniteLoading = __webpack_require__(175);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33732,19 +33865,7 @@
 	                                _react2.default.createElement(
 	                                    "td",
 	                                    { colSpan: 2 + (_this2.props.extraColumns && _this2.props.extraColumns.length || 0) },
-	                                    _react2.default.createElement(
-	                                        "div",
-	                                        { className: "progress" },
-	                                        _react2.default.createElement(
-	                                            "div",
-	                                            { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                            _react2.default.createElement(
-	                                                "span",
-	                                                { className: "sr-only" },
-	                                                "100% Complete"
-	                                            )
-	                                        )
-	                                    )
+	                                    _react2.default.createElement(_infiniteLoading2.default, null)
 	                                )
 	                            );
 	                        } else if (!_this2.props.projects.length) {
@@ -33820,7 +33941,7 @@
 	exports.default = ProjectVersionsList;
 
 /***/ },
-/* 179 */
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33839,7 +33960,7 @@
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _buildsRepository = __webpack_require__(180);
+	var _buildsRepository = __webpack_require__(181);
 
 	var _buildsRepository2 = _interopRequireDefault(_buildsRepository);
 
@@ -33847,15 +33968,19 @@
 
 	var _productsRepository2 = _interopRequireDefault(_productsRepository);
 
-	var _projectVersionsList = __webpack_require__(178);
+	var _projectVersionsList = __webpack_require__(179);
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
-	var _copyContent = __webpack_require__(181);
+	var _copyContent = __webpack_require__(182);
 
 	var _copyContent2 = _interopRequireDefault(_copyContent);
 
 	var _globalEventEmitter = __webpack_require__(173);
+
+	var _infiniteLoading = __webpack_require__(175);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33955,7 +34080,7 @@
 	                selectedReleaseIndex: selectedIndex
 	            });
 
-	            _globalEventEmitter.GlobalEventEmitter.instance.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this.state.selectedRelease);
+	            _globalEventEmitter.GlobalEventEmitter.instance.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, selectedRelease);
 	        }
 	    }, {
 	        key: "handleStartBuildClick",
@@ -34117,19 +34242,7 @@
 	        key: "renderBuildNumberCell",
 	        value: function renderBuildNumberCell(project) {
 	            if (project.isBuilding || this.state.isLoadingBuilds) {
-	                return _react2.default.createElement(
-	                    "div",
-	                    { className: "progress" },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                        _react2.default.createElement(
-	                            "span",
-	                            { className: "sr-only" },
-	                            "100% Complete"
-	                        )
-	                    )
-	                );
+	                return _react2.default.createElement(_infiniteLoading2.default, null);
 	            }
 
 	            var projectBuilds = this.state.successfulBuilds[project.name];
@@ -34162,7 +34275,7 @@
 	exports.default = UpcomingVersionsList;
 
 /***/ },
-/* 180 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -34268,7 +34381,7 @@
 	exports.default = BuildsRepository;
 
 /***/ },
-/* 181 */
+/* 182 */
 /***/ function(module, exports) {
 
 	"use strict";

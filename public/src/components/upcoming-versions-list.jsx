@@ -5,6 +5,7 @@ import ProductsRepository from "../repositories/products-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
 import copyContent from "../utils/copy-content";
 import {GlobalEventEmitter, Events} from "../utils/global-event-emitter";
+import InfiniteLoading from "./infinite-loading.jsx";
 
 export default class UpcomingVersionsList extends React.Component
 {
@@ -103,7 +104,7 @@ export default class UpcomingVersionsList extends React.Component
             selectedReleaseIndex: selectedIndex
         });
 
-        GlobalEventEmitter.instance.emit(Events.SELECTED_RELEASE_CHANGED, this.state.selectedRelease);
+        GlobalEventEmitter.instance.emit(Events.SELECTED_RELEASE_CHANGED, selectedRelease);
     }
 
     handleStartBuildClick(project)
@@ -238,13 +239,7 @@ export default class UpcomingVersionsList extends React.Component
     {
         if (project.isBuilding || this.state.isLoadingBuilds)
         {
-            return (
-                <div className="progress">
-                    <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
-                        <span className="sr-only">100% Complete</span>
-                    </div>
-                </div>
-            );
+            return <InfiniteLoading />;
         }
 
         let projectBuilds = this.state.successfulBuilds[project.name];

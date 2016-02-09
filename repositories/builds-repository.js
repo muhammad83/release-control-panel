@@ -170,7 +170,7 @@ class BuildsRepository
                 return;
             }
 
-            deferred.resolve(data);
+            deferred.resolve();
         };
 
         request(requestOptions, responseHandler);

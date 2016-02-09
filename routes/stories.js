@@ -6,6 +6,26 @@ const tagsRepository = require("../repositories/tags-repository");
 
 class Stories
 {
+    static createReleaseFilter(request, response)
+    {
+        let version = request.query.version;
+        let projects = (request.query.projects || "").split(",");
+
+        Stories.getTagsToFindForVersion(projects, version)
+            .then(projectTags =>
+            {
+                return storiesRepository.createReleaseFilter(version, projectTags);
+            })
+            .then(data =>
+            {
+                response.send(data);
+            })
+            .catch(error =>
+            {
+                response.status(500).send(JSON.stringify(error || "Unknown error."));
+            });
+    }
+
     static getStories(request, response)
     {
         let serviceName = request.query.serviceName;
@@ -37,10 +57,37 @@ class Stories
     {
         let version = request.query.version;
         let projects = (request.query.projects || "").split(",");
+
+        Stories.getTagsToFindForVersion(projects, version)
+            .then(projectTags =>
+            {
+                return storiesRepository.getStories(projectTags);
+            })
+            .then(data =>
+            {
+                response.send(JSON.stringify(data));
+            })
+            .catch(ex =>
+            {
+                let data = (ex && ex.data) || null;
+                let message = (ex && ex.message) || "Something went wrong.";
+                let status = (ex && ex.status) || 500;
+                let responseData =
+                {
+                    message: message,
+                    data: data
+                };
+
+                response.status(status).send(JSON.stringify(responseData));
+            });
+    }
+
+    static getTagsToFindForVersion(projects, version)
+    {
         let versions;
         let projectProdReleaseNumbers;
 
-        tagsRepository.getStableApplications(version)
+        return tagsRepository.getStableApplications(version)
             .then(projectsVersions =>
             {
                 versions = projects.map(project =>
@@ -60,7 +107,7 @@ class Stories
             })
             .then(allTags =>
             {
-                let projectTags = allTags.map((tags, projectIndex) =>
+                return allTags.map((tags, projectIndex) =>
                 {
                     let tagsToFind = tags.slice(
                         tags.indexOf(versions[projectIndex]),
@@ -72,24 +119,6 @@ class Stories
                         tags: tagsToFind
                     };
                 });
-                return storiesRepository.getStories(projectTags);
-            })
-            .then(data =>
-            {
-                response.send(JSON.stringify(data));
-            })
-            .catch(ex =>
-            {
-                let data = (ex && ex.data) || null;
-                let message = (ex && ex.message) || "Something went wrong.";
-                let status = (ex && ex.status) || 500;
-                let responseData =
-                {
-                    message: message,
-                    data: data
-                };
-
-                response.status(status).send(JSON.stringify(responseData));
             });
     }
 }

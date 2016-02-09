@@ -3,6 +3,7 @@ import $ from "jquery";
 import ErrorHandler from "../handlers/error-handler";
 import StoriesRepository from "../repositories/stories-repository";
 import {GlobalEventEmitter, Events} from "../utils/global-event-emitter";
+import InfiniteLoading from "./infinite-loading.jsx";
 
 export default class TicketsList extends React.Component
 {
@@ -12,6 +13,9 @@ export default class TicketsList extends React.Component
 
         this.state =
         {
+            createdFilterName: null,
+            createdFilterUrl: null,
+            isCreatingFilter: false,
             isLoadingStories: false,
             jiraTickets: [],
             selectedRelease: null
@@ -31,6 +35,41 @@ export default class TicketsList extends React.Component
     {
         GlobalEventEmitter.instance.removeListener(Events.SEARCH_TICKETS, this._onSearchStories);
         GlobalEventEmitter.instance.removeListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged)
+    }
+
+    handleCreateReleaseFilterClick()
+    {
+        if (!this.state.selectedRelease)
+        {
+            alert("Please select release first.");
+            return;
+        }
+
+        this.setState(
+        {
+            isCreatingFilter: true
+        });
+
+        StoriesRepository.instance.createReleaseFilter(this.state.selectedRelease.name)
+            .then(data =>
+            {
+                this.setState(
+                {
+                    createdFilterName: data.name,
+                    createdFilterUrl: data.url
+                });
+            })
+            .catch(error =>
+            {
+                ErrorHandler.showErrorMessage(error);
+            })
+            .finally(() =>
+            {
+                this.setState(
+                {
+                    isCreatingFilter: false
+                });
+            });
     }
 
     onSearchStoriesClick(selectedRelease)
@@ -85,11 +124,25 @@ export default class TicketsList extends React.Component
                         {
                             if (this.state.selectedRelease)
                             {
-                                return (
-                                    <div className="btn-group" role="group">
-                                        <button className="btn btn-default">Create release filter</button>
-                                    </div>
-                                );
+                                if (this.state.createdFilterName)
+                                {
+                                    return <p>Created JIRA filter: <a href={this.state.createdFilterUrl} target="_blank" rel="external">{this.state.createdFilterName}</a></p>;
+                                }
+                                else
+                                {
+                                    return (
+                                        <div className="row">
+                                            <div className="col-md-1">
+                                                <div className="btn-group" role="group">
+                                                    <button className="btn btn-default" onClick={this.handleCreateReleaseFilterClick.bind(this)}>Create release filter</button>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-1">
+                                                <InfiniteLoading isLoading={this.state.isCreatingFilter} />
+                                            </div>
+                                        </div>
+                                    );
+                                }
                             }
                         })()
                     }
@@ -114,11 +167,7 @@ export default class TicketsList extends React.Component
                                     return (
                                         <tr>
                                             <td colSpan="7">
-                                                <div className="progress">
-                                                    <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
-                                                        <span className="sr-only">100% Complete</span>
-                                                    </div>
-                                                </div>
+                                                <InfiniteLoading />
                                             </td>
                                         </tr>
                                     );

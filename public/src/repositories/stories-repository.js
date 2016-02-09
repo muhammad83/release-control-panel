@@ -28,6 +28,23 @@ export default class StoriesRepository extends BaseRepository
         return this[singleton];
     }
 
+    createReleaseFilter(releaseName)
+    {
+        let deferred = q.defer();
+        let products = ProductsRepository.instance.getProducts().map(function (p) { return p.name; }).join(",");
+
+        $.post(`/create-release-filter?version=${releaseName}&projects=${products}&timestamp=${+new Date()}`, data =>
+        {
+            deferred.resolve(data);
+        })
+        .fail(response =>
+        {
+            deferred.reject(this.processRequestFailure(response));
+        });
+
+        return deferred.promise;
+    }
+
     getStories(serviceName, startTag, endTag)
     {
         let deferred = q.defer();

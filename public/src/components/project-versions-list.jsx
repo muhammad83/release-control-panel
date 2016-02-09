@@ -1,4 +1,5 @@
 import React from "react";
+import InfiniteLoading from "./infinite-loading.jsx";
 
 export default class ProjectVersionsList extends React.Component
 {
@@ -38,11 +39,7 @@ export default class ProjectVersionsList extends React.Component
                             return (
                                 <tr>
                                     <td colSpan={ 2 + ((this.props.extraColumns && this.props.extraColumns.length) || 0) }>
-                                        <div className="progress">
-                                            <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
-                                                <span className="sr-only">100% Complete</span>
-                                            </div>
-                                        </div>
+                                        <InfiniteLoading />
                                     </td>
                                 </tr>
                             );
