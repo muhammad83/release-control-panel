@@ -4,6 +4,7 @@ import BuildsRepository from "../repositories/builds-repository";
 import ProductsRepository from "../repositories/products-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
 import copyContent from "../utils/copy-content";
+import {GlobalEventEmitter, Events} from "../utils/global-event-emitter";
 
 export default class UpcomingVersionsList extends React.Component
 {
@@ -72,13 +73,8 @@ export default class UpcomingVersionsList extends React.Component
         {
             return;
         }
-        
-        if (!this.props.onSearch)
-        {
-            return;
-        }
-        
-        this.props.onSearch(this.state.selectedRelease);
+
+        GlobalEventEmitter.instance.emit(Events.SEARCH_TICKETS, this.state.selectedRelease);
     }
 
     handleRefreshClick()
@@ -90,7 +86,7 @@ export default class UpcomingVersionsList extends React.Component
             selectedReleaseIndex: -1
         });
 
-        this.props.onSelectedReleaseChanged && this.props.onSelectedReleaseChanged(-1);
+        GlobalEventEmitter.instance.emit(Events.SELECTED_RELEASE_CHANGED, null);
 
         this.loadAvailableReleases();
     }
@@ -106,13 +102,8 @@ export default class UpcomingVersionsList extends React.Component
             selectedRelease: selectedRelease,
             selectedReleaseIndex: selectedIndex
         });
-        
-        if (!this.props.onSelectedReleaseChanged)
-        {
-            return;
-        }
-        
-        this.props.onSelectedReleaseChanged(this.state.selectedRelease);
+
+        GlobalEventEmitter.instance.emit(Events.SELECTED_RELEASE_CHANGED, this.state.selectedRelease);
     }
 
     handleStartBuildClick(project)
@@ -124,7 +115,7 @@ export default class UpcomingVersionsList extends React.Component
             selectedRelease: this.state.selectedRelease
         });
 
-        BuildsRepository.startBuild(project.name, project.version);
+        BuildsRepository.instance.startBuild(project.name, project.version);
     }
 
     loadAvailableReleases()
@@ -134,7 +125,7 @@ export default class UpcomingVersionsList extends React.Component
             isLoadingReleases: true
         });
 
-        ProductsRepository.getUpcomingReleases()
+        ProductsRepository.instance.getUpcomingReleases()
             .then(releases =>
             {
                 this.setState(
@@ -161,7 +152,7 @@ export default class UpcomingVersionsList extends React.Component
             isLoadingBuilds: true
         });
 
-        BuildsRepository.getSuccessfulBuildsForProjects()
+        BuildsRepository.instance.getSuccessfulBuildsForProjects()
             .then(builds =>
             {
                 this.setState(

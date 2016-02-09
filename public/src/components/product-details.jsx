@@ -78,7 +78,7 @@ export default class ProductDetails extends React.Component
         {
             this.setState({ searchingInProgress: true });
 
-            TagsRepository.getStableTags(this.props.productName)
+            TagsRepository.instance.getStableTags(this.props.productName)
                 .then(data =>
                 {
                     this.setState(
@@ -114,7 +114,7 @@ export default class ProductDetails extends React.Component
     {
         this.setState({ searchingInProgress: true });
 
-        TagsRepository.getTags(props.productName)
+        TagsRepository.instance.getTags(props.productName)
             .then(data =>
             {
                 this.setState(
@@ -164,7 +164,7 @@ export default class ProductDetails extends React.Component
         let startTag = this.state.tags[this.state.startingTagIndex].name;
         let endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-        StoriesRepository.getStories(serviceName, startTag, endTag)
+        StoriesRepository.instance.getStories(serviceName, startTag, endTag)
             .then(data =>
             {
                 this.setState(

@@ -7,7 +7,7 @@ export default class ProductsList extends React.Component
         super(props);
 
         this.state = {
-            products: ProductsRepository.getProducts()
+            products: ProductsRepository.instance.getProducts()
         };
     }
 

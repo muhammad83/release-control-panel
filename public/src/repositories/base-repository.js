@@ -1,7 +1,7 @@
 
 export default class BaseRepository
 {
-    static processRequestFailure(errorResponse)
+    processRequestFailure(errorResponse)
     {
         let data;
 

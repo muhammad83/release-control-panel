@@ -1,14 +1,98 @@
 import React from "react";
 import $ from "jquery";
+import ErrorHandler from "../handlers/error-handler";
+import StoriesRepository from "../repositories/stories-repository";
+import {GlobalEventEmitter, Events} from "../utils/global-event-emitter";
 
 export default class TicketsList extends React.Component
 {
+    constructor(props)
+    {
+        super(props);
+
+        this.state =
+        {
+            isLoadingStories: false,
+            jiraTickets: [],
+            selectedRelease: null
+        };
+    }
+
+    componentDidMount()
+    {
+        this._onSearchStories = this.onSearchStoriesClick.bind(this);
+        this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
+
+        GlobalEventEmitter.instance.addListener(Events.SEARCH_TICKETS, this._onSearchStories);
+        GlobalEventEmitter.instance.addListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged)
+    }
+
+    componentWillUnmount()
+    {
+        GlobalEventEmitter.instance.removeListener(Events.SEARCH_TICKETS, this._onSearchStories);
+        GlobalEventEmitter.instance.removeListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged)
+    }
+
+    onSearchStoriesClick(selectedRelease)
+    {
+        this.setState(
+        {
+            isLoadingStories: true,
+            jiraTickets: [],
+            selectedRelease: selectedRelease
+        });
+
+        if (!selectedRelease)
+            return;
+
+        StoriesRepository.instance.getStoriesForRelease(selectedRelease.name)
+            .then((data) =>
+            {
+                this.setState(
+                {
+                    isLoadingStories: false,
+                    jiraTickets: data
+                });
+            })
+            .catch(error =>
+            {
+                this.setState(
+                {
+                    isLoadingStories: false
+                });
+
+                ErrorHandler.showErrorMessage(error);
+            });
+    }
+
+    onSelectedReleaseChanged(selectedRelease)
+    {
+        this.setState(
+        {
+            jiraTickets: [],
+            selectedRelease: selectedRelease
+        });
+    }
+
     render()
     {
         return (
             <div className="row">
                 <div className="col-md-12">
                     <h2>Jira tickets</h2>
+                    {
+                        (() =>
+                        {
+                            if (this.state.selectedRelease)
+                            {
+                                return (
+                                    <div className="btn-group" role="group">
+                                        <button className="btn btn-default">Create release filter</button>
+                                    </div>
+                                );
+                            }
+                        })()
+                    }
                     <table className="table">
                         <thead>
                         <tr>
@@ -25,7 +109,7 @@ export default class TicketsList extends React.Component
                         {
                             (() =>
                             {
-                                if (this.props.isSearching)
+                                if (this.state.isLoadingStories)
                                 {
                                     return (
                                         <tr>
@@ -40,7 +124,7 @@ export default class TicketsList extends React.Component
                                     );
                                 }
 
-                                if (!this.props.jiraTickets || !this.props.jiraTickets.length)
+                                if (!this.state.jiraTickets || !this.state.jiraTickets.length)
                                 {
                                     return (
                                         <tr>
@@ -51,7 +135,7 @@ export default class TicketsList extends React.Component
                                     );
                                 }
 
-                                return this.props.jiraTickets.map(function (ticket, ticketIndex)
+                                return this.state.jiraTickets.map(function (ticket, ticketIndex)
                                 {
                                     return (
                                         <tr key={ticketIndex}>

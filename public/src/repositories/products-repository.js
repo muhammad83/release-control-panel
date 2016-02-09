@@ -3,9 +3,32 @@ import q from "q";
 import Product from "../models/product";
 import BaseRepository from "./base-repository";
 
+let singleton = Symbol();
+let singletonEnforcer = Symbol();
+
 export default class ProductsRepository extends BaseRepository
 {
-    static getCurrentVersions()
+    constructor(enforcer)
+    {
+        super();
+
+        if (enforcer !== singletonEnforcer)
+        {
+            throw "Cannot construct singleton";
+        }
+    }
+
+    static get instance()
+    {
+        if (!this[singleton])
+        {
+            this[singleton] = new ProductsRepository(singletonEnforcer);
+        }
+
+        return this[singleton];
+    }
+
+    getCurrentVersions()
     {
         let deferred = q.defer();
         let productNames = this.getProducts().map((product) => product.name).join(",");
@@ -21,7 +44,7 @@ export default class ProductsRepository extends BaseRepository
         return deferred.promise;
     }
 
-    static getProducts()
+    getProducts()
     {
         return [
             new Product("cato-filing"),
@@ -31,7 +54,7 @@ export default class ProductsRepository extends BaseRepository
         ];
     }
 
-    static getUpcomingReleases()
+    getUpcomingReleases()
     {
         let deferred = q.defer();
         let products = this.getProducts().map((p) => p.name);

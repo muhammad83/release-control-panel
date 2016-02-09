@@ -9,52 +9,6 @@ import UpcomingVersionsList from "./upcoming-versions-list.jsx";
 
 export default class Releases extends React.Component
 {
-    constructor(props)
-    {
-        super(props);
-
-        this.state =
-        {
-            isLoadingStories: false,
-            jiraTickets: []
-        };
-    }
-    
-    onSelectedReleaseChanged(selectedRelease)
-    {
-        this.setState(
-        {
-            jiraTickets: []
-        });
-    }
-
-    onSearchStoriesClick(selectedRelease)
-    {
-        this.setState(
-        {
-            isLoadingStories: true
-        });
-
-        StoriesRepository.getStoriesForRelease(selectedRelease.name)
-            .then((data) =>
-            {
-                this.setState(
-                {
-                    isLoadingStories: false,
-                    jiraTickets: data
-                });
-            })
-            .catch(error =>
-            {
-                this.setState(
-                {
-                    isLoadingStories: false
-                });
-
-                ErrorHandler.showErrorMessage(error);
-            });
-    }
-
     render()
     {
         return (
@@ -64,10 +18,10 @@ export default class Releases extends React.Component
                         <CurrentVersionsList />
                     </div>
                     <div className="col-md-6">
-                        <UpcomingVersionsList onSearch={this.onSearchStoriesClick.bind(this)} onSelectedReleaseChanged={this.onSelectedReleaseChanged.bind(this)} />
+                        <UpcomingVersionsList />
                     </div>
                 </div>
-                <TicketsList jiraTickets={this.state.jiraTickets} isSearching={this.state.isLoadingStories} />
+                <TicketsList />
             </div>
         );
     }

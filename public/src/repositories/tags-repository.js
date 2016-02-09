@@ -3,9 +3,32 @@ import q from "q";
 import Tag from "../models/tag.js";
 import BaseRepository from "./base-repository";
 
+let singleton = Symbol();
+let singletonEnforcer = Symbol();
+
 export default class TagsRepository extends BaseRepository
 {
-    static getStableTags(productName)
+    constructor(enforcer)
+    {
+        super();
+
+        if (enforcer !== singletonEnforcer)
+        {
+            throw "Cannot construct singleton";
+        }
+    }
+
+    static get instance()
+    {
+        if (!this[singleton])
+        {
+            this[singleton] = new TagsRepository(singletonEnforcer);
+        }
+
+        return this[singleton];
+    }
+
+    getStableTags(productName)
     {
         let deferred = q.defer();
 
@@ -23,7 +46,7 @@ export default class TagsRepository extends BaseRepository
         return deferred.promise;
     }
 
-    static getTags(productName)
+    getTags(productName)
     {
         let deferred = q.defer();
 
