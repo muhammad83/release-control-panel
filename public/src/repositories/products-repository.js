@@ -6,7 +6,7 @@ import BaseRepository from "./base-repository";
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
 
-export default class ProductsRepository extends BaseRepository
+export class ProductsRepository extends BaseRepository
 {
     constructor(enforcer)
     {
@@ -33,13 +33,15 @@ export default class ProductsRepository extends BaseRepository
         let deferred = q.defer();
         let productNames = this.getProducts().map((product) => product.name).join(",");
 
-        $.get(`/current-versions?projects=${productNames}`, (data) =>
+        let request = $.get(`/current-versions?projects=${productNames}`, (data) =>
         {
             deferred.resolve(JSON.parse(data));
         }).fail(error =>
         {
             deferred.reject(this.processRequestFailure(error));
         });
+
+        this.safeMonitorRequest(request);
 
         return deferred.promise;
     }
@@ -59,7 +61,7 @@ export default class ProductsRepository extends BaseRepository
         let deferred = q.defer();
         let products = this.getProducts().map((p) => p.name);
 
-        $.get(`/releases?timestamp=${+new Date()}`, (data) =>
+        let request = $.get(`/releases?timestamp=${+new Date()}`, (data) =>
         {
             let jsonData = JSON.parse(data);
             let filteredRelases = jsonData.map(r =>
@@ -73,6 +75,10 @@ export default class ProductsRepository extends BaseRepository
             deferred.reject(this.processRequestFailure(error));
         });
 
+        this.safeMonitorRequest(request);
+
         return deferred.promise;
     }
 }
+
+export const productsRepository = ProductsRepository.instance;

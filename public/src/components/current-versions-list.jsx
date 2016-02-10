@@ -1,14 +1,16 @@
-import React from "react";
+import BaseComponent from "./base-component";
 import ErrorHandler from "../handlers/error-handler";
-import ProductsRepository from "../repositories/products-repository";
+import {productsRepository} from "../repositories/products-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
+import RequestManager from "../utils/request-manager";
 
-export default class CurrentVersionsList extends React.Component
+export default class CurrentVersionsList extends BaseComponent
 {
     constructor(props)
     {
         super(props);
-        
+
+        this.requestManager = new RequestManager();
         this.state =
         {
             currentVersions: [],
@@ -18,7 +20,14 @@ export default class CurrentVersionsList extends React.Component
     
     componentDidMount()
     {
+        super.componentDidMount();
         this.loadCurrentVersions();
+    }
+
+    componentWillUnmount()
+    {
+        super.componentWillUnmount();
+        this.requestManager.abortPendingRequests();
     }
     
     loadCurrentVersions()
@@ -28,9 +37,13 @@ export default class CurrentVersionsList extends React.Component
             isLoadingCurrentVersions: true
         });
 
-        ProductsRepository.instance.getCurrentVersions()
+        productsRepository.setRequestManager(this.requestManager);
+        productsRepository.getCurrentVersions()
             .then(versions =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     currentVersions: versions,
@@ -39,6 +52,9 @@ export default class CurrentVersionsList extends React.Component
             })
             .catch(error =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     isLoadingCurrentVersions: false

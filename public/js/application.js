@@ -19663,27 +19663,29 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
-	var _react = __webpack_require__(1);
+	var _baseComponent = __webpack_require__(160);
 
-	var _react2 = _interopRequireDefault(_react);
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _navigation = __webpack_require__(160);
+	var _navigation = __webpack_require__(161);
 
 	var _navigation2 = _interopRequireDefault(_navigation);
 
-	var _productDetails = __webpack_require__(167);
+	var _productDetails = __webpack_require__(168);
 
 	var _productDetails2 = _interopRequireDefault(_productDetails);
 
-	var _productsList = __webpack_require__(176);
+	var _productsList = __webpack_require__(178);
 
 	var _productsList2 = _interopRequireDefault(_productsList);
 
-	var _releases = __webpack_require__(177);
+	var _releases = __webpack_require__(179);
 
 	var _releases2 = _interopRequireDefault(_releases);
 
@@ -19695,8 +19697,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var App = function (_React$Component) {
-	    _inherits(App, _React$Component);
+	var App = function (_BaseComponent) {
+	    _inherits(App, _BaseComponent);
 
 	    function App(props) {
 	        _classCallCheck(this, App);
@@ -19713,6 +19715,8 @@
 	        key: "componentDidMount",
 	        value: function componentDidMount() {
 	            var _this2 = this;
+
+	            _get(Object.getPrototypeOf(App.prototype), "componentDidMount", this).call(this);
 
 	            window.addEventListener('hashchange', function () {
 	                _this2.setState({
@@ -19737,17 +19741,17 @@
 	                Child = _productsList2.default;
 	            }
 
-	            return _react2.default.createElement(
+	            return React.createElement(
 	                "div",
 	                null,
-	                _react2.default.createElement(_navigation2.default, null),
-	                _react2.default.createElement(Child, childProps)
+	                React.createElement(_navigation2.default, null),
+	                React.createElement(Child, childProps)
 	            );
 	        }
 	    }]);
 
 	    return App;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = App;
 
@@ -19767,10 +19771,6 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _productsRepository = __webpack_require__(161);
-
-	var _productsRepository2 = _interopRequireDefault(_productsRepository);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -19779,110 +19779,34 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Navigation = function (_React$Component) {
-	    _inherits(Navigation, _React$Component);
+	var BaseComponent = function (_React$Component) {
+	    _inherits(BaseComponent, _React$Component);
 
-	    function Navigation(props) {
-	        _classCallCheck(this, Navigation);
+	    function BaseComponent(props) {
+	        _classCallCheck(this, BaseComponent);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Navigation).call(this, props));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BaseComponent).call(this, props));
 
-	        _this.state = {
-	            products: _productsRepository2.default.instance.getProducts()
-	        };
+	        _this.m_isMounted = false;
 	        return _this;
 	    }
 
-	    _createClass(Navigation, [{
-	        key: "render",
-	        value: function render() {
-	            return _react2.default.createElement(
-	                "nav",
-	                { className: "navbar navbar-default" },
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "container-fluid" },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "navbar-header" },
-	                        _react2.default.createElement(
-	                            "button",
-	                            { type: "button", className: "navbar-toggle collapsed", "data-toggle": "collapse", "data-target": "#bs-example-navbar-collapse-1", "aria-expanded": "false" },
-	                            _react2.default.createElement(
-	                                "span",
-	                                { className: "sr-only" },
-	                                "Toggle navigation"
-	                            ),
-	                            _react2.default.createElement("span", { className: "icon-bar" }),
-	                            _react2.default.createElement("span", { className: "icon-bar" }),
-	                            _react2.default.createElement("span", { className: "icon-bar" })
-	                        ),
-	                        _react2.default.createElement(
-	                            "a",
-	                            { className: "navbar-brand", href: "#/" },
-	                            "Control Panel"
-	                        )
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "collapse navbar-collapse", id: "bs-example-navbar-collapse-1" },
-	                        _react2.default.createElement(
-	                            "ul",
-	                            { className: "nav navbar-nav" },
-	                            _react2.default.createElement(
-	                                "li",
-	                                null,
-	                                _react2.default.createElement(
-	                                    "a",
-	                                    { href: "#/" },
-	                                    "Home"
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                "li",
-	                                { className: "dropdown" },
-	                                _react2.default.createElement(
-	                                    "a",
-	                                    { href: "", className: "dropdown-toggle", "data-toggle": "dropdown", role: "button", "aria-haspopup": "true", "aria-expanded": "false" },
-	                                    "Products ",
-	                                    _react2.default.createElement("span", { className: "caret" })
-	                                ),
-	                                _react2.default.createElement(
-	                                    "ul",
-	                                    { className: "dropdown-menu" },
-	                                    this.state.products.map(function (product, productIndex) {
-	                                        return _react2.default.createElement(
-	                                            "li",
-	                                            { key: productIndex },
-	                                            _react2.default.createElement(
-	                                                "a",
-	                                                { href: "#/product/" + product.name },
-	                                                product.name
-	                                            )
-	                                        );
-	                                    })
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                "li",
-	                                null,
-	                                _react2.default.createElement(
-	                                    "a",
-	                                    { href: "#/releases" },
-	                                    "Releases"
-	                                )
-	                            )
-	                        )
-	                    )
-	                )
-	            );
+	    _createClass(BaseComponent, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            this.m_isMounted = true;
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            this.m_isMounted = false;
 	        }
 	    }]);
 
-	    return Navigation;
+	    return BaseComponent;
 	}(_react2.default.Component);
 
-	exports.default = Navigation;
+	exports.default = BaseComponent;
 
 /***/ },
 /* 161 */
@@ -19896,19 +19820,151 @@
 	    value: true
 	});
 
-	var _jquery = __webpack_require__(162);
+	var _baseComponent = __webpack_require__(160);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _productsRepository = __webpack_require__(162);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Navigation = function (_BaseComponent) {
+	    _inherits(Navigation, _BaseComponent);
+
+	    function Navigation(props) {
+	        _classCallCheck(this, Navigation);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Navigation).call(this, props));
+
+	        _this.state = {
+	            products: _productsRepository.productsRepository.getProducts()
+	        };
+	        return _this;
+	    }
+
+	    _createClass(Navigation, [{
+	        key: "render",
+	        value: function render() {
+	            return React.createElement(
+	                "nav",
+	                { className: "navbar navbar-default" },
+	                React.createElement(
+	                    "div",
+	                    { className: "container-fluid" },
+	                    React.createElement(
+	                        "div",
+	                        { className: "navbar-header" },
+	                        React.createElement(
+	                            "button",
+	                            { type: "button", className: "navbar-toggle collapsed", "data-toggle": "collapse", "data-target": "#bs-example-navbar-collapse-1", "aria-expanded": "false" },
+	                            React.createElement(
+	                                "span",
+	                                { className: "sr-only" },
+	                                "Toggle navigation"
+	                            ),
+	                            React.createElement("span", { className: "icon-bar" }),
+	                            React.createElement("span", { className: "icon-bar" }),
+	                            React.createElement("span", { className: "icon-bar" })
+	                        ),
+	                        React.createElement(
+	                            "a",
+	                            { className: "navbar-brand", href: "#/" },
+	                            "Control Panel"
+	                        )
+	                    ),
+	                    React.createElement(
+	                        "div",
+	                        { className: "collapse navbar-collapse", id: "bs-example-navbar-collapse-1" },
+	                        React.createElement(
+	                            "ul",
+	                            { className: "nav navbar-nav" },
+	                            React.createElement(
+	                                "li",
+	                                null,
+	                                React.createElement(
+	                                    "a",
+	                                    { href: "#/" },
+	                                    "Home"
+	                                )
+	                            ),
+	                            React.createElement(
+	                                "li",
+	                                { className: "dropdown" },
+	                                React.createElement(
+	                                    "a",
+	                                    { href: "", className: "dropdown-toggle", "data-toggle": "dropdown", role: "button", "aria-haspopup": "true", "aria-expanded": "false" },
+	                                    "Products ",
+	                                    React.createElement("span", { className: "caret" })
+	                                ),
+	                                React.createElement(
+	                                    "ul",
+	                                    { className: "dropdown-menu" },
+	                                    this.state.products.map(function (product, productIndex) {
+	                                        return React.createElement(
+	                                            "li",
+	                                            { key: productIndex },
+	                                            React.createElement(
+	                                                "a",
+	                                                { href: "#/product/" + product.name },
+	                                                product.name
+	                                            )
+	                                        );
+	                                    })
+	                                )
+	                            ),
+	                            React.createElement(
+	                                "li",
+	                                null,
+	                                React.createElement(
+	                                    "a",
+	                                    { href: "#/releases" },
+	                                    "Releases"
+	                                )
+	                            )
+	                        )
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return Navigation;
+	}(_baseComponent2.default);
+
+	exports.default = Navigation;
+
+/***/ },
+/* 162 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.productsRepository = exports.ProductsRepository = undefined;
+
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(163);
+	var _q = __webpack_require__(164);
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _product = __webpack_require__(165);
+	var _product = __webpack_require__(166);
 
 	var _product2 = _interopRequireDefault(_product);
 
-	var _baseRepository = __webpack_require__(166);
+	var _baseRepository = __webpack_require__(167);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
@@ -19923,7 +19979,7 @@
 	var singleton = Symbol();
 	var singletonEnforcer = Symbol();
 
-	var ProductsRepository = function (_BaseRepository) {
+	var ProductsRepository = exports.ProductsRepository = function (_BaseRepository) {
 	    _inherits(ProductsRepository, _BaseRepository);
 
 	    function ProductsRepository(enforcer) {
@@ -19947,11 +20003,13 @@
 	                return product.name;
 	            }).join(",");
 
-	            _jquery2.default.get("/current-versions?projects=" + productNames, function (data) {
+	            var request = _jquery2.default.get("/current-versions?projects=" + productNames, function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (error) {
 	                deferred.reject(_this2.processRequestFailure(error));
 	            });
+
+	            this.safeMonitorRequest(request);
 
 	            return deferred.promise;
 	        }
@@ -19970,7 +20028,7 @@
 	                return p.name;
 	            });
 
-	            _jquery2.default.get("/releases?timestamp=" + +new Date(), function (data) {
+	            var request = _jquery2.default.get("/releases?timestamp=" + +new Date(), function (data) {
 	                var jsonData = JSON.parse(data);
 	                var filteredRelases = jsonData.map(function (r) {
 	                    r.applications = r.applications.filter(function (a) {
@@ -19982,6 +20040,8 @@
 	            }).fail(function (error) {
 	                deferred.reject(_this3.processRequestFailure(error));
 	            });
+
+	            this.safeMonitorRequest(request);
 
 	            return deferred.promise;
 	        }
@@ -19999,10 +20059,10 @@
 	    return ProductsRepository;
 	}(_baseRepository2.default);
 
-	exports.default = ProductsRepository;
+	var productsRepository = exports.productsRepository = ProductsRepository.instance;
 
 /***/ },
-/* 162 */
+/* 163 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -29839,7 +29899,7 @@
 
 
 /***/ },
-/* 163 */
+/* 164 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process, setImmediate) {// vim:ts=4:sts=4:sw=4:
@@ -31891,10 +31951,10 @@
 
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(164).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(165).setImmediate))
 
 /***/ },
-/* 164 */
+/* 165 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(4).nextTick;
@@ -31973,10 +32033,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(164).setImmediate, __webpack_require__(164).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(165).setImmediate, __webpack_require__(165).clearImmediate))
 
 /***/ },
-/* 165 */
+/* 166 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -31999,7 +32059,7 @@
 	exports.default = Product;
 
 /***/ },
-/* 166 */
+/* 167 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32015,24 +32075,36 @@
 	var BaseRepository = function () {
 	    function BaseRepository() {
 	        _classCallCheck(this, BaseRepository);
+
+	        this.requestManager = null;
 	    }
 
 	    _createClass(BaseRepository, [{
 	        key: "processRequestFailure",
 	        value: function processRequestFailure(errorResponse) {
-	            var data = undefined;
+	            var data = {};
 
 	            if (errorResponse.responseText) {
 	                try {
 	                    data = JSON.parse(errorResponse.responseText);
-	                } catch (ex) {
-	                    data = {};
-	                }
+	                } catch (ex) {}
 	            }
 
 	            data.status = errorResponse.status;
 
 	            return data;
+	        }
+	    }, {
+	        key: "safeMonitorRequest",
+	        value: function safeMonitorRequest(request) {
+	            if (this.requestManager) {
+	                this.requestManager.monitorRequest(request);
+	            }
+	        }
+	    }, {
+	        key: "setRequestManager",
+	        value: function setRequestManager(manager) {
+	            this.requestManager = manager;
 	        }
 	    }]);
 
@@ -32042,38 +32114,40 @@
 	exports.default = BaseRepository;
 
 /***/ },
-/* 167 */
+/* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _errorHandler = __webpack_require__(168);
+	var _baseComponent = __webpack_require__(160);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _errorHandler = __webpack_require__(169);
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _storiesRepository = __webpack_require__(169);
+	var _requestManager = __webpack_require__(170);
 
-	var _storiesRepository2 = _interopRequireDefault(_storiesRepository);
+	var _requestManager2 = _interopRequireDefault(_requestManager);
 
-	var _tagsRepository = __webpack_require__(170);
+	var _storiesRepository = __webpack_require__(171);
 
-	var _tagsRepository2 = _interopRequireDefault(_tagsRepository);
+	var _tagsRepository = __webpack_require__(172);
 
-	var _ticketsList = __webpack_require__(172);
+	var _ticketsList = __webpack_require__(174);
 
 	var _ticketsList2 = _interopRequireDefault(_ticketsList);
 
@@ -32085,14 +32159,15 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var ProductDetails = function (_React$Component) {
-	    _inherits(ProductDetails, _React$Component);
+	var ProductDetails = function (_BaseComponent) {
+	    _inherits(ProductDetails, _BaseComponent);
 
 	    function ProductDetails(params) {
 	        _classCallCheck(this, ProductDetails);
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ProductDetails).call(this, params));
 
+	        _this.requestManager = new _requestManager2.default();
 	        _this.state = {
 	            endingTags: [],
 	            endingTagIndex: -1,
@@ -32108,12 +32183,21 @@
 	    _createClass(ProductDetails, [{
 	        key: "componentDidMount",
 	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(ProductDetails.prototype), "componentDidMount", this).call(this);
+
 	            this.loadTagsList(this.props);
 	        }
 	    }, {
 	        key: "componentWillReceiveProps",
 	        value: function componentWillReceiveProps(props) {
 	            this.loadTagsList(props);
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            _get(Object.getPrototypeOf(ProductDetails.prototype), "componentWillUnmount", this).call(this);
+
+	            this.requestManager.abortPendingRequests();
 	        }
 	    }, {
 	        key: "getEndingTagsForStartTag",
@@ -32158,13 +32242,18 @@
 	            if (showStableVersions) {
 	                this.setState({ searchingInProgress: true });
 
-	                _tagsRepository2.default.instance.getStableTags(this.props.productName).then(function (data) {
+	                _tagsRepository.tagsRepository.setRequestManager(this.requestManager);
+	                _tagsRepository.tagsRepository.getStableTags(this.props.productName).then(function (data) {
+	                    if (!_this2.m_isMounted) return;
+
 	                    _this2.setState({
 	                        endingTagIndex: -1,
 	                        endingTags: data,
 	                        searchingInProgress: false
 	                    });
 	                }).catch(function (error) {
+	                    if (!_this2.m_isMounted) return;
+
 	                    _this2.setState({
 	                        searchingInProgress: false
 	                    });
@@ -32187,7 +32276,10 @@
 
 	            this.setState({ searchingInProgress: true });
 
-	            _tagsRepository2.default.instance.getTags(props.productName).then(function (data) {
+	            _tagsRepository.tagsRepository.setRequestManager(this.requestManager);
+	            _tagsRepository.tagsRepository.getTags(props.productName).then(function (data) {
+	                if (!_this3.m_isMounted) return;
+
 	                _this3.setState({
 	                    endingTagIndex: -1,
 	                    endingTags: [],
@@ -32203,6 +32295,8 @@
 	                    });
 	                }
 	            }).catch(function (error) {
+	                if (!_this3.m_isMounted) return;
+
 	                _this3.setState({
 	                    searchingInProgress: false
 	                });
@@ -32229,12 +32323,17 @@
 	            var startTag = this.state.tags[this.state.startingTagIndex].name;
 	            var endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-	            _storiesRepository2.default.instance.getStories(serviceName, startTag, endTag).then(function (data) {
+	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
+	            _storiesRepository.storiesRepository.getStories(serviceName, startTag, endTag).then(function (data) {
+	                if (!_this4.m_isMounted) return;
+
 	                _this4.setState({
 	                    jiraTickets: data,
 	                    searchingInProgress: false
 	                });
 	            }).catch(function (error) {
+	                if (!_this4.m_isMounted) return;
+
 	                _this4.setState({
 	                    searchingInProgress: false
 	                });
@@ -32245,53 +32344,53 @@
 	    }, {
 	        key: "render",
 	        value: function render() {
-	            return _react2.default.createElement(
+	            return React.createElement(
 	                "div",
 	                { className: "container-fluid" },
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "div",
 	                    { className: "row" },
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "div",
 	                        { className: "col-md-12" },
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "form",
 	                            { className: "form-horizontal", onSubmit: this.searchJiraTikets.bind(this) },
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "div",
 	                                { className: "form-group" },
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "label",
 	                                    { htmlFor: "productName", className: "col-sm-2 control-label" },
 	                                    "Product name:"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "div",
 	                                    { className: "col-sm-10" },
-	                                    _react2.default.createElement("input", { className: "form-control", id: "productName", value: this.props.productName, disabled: "disabled" })
+	                                    React.createElement("input", { className: "form-control", id: "productName", value: this.props.productName, disabled: "disabled" })
 	                                )
 	                            ),
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "div",
 	                                { className: "form-group" },
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "label",
 	                                    { htmlFor: "startingTag", className: "col-sm-2 control-label" },
 	                                    "Select starting tag:"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "div",
 	                                    { className: "col-sm-10" },
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "select",
 	                                        { id: "startingTag", className: "form-control", onChange: this.handleStartingTagChange.bind(this), value: this.state.startingTagIndex },
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "option",
 	                                            { value: "-1" },
 	                                            " "
 	                                        ),
 	                                        this.state.tags.map(function (tag, tagIndex) {
-	                                            return _react2.default.createElement(
+	                                            return React.createElement(
 	                                                "option",
 	                                                { key: tagIndex, value: tagIndex },
 	                                                tag.name
@@ -32300,45 +32399,45 @@
 	                                    )
 	                                )
 	                            ),
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "div",
 	                                { className: "form-group" },
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "div",
 	                                    { className: "col-sm-offset-2 col-sm-10" },
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "div",
 	                                        { className: "checkbox" },
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "label",
 	                                            null,
-	                                            _react2.default.createElement("input", { type: "checkbox", onChange: this.handleStableVersionChange.bind(this), checked: this.state.showStableVersions }),
+	                                            React.createElement("input", { type: "checkbox", onChange: this.handleStableVersionChange.bind(this), checked: this.state.showStableVersions }),
 	                                            " Show only stable versions"
 	                                        )
 	                                    )
 	                                )
 	                            ),
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "div",
 	                                { className: "form-group" },
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "label",
 	                                    { htmlFor: "endingTag", className: "col-sm-2 control-label" },
 	                                    "Select ending tag:"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "div",
 	                                    { className: "col-sm-10" },
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "select",
 	                                        { id: "endingTag", className: "form-control", onChange: this.handleEndingTagChange.bind(this), value: this.state.endingTagIndex },
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "option",
 	                                            { value: "-1" },
 	                                            " "
 	                                        ),
 	                                        this.state.endingTags.map(function (tag, tagIndex) {
-	                                            return _react2.default.createElement(
+	                                            return React.createElement(
 	                                                "option",
 	                                                { key: tagIndex, value: tagIndex },
 	                                                tag.name
@@ -32347,13 +32446,13 @@
 	                                    )
 	                                )
 	                            ),
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "div",
 	                                { className: "form-group" },
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "div",
 	                                    { className: "col-sm-offset-2 col-sm-10" },
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "button",
 	                                        { className: "btn btn-default" },
 	                                        "Search"
@@ -32363,18 +32462,18 @@
 	                        )
 	                    )
 	                ),
-	                _react2.default.createElement(_ticketsList2.default, { jiraTickets: this.state.jiraTickets, isSearching: this.state.searchingInProgress })
+	                React.createElement(_ticketsList2.default, { jiraTickets: this.state.jiraTickets, isSearching: this.state.searchingInProgress })
 	            );
 	        }
 	    }]);
 
 	    return ProductDetails;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = ProductDetails;
 
 /***/ },
-/* 168 */
+/* 169 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32405,8 +32504,8 @@
 	exports.default = ErrorHandler;
 
 /***/ },
-/* 169 */
-/***/ function(module, exports, __webpack_require__) {
+/* 170 */
+/***/ function(module, exports) {
 
 	"use strict";
 
@@ -32416,19 +32515,97 @@
 	    value: true
 	});
 
-	var _jquery = __webpack_require__(162);
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var RequestManager = function () {
+	    function RequestManager() {
+	        _classCallCheck(this, RequestManager);
+
+	        this.isAborting = false;
+	        this.requests = [];
+	    }
+
+	    _createClass(RequestManager, [{
+	        key: "abortPendingRequests",
+	        value: function abortPendingRequests() {
+	            this.isAborting = true;
+
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = this.requests[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var request = _step.value;
+
+	                    request.abort();
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            this.requests = [];
+	        }
+	    }, {
+	        key: "onRequestFinished",
+	        value: function onRequestFinished(request) {
+	            if (this.isAborting) return;
+
+	            var index = this.requests.indexOf(request);
+	            if (index === -1) return;
+
+	            this.requests.splice(index, 1);
+	        }
+	    }, {
+	        key: "monitorRequest",
+	        value: function monitorRequest(request) {
+	            request.always(this.onRequestFinished.bind(this, request));
+	            this.requests.push(request);
+	        }
+	    }]);
+
+	    return RequestManager;
+	}();
+
+	exports.default = RequestManager;
+
+/***/ },
+/* 171 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.storiesRepository = exports.StoriesRepository = undefined;
+
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(163);
+	var _q = __webpack_require__(164);
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _baseRepository = __webpack_require__(166);
+	var _baseRepository = __webpack_require__(167);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
-	var _productsRepository = __webpack_require__(161);
+	var _productsRepository = __webpack_require__(162);
 
 	var _productsRepository2 = _interopRequireDefault(_productsRepository);
 
@@ -32443,7 +32620,7 @@
 	var singleton = Symbol();
 	var singletonEnforcer = Symbol();
 
-	var StoriesRepository = function (_BaseRepository) {
+	var StoriesRepository = exports.StoriesRepository = function (_BaseRepository) {
 	    _inherits(StoriesRepository, _BaseRepository);
 
 	    function StoriesRepository(enforcer) {
@@ -32467,11 +32644,13 @@
 	                return p.name;
 	            }).join(",");
 
-	            _jquery2.default.post("/create-release-filter?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
+	            var request = _jquery2.default.post("/create-release-filter?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(data);
 	            }).fail(function (response) {
 	                deferred.reject(_this2.processRequestFailure(response));
 	            });
+
+	            this.safeMonitorRequest(request);
 
 	            return deferred.promise;
 	        }
@@ -32484,11 +32663,13 @@
 	            var encodedStartTag = encodeURIComponent(startTag);
 	            var encodedEndTag = encodeURIComponent(endTag);
 
-	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
+	            var request = _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (response) {
 	                deferred.reject(_this3.processRequestFailure(response));
 	            });
+
+	            this.safeMonitorRequest(request);
 
 	            return deferred.promise;
 	        }
@@ -32502,11 +32683,13 @@
 	                return p.name;
 	            }).join(",");
 
-	            _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
+	            var request = _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (response) {
 	                deferred.reject(_this4.processRequestFailure(response));
 	            });
+
+	            this.safeMonitorRequest(request);
 
 	            return deferred.promise;
 	        }
@@ -32524,10 +32707,10 @@
 	    return StoriesRepository;
 	}(_baseRepository2.default);
 
-	exports.default = StoriesRepository;
+	var storiesRepository = exports.storiesRepository = StoriesRepository.instance;
 
 /***/ },
-/* 170 */
+/* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -32537,20 +32720,21 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.tagsRepository = exports.TagsRepository = undefined;
 
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(163);
+	var _q = __webpack_require__(164);
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _tag = __webpack_require__(171);
+	var _tag = __webpack_require__(173);
 
 	var _tag2 = _interopRequireDefault(_tag);
 
-	var _baseRepository = __webpack_require__(166);
+	var _baseRepository = __webpack_require__(167);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
@@ -32565,7 +32749,7 @@
 	var singleton = Symbol();
 	var singletonEnforcer = Symbol();
 
-	var TagsRepository = function (_BaseRepository) {
+	var TagsRepository = exports.TagsRepository = function (_BaseRepository) {
 	    _inherits(TagsRepository, _BaseRepository);
 
 	    function TagsRepository(enforcer) {
@@ -32586,7 +32770,7 @@
 
 	            var deferred = _q2.default.defer();
 
-	            _jquery2.default.get("/stable-tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
+	            var request = _jquery2.default.get("/stable-tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
 	                var jsonData = JSON.parse(data);
 	                var tags = jsonData.map(function (tag) {
 	                    return new _tag2.default(tag);
@@ -32597,6 +32781,8 @@
 	                deferred.reject(_this2.processRequestFailure(error));
 	            });
 
+	            this.safeMonitorRequest(request);
+
 	            return deferred.promise;
 	        }
 	    }, {
@@ -32606,7 +32792,7 @@
 
 	            var deferred = _q2.default.defer();
 
-	            _jquery2.default.get("/tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
+	            var request = _jquery2.default.get("/tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
 	                var jsonData = JSON.parse(data);
 	                var tags = jsonData.tags.map(function (tag) {
 	                    return new _tag2.default(tag);
@@ -32622,6 +32808,8 @@
 	            }).fail(function (error) {
 	                deferred.reject(_this3.processRequestFailure(error));
 	            });
+
+	            this.safeMonitorRequest(request);
 
 	            return deferred.promise;
 	        }
@@ -32639,10 +32827,10 @@
 	    return TagsRepository;
 	}(_baseRepository2.default);
 
-	exports.default = TagsRepository;
+	var tagsRepository = exports.tagsRepository = TagsRepository.instance;
 
 /***/ },
-/* 171 */
+/* 173 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32662,38 +32850,42 @@
 	exports.default = Tag;
 
 /***/ },
-/* 172 */
+/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _errorHandler = __webpack_require__(168);
+	var _baseComponent = __webpack_require__(160);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _errorHandler = __webpack_require__(169);
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _storiesRepository = __webpack_require__(169);
+	var _globalEventEmitter = __webpack_require__(175);
 
-	var _storiesRepository2 = _interopRequireDefault(_storiesRepository);
-
-	var _globalEventEmitter = __webpack_require__(173);
-
-	var _infiniteLoading = __webpack_require__(175);
+	var _infiniteLoading = __webpack_require__(177);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
+
+	var _requestManager = __webpack_require__(170);
+
+	var _requestManager2 = _interopRequireDefault(_requestManager);
+
+	var _storiesRepository = __webpack_require__(171);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -32703,14 +32895,15 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var TicketsList = function (_React$Component) {
-	    _inherits(TicketsList, _React$Component);
+	var TicketsList = function (_BaseComponent) {
+	    _inherits(TicketsList, _BaseComponent);
 
 	    function TicketsList(props) {
 	        _classCallCheck(this, TicketsList);
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).call(this, props));
 
+	        _this.requestManager = new _requestManager2.default();
 	        _this.state = {
 	            createdFilterName: null,
 	            createdFilterUrl: null,
@@ -32725,17 +32918,23 @@
 	    _createClass(TicketsList, [{
 	        key: "componentDidMount",
 	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentDidMount", this).call(this);
+
 	            this._onSearchStories = this.onSearchStoriesClick.bind(this);
 	            this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
 
-	            _globalEventEmitter.GlobalEventEmitter.instance.addListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
-	            _globalEventEmitter.GlobalEventEmitter.instance.addListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
 	        }
 	    }, {
 	        key: "componentWillUnmount",
 	        value: function componentWillUnmount() {
-	            _globalEventEmitter.GlobalEventEmitter.instance.removeListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
-	            _globalEventEmitter.GlobalEventEmitter.instance.removeListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
+	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentWillUnmount", this).call(this);
+
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
+
+	            this.requestManager.abortPendingRequests();
 	        }
 	    }, {
 	        key: "handleCreateReleaseFilterClick",
@@ -32751,14 +32950,21 @@
 	                isCreatingFilter: true
 	            });
 
-	            _storiesRepository2.default.instance.createReleaseFilter(this.state.selectedRelease.name).then(function (data) {
+	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
+	            _storiesRepository.storiesRepository.createReleaseFilter(this.state.selectedRelease.name).then(function (data) {
+	                if (!_this2.m_isMounted) return;
+
 	                _this2.setState({
 	                    createdFilterName: data.name,
 	                    createdFilterUrl: data.url
 	                });
 	            }).catch(function (error) {
+	                if (!_this2.m_isMounted) return;
+
 	                _errorHandler2.default.showErrorMessage(error);
 	            }).finally(function () {
+	                if (!_this2.m_isMounted) return;
+
 	                _this2.setState({
 	                    isCreatingFilter: false
 	                });
@@ -32777,12 +32983,17 @@
 
 	            if (!selectedRelease) return;
 
-	            _storiesRepository2.default.instance.getStoriesForRelease(selectedRelease.name).then(function (data) {
+	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
+	            _storiesRepository.storiesRepository.getStoriesForRelease(selectedRelease.name).then(function (data) {
+	                if (!_this3.m_isMounted) return;
+
 	                _this3.setState({
 	                    isLoadingStories: false,
 	                    jiraTickets: data
 	                });
 	            }).catch(function (error) {
+	                if (!_this3.m_isMounted) return;
+
 	                _this3.setState({
 	                    isLoadingStories: false
 	                });
@@ -32803,13 +33014,13 @@
 	        value: function render() {
 	            var _this4 = this;
 
-	            return _react2.default.createElement(
+	            return React.createElement(
 	                "div",
 	                { className: "row" },
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "div",
 	                    { className: "col-md-12" },
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "h2",
 	                        null,
 	                        "Jira tickets"
@@ -32817,112 +33028,112 @@
 	                    function () {
 	                        if (_this4.state.selectedRelease) {
 	                            if (_this4.state.createdFilterName) {
-	                                return _react2.default.createElement(
+	                                return React.createElement(
 	                                    "p",
 	                                    null,
 	                                    "Created JIRA filter: ",
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "a",
 	                                        { href: _this4.state.createdFilterUrl, target: "_blank", rel: "external" },
 	                                        _this4.state.createdFilterName
 	                                    )
 	                                );
 	                            } else {
-	                                return _react2.default.createElement(
+	                                return React.createElement(
 	                                    "div",
 	                                    { className: "row" },
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "div",
 	                                        { className: "col-md-1" },
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "div",
 	                                            { className: "btn-group", role: "group" },
-	                                            _react2.default.createElement(
+	                                            React.createElement(
 	                                                "button",
 	                                                { className: "btn btn-default", onClick: _this4.handleCreateReleaseFilterClick.bind(_this4) },
 	                                                "Create release filter"
 	                                            )
 	                                        )
 	                                    ),
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "div",
 	                                        { className: "col-md-1" },
-	                                        _react2.default.createElement(_infiniteLoading2.default, { isLoading: _this4.state.isCreatingFilter })
+	                                        React.createElement(_infiniteLoading2.default, { isLoading: _this4.state.isCreatingFilter })
 	                                    )
 	                                );
 	                            }
 	                        }
 	                    }(),
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "table",
 	                        { className: "table" },
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "thead",
 	                            null,
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "tr",
 	                                null,
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "th",
 	                                    null,
 	                                    "#"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "th",
 	                                    null,
 	                                    "Summary"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "th",
 	                                    null,
 	                                    "Epic"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "th",
 	                                    null,
 	                                    "Git tags"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "th",
 	                                    null,
 	                                    "Date"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "th",
 	                                    null,
 	                                    "Status"
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "th",
 	                                    null,
 	                                    "Author"
 	                                )
 	                            )
 	                        ),
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "tbody",
 	                            null,
 	                            function () {
 	                                if (_this4.state.isLoadingStories) {
-	                                    return _react2.default.createElement(
+	                                    return React.createElement(
 	                                        "tr",
 	                                        null,
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            { colSpan: "7" },
-	                                            _react2.default.createElement(_infiniteLoading2.default, null)
+	                                            React.createElement(_infiniteLoading2.default, null)
 	                                        )
 	                                    );
 	                                }
 
 	                                if (!_this4.state.jiraTickets || !_this4.state.jiraTickets.length) {
-	                                    return _react2.default.createElement(
+	                                    return React.createElement(
 	                                        "tr",
 	                                        null,
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            { colSpan: "7" },
-	                                            _react2.default.createElement(
+	                                            React.createElement(
 	                                                "p",
 	                                                null,
 	                                                "No JIRA tickets found. Please change search criteria and hit \"Search\" button."
@@ -32932,18 +33143,18 @@
 	                                }
 
 	                                return _this4.state.jiraTickets.map(function (ticket, ticketIndex) {
-	                                    return _react2.default.createElement(
+	                                    return React.createElement(
 	                                        "tr",
 	                                        { key: ticketIndex },
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
 	                                            ticketIndex + 1
 	                                        ),
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
-	                                            _react2.default.createElement(
+	                                            React.createElement(
 	                                                "a",
 	                                                { href: ticket.url, target: "_blank", rel: "external" },
 	                                                ticket.ticketNumber,
@@ -32951,12 +33162,12 @@
 	                                                ticket.message
 	                                            )
 	                                        ),
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
 	                                            function () {
 	                                                if (ticket.epic) {
-	                                                    return _react2.default.createElement(
+	                                                    return React.createElement(
 	                                                        "a",
 	                                                        { href: ticket.epic.url, target: "_blank", rel: "external" },
 	                                                        ticket.epic.ticketNumber,
@@ -32966,14 +33177,14 @@
 	                                                }
 	                                            }()
 	                                        ),
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
-	                                            _react2.default.createElement(
+	                                            React.createElement(
 	                                                "ul",
 	                                                { className: "list-unstyled" },
 	                                                (ticket.gitTags || []).map(function (tag, tagIndex) {
-	                                                    return _react2.default.createElement(
+	                                                    return React.createElement(
 	                                                        "li",
 	                                                        { key: tagIndex },
 	                                                        tag
@@ -32981,38 +33192,38 @@
 	                                                })
 	                                            )
 	                                        ),
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
 	                                            ticket.dateTime
 	                                        ),
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
 	                                            function () {
 	                                                switch (ticket.status) {
 	                                                    case "Dev Ready":
 	                                                    case "Dev Complete":
-	                                                        return _react2.default.createElement(
+	                                                        return React.createElement(
 	                                                            "span",
 	                                                            { className: "label label-danger" },
 	                                                            ticket.status
 	                                                        );
 	                                                    case "In QA":
-	                                                        return _react2.default.createElement(
+	                                                        return React.createElement(
 	                                                            "span",
 	                                                            { className: "label label-warning" },
 	                                                            ticket.status
 	                                                        );
 	                                                    case "QA Complete":
 	                                                    case "Resolved":
-	                                                        return _react2.default.createElement(
+	                                                        return React.createElement(
 	                                                            "span",
 	                                                            { className: "label label-success" },
 	                                                            ticket.status
 	                                                        );
 	                                                    default:
-	                                                        return _react2.default.createElement(
+	                                                        return React.createElement(
 	                                                            "span",
 	                                                            { className: "label label-default" },
 	                                                            ticket.status
@@ -33020,7 +33231,7 @@
 	                                                }
 	                                            }()
 	                                        ),
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
 	                                            ticket.author
@@ -33036,12 +33247,12 @@
 	    }]);
 
 	    return TicketsList;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = TicketsList;
 
 /***/ },
-/* 173 */
+/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33051,9 +33262,9 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.GlobalEventEmitter = exports.Events = undefined;
+	exports.globalEventEmitter = exports.GlobalEventEmitter = exports.Events = undefined;
 
-	var _events = __webpack_require__(174);
+	var _events = __webpack_require__(176);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -33101,8 +33312,10 @@
 	    return GlobalEventEmitter;
 	}(_events.EventEmitter);
 
+	var globalEventEmitter = exports.globalEventEmitter = GlobalEventEmitter.instance;
+
 /***/ },
-/* 174 */
+/* 176 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -33406,7 +33619,7 @@
 
 
 /***/ },
-/* 175 */
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33417,9 +33630,9 @@
 	    value: true
 	});
 
-	var _react = __webpack_require__(1);
+	var _baseComponent = __webpack_require__(160);
 
-	var _react2 = _interopRequireDefault(_react);
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33429,8 +33642,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var CurrentVersionsList = function (_React$Component) {
-	    _inherits(CurrentVersionsList, _React$Component);
+	var CurrentVersionsList = function (_BaseComponent) {
+	    _inherits(CurrentVersionsList, _BaseComponent);
 
 	    function CurrentVersionsList() {
 	        _classCallCheck(this, CurrentVersionsList);
@@ -33444,13 +33657,13 @@
 	            var isLoadingProp = this.props.isLoading;
 
 	            if (isLoadingProp == undefined || isLoadingProp == null || isLoadingProp) {
-	                return _react2.default.createElement(
+	                return React.createElement(
 	                    "div",
 	                    { className: "progress" },
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "div",
 	                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "span",
 	                            { className: "sr-only" },
 	                            "100% Complete"
@@ -33464,12 +33677,12 @@
 	    }]);
 
 	    return CurrentVersionsList;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = CurrentVersionsList;
 
 /***/ },
-/* 176 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33480,13 +33693,11 @@
 	    value: true
 	});
 
-	var _react = __webpack_require__(1);
+	var _baseComponent = __webpack_require__(160);
 
-	var _react2 = _interopRequireDefault(_react);
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _productsRepository = __webpack_require__(161);
-
-	var _productsRepository2 = _interopRequireDefault(_productsRepository);
+	var _productsRepository = __webpack_require__(162);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33496,8 +33707,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var ProductsList = function (_React$Component) {
-	    _inherits(ProductsList, _React$Component);
+	var ProductsList = function (_BaseComponent) {
+	    _inherits(ProductsList, _BaseComponent);
 
 	    function ProductsList(props) {
 	        _classCallCheck(this, ProductsList);
@@ -33505,7 +33716,7 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ProductsList).call(this, props));
 
 	        _this.state = {
-	            products: _productsRepository2.default.instance.getProducts()
+	            products: _productsRepository.productsRepository.getProducts()
 	        };
 	        return _this;
 	    }
@@ -33513,63 +33724,63 @@
 	    _createClass(ProductsList, [{
 	        key: "render",
 	        value: function render() {
-	            return _react2.default.createElement(
+	            return React.createElement(
 	                "div",
 	                { className: "container-fluid" },
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "div",
 	                    { className: "row" },
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "div",
 	                        { className: "col-md-12" },
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "h1",
 	                            null,
 	                            "Choose the project"
 	                        ),
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "table",
 	                            { className: "table" },
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "thead",
 	                                null,
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "tr",
 	                                    null,
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "th",
 	                                        null,
 	                                        "#"
 	                                    ),
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "th",
 	                                        null,
 	                                        "Name"
 	                                    ),
-	                                    _react2.default.createElement("th", null)
+	                                    React.createElement("th", null)
 	                                )
 	                            ),
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "tbody",
 	                                null,
 	                                this.state.products.map(function (product) {
-	                                    return _react2.default.createElement(
+	                                    return React.createElement(
 	                                        "tr",
 	                                        { key: product.key },
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
 	                                            "1"
 	                                        ),
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
 	                                            product.name
 	                                        ),
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "td",
 	                                            null,
-	                                            _react2.default.createElement(
+	                                            React.createElement(
 	                                                "a",
 	                                                { href: "#/product/" + product.name, className: "btn btn-default" },
 	                                                "Select"
@@ -33586,12 +33797,12 @@
 	    }]);
 
 	    return ProductsList;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = ProductsList;
 
 /***/ },
-/* 177 */
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33606,31 +33817,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _errorHandler = __webpack_require__(168);
-
-	var _errorHandler2 = _interopRequireDefault(_errorHandler);
-
-	var _productsRepository = __webpack_require__(161);
-
-	var _productsRepository2 = _interopRequireDefault(_productsRepository);
-
-	var _storiesRepository = __webpack_require__(169);
-
-	var _storiesRepository2 = _interopRequireDefault(_storiesRepository);
-
-	var _tagsRepository = __webpack_require__(170);
-
-	var _tagsRepository2 = _interopRequireDefault(_tagsRepository);
-
-	var _currentVersionsList = __webpack_require__(178);
+	var _currentVersionsList = __webpack_require__(180);
 
 	var _currentVersionsList2 = _interopRequireDefault(_currentVersionsList);
 
-	var _ticketsList = __webpack_require__(172);
+	var _ticketsList = __webpack_require__(174);
 
 	var _ticketsList2 = _interopRequireDefault(_ticketsList);
 
-	var _upcomingVersionsList = __webpack_require__(180);
+	var _upcomingVersionsList = __webpack_require__(182);
 
 	var _upcomingVersionsList2 = _interopRequireDefault(_upcomingVersionsList);
 
@@ -33682,32 +33877,36 @@
 	exports.default = Releases;
 
 /***/ },
-/* 178 */
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
-	var _react = __webpack_require__(1);
+	var _baseComponent = __webpack_require__(160);
 
-	var _react2 = _interopRequireDefault(_react);
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _errorHandler = __webpack_require__(168);
+	var _errorHandler = __webpack_require__(169);
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _productsRepository = __webpack_require__(161);
+	var _productsRepository = __webpack_require__(162);
 
-	var _productsRepository2 = _interopRequireDefault(_productsRepository);
-
-	var _projectVersionsList = __webpack_require__(179);
+	var _projectVersionsList = __webpack_require__(181);
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
+
+	var _requestManager = __webpack_require__(170);
+
+	var _requestManager2 = _interopRequireDefault(_requestManager);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33717,14 +33916,15 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var CurrentVersionsList = function (_React$Component) {
-	    _inherits(CurrentVersionsList, _React$Component);
+	var CurrentVersionsList = function (_BaseComponent) {
+	    _inherits(CurrentVersionsList, _BaseComponent);
 
 	    function CurrentVersionsList(props) {
 	        _classCallCheck(this, CurrentVersionsList);
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CurrentVersionsList).call(this, props));
 
+	        _this.requestManager = new _requestManager2.default();
 	        _this.state = {
 	            currentVersions: [],
 	            isLoadingCurrentVersions: false
@@ -33735,7 +33935,14 @@
 	    _createClass(CurrentVersionsList, [{
 	        key: "componentDidMount",
 	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(CurrentVersionsList.prototype), "componentDidMount", this).call(this);
 	            this.loadCurrentVersions();
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            _get(Object.getPrototypeOf(CurrentVersionsList.prototype), "componentWillUnmount", this).call(this);
+	            this.requestManager.abortPendingRequests();
 	        }
 	    }, {
 	        key: "loadCurrentVersions",
@@ -33746,12 +33953,17 @@
 	                isLoadingCurrentVersions: true
 	            });
 
-	            _productsRepository2.default.instance.getCurrentVersions().then(function (versions) {
+	            _productsRepository.productsRepository.setRequestManager(this.requestManager);
+	            _productsRepository.productsRepository.getCurrentVersions().then(function (versions) {
+	                if (!_this2.m_isMounted) return;
+
 	                _this2.setState({
 	                    currentVersions: versions,
 	                    isLoadingCurrentVersions: false
 	                });
 	            }).catch(function (error) {
+	                if (!_this2.m_isMounted) return;
+
 	                _this2.setState({
 	                    isLoadingCurrentVersions: false
 	                });
@@ -33762,26 +33974,26 @@
 	    }, {
 	        key: "render",
 	        value: function render() {
-	            return _react2.default.createElement(
+	            return React.createElement(
 	                "div",
 	                null,
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "h4",
 	                    null,
 	                    "Current versions"
 	                ),
-	                _react2.default.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingCurrentVersions, projects: this.state.currentVersions })
+	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingCurrentVersions, projects: this.state.currentVersions })
 	            );
 	        }
 	    }]);
 
 	    return CurrentVersionsList;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = CurrentVersionsList;
 
 /***/ },
-/* 179 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33792,11 +34004,11 @@
 	    value: true
 	});
 
-	var _react = __webpack_require__(1);
+	var _baseComponent = __webpack_require__(160);
 
-	var _react2 = _interopRequireDefault(_react);
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _infiniteLoading = __webpack_require__(175);
+	var _infiniteLoading = __webpack_require__(177);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
@@ -33808,13 +34020,13 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var ProjectVersionsList = function (_React$Component) {
-	    _inherits(ProjectVersionsList, _React$Component);
+	var ProjectVersionsList = function (_BaseComponent) {
+	    _inherits(ProjectVersionsList, _BaseComponent);
 
-	    function ProjectVersionsList(props) {
+	    function ProjectVersionsList() {
 	        _classCallCheck(this, ProjectVersionsList);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectVersionsList).call(this, props));
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectVersionsList).apply(this, arguments));
 	    }
 
 	    _createClass(ProjectVersionsList, [{
@@ -33822,21 +34034,21 @@
 	        value: function render() {
 	            var _this2 = this;
 
-	            return _react2.default.createElement(
+	            return React.createElement(
 	                "table",
 	                { className: "table" },
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "thead",
 	                    null,
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "tr",
 	                        null,
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "th",
 	                            null,
 	                            "Project name"
 	                        ),
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "th",
 	                            null,
 	                            "Version"
@@ -33844,7 +34056,7 @@
 	                        function () {
 	                            if (_this2.props.extraColumns) {
 	                                return _this2.props.extraColumns.map(function (column, index) {
-	                                    return _react2.default.createElement(
+	                                    return React.createElement(
 	                                        "th",
 	                                        { key: index },
 	                                        column.heading
@@ -33854,25 +34066,25 @@
 	                        }()
 	                    )
 	                ),
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "tbody",
 	                    null,
 	                    function () {
 	                        if (_this2.props.isLoading) {
-	                            return _react2.default.createElement(
+	                            return React.createElement(
 	                                "tr",
 	                                null,
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "td",
 	                                    { colSpan: 2 + (_this2.props.extraColumns && _this2.props.extraColumns.length || 0) },
-	                                    _react2.default.createElement(_infiniteLoading2.default, null)
+	                                    React.createElement(_infiniteLoading2.default, null)
 	                                )
 	                            );
 	                        } else if (!_this2.props.projects.length) {
-	                            return _react2.default.createElement(
+	                            return React.createElement(
 	                                "tr",
 	                                null,
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "td",
 	                                    { colSpan: 2 + (_this2.props.extraColumns && _this2.props.extraColumns.length || 0) },
 	                                    "Nothing to show here."
@@ -33881,15 +34093,15 @@
 	                        }
 
 	                        return _this2.props.projects.map(function (project, index) {
-	                            return _react2.default.createElement(
+	                            return React.createElement(
 	                                "tr",
 	                                { key: index },
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "td",
 	                                    null,
 	                                    project.name
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "td",
 	                                    null,
 	                                    project.version
@@ -33901,7 +34113,7 @@
 
 	                                            switch (column.type) {
 	                                                case "button":
-	                                                    cellContent = _react2.default.createElement(
+	                                                    cellContent = React.createElement(
 	                                                        "button",
 	                                                        { "class": "btn btn-default", onClick: column.action(project) },
 	                                                        column.actionName
@@ -33911,7 +34123,7 @@
 	                                                    cellContent = column.template(project);
 	                                                    break;
 	                                                default:
-	                                                    cellContent = _react2.default.createElement(
+	                                                    cellContent = React.createElement(
 	                                                        "span",
 	                                                        null,
 	                                                        project[column.name]
@@ -33919,7 +34131,7 @@
 	                                                    break;
 	                                            }
 
-	                                            return _react2.default.createElement(
+	                                            return React.createElement(
 	                                                "td",
 	                                                { key: index },
 	                                                cellContent
@@ -33936,51 +34148,53 @@
 	    }]);
 
 	    return ProjectVersionsList;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = ProjectVersionsList;
 
 /***/ },
-/* 180 */
+/* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
-	var _react = __webpack_require__(1);
+	var _baseComponent = __webpack_require__(160);
 
-	var _react2 = _interopRequireDefault(_react);
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _errorHandler = __webpack_require__(168);
+	var _buildsRepository = __webpack_require__(183);
 
-	var _errorHandler2 = _interopRequireDefault(_errorHandler);
-
-	var _buildsRepository = __webpack_require__(181);
-
-	var _buildsRepository2 = _interopRequireDefault(_buildsRepository);
-
-	var _productsRepository = __webpack_require__(161);
-
-	var _productsRepository2 = _interopRequireDefault(_productsRepository);
-
-	var _projectVersionsList = __webpack_require__(179);
-
-	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
-
-	var _copyContent = __webpack_require__(182);
+	var _copyContent = __webpack_require__(184);
 
 	var _copyContent2 = _interopRequireDefault(_copyContent);
 
-	var _globalEventEmitter = __webpack_require__(173);
+	var _errorHandler = __webpack_require__(169);
 
-	var _infiniteLoading = __webpack_require__(175);
+	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+
+	var _globalEventEmitter = __webpack_require__(175);
+
+	var _infiniteLoading = __webpack_require__(177);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
+
+	var _productsRepository = __webpack_require__(162);
+
+	var _projectVersionsList = __webpack_require__(181);
+
+	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
+
+	var _requestManager = __webpack_require__(170);
+
+	var _requestManager2 = _interopRequireDefault(_requestManager);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33990,14 +34204,15 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var UpcomingVersionsList = function (_React$Component) {
-	    _inherits(UpcomingVersionsList, _React$Component);
+	var UpcomingVersionsList = function (_BaseComponent) {
+	    _inherits(UpcomingVersionsList, _BaseComponent);
 
 	    function UpcomingVersionsList(props) {
 	        _classCallCheck(this, UpcomingVersionsList);
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(UpcomingVersionsList).call(this, props));
 
+	        _this.requestManager = new _requestManager2.default();
 	        _this.state = {
 	            commandLineScript: "",
 	            extraColumns: [{
@@ -34016,6 +34231,26 @@
 	    }
 
 	    _createClass(UpcomingVersionsList, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(UpcomingVersionsList.prototype), "componentDidMount", this).call(this);
+
+	            this.loadAvailableReleases();
+	            this.loadSuccessfulBuilds();
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            _get(Object.getPrototypeOf(UpcomingVersionsList.prototype), "componentWillUnmount", this).call(this);
+
+	            this.requestManager.abortPendingRequests();
+	        }
+	    }, {
+	        key: "copyCommandLineScript",
+	        value: function copyCommandLineScript() {
+	            (0, _copyContent2.default)("#commandLineScript");
+	        }
+	    }, {
 	        key: "getCommandLineScript",
 	        value: function getCommandLineScript(selectedRelease) {
 	            var applications = selectedRelease ? selectedRelease.applications || [] : [];
@@ -34023,17 +34258,6 @@
 	                var smProjectName = project.name.toUpperCase().replace(/-/g, "_");
 	                return "sm --restart " + smProjectName + " -r " + project.version;
 	            }).join(" & ");
-	        }
-	    }, {
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            this.loadAvailableReleases();
-	            this.loadSuccessfulBuilds();
-	        }
-	    }, {
-	        key: "copyCommandLineScript",
-	        value: function copyCommandLineScript() {
-	            (0, _copyContent2.default)("#commandLineScript");
 	        }
 	    }, {
 	        key: "getSelectedReleaseApplications",
@@ -34053,7 +34277,7 @@
 	                return;
 	            }
 
-	            _globalEventEmitter.GlobalEventEmitter.instance.emit(_globalEventEmitter.Events.SEARCH_TICKETS, this.state.selectedRelease);
+	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SEARCH_TICKETS, this.state.selectedRelease);
 	        }
 	    }, {
 	        key: "handleRefreshClick",
@@ -34064,7 +34288,7 @@
 	                selectedReleaseIndex: -1
 	            });
 
-	            _globalEventEmitter.GlobalEventEmitter.instance.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, null);
+	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, null);
 
 	            this.loadAvailableReleases();
 	        }
@@ -34080,7 +34304,7 @@
 	                selectedReleaseIndex: selectedIndex
 	            });
 
-	            _globalEventEmitter.GlobalEventEmitter.instance.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, selectedRelease);
+	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, selectedRelease);
 	        }
 	    }, {
 	        key: "handleStartBuildClick",
@@ -34091,7 +34315,8 @@
 	                selectedRelease: this.state.selectedRelease
 	            });
 
-	            _buildsRepository2.default.instance.startBuild(project.name, project.version);
+	            _buildsRepository.buildsRepository.setRequestManager(this.requestManager);
+	            _buildsRepository.buildsRepository.startBuild(project.name, project.version);
 	        }
 	    }, {
 	        key: "loadAvailableReleases",
@@ -34102,12 +34327,17 @@
 	                isLoadingReleases: true
 	            });
 
-	            _productsRepository2.default.instance.getUpcomingReleases().then(function (releases) {
+	            _productsRepository.productsRepository.setRequestManager(this.requestManager);
+	            _productsRepository.productsRepository.getUpcomingReleases().then(function (releases) {
+	                if (!_this2.m_isMounted) return;
+
 	                _this2.setState({
 	                    releases: releases,
 	                    isLoadingReleases: false
 	                });
 	            }).catch(function (error) {
+	                if (!_this2.m_isMounted) return;
+
 	                _this2.setState({
 	                    isLoadingReleases: false
 	                });
@@ -34124,12 +34354,17 @@
 	                isLoadingBuilds: true
 	            });
 
-	            _buildsRepository2.default.instance.getSuccessfulBuildsForProjects().then(function (builds) {
+	            _buildsRepository.buildsRepository.setRequestManager(this.requestManager);
+	            _buildsRepository.buildsRepository.getSuccessfulBuildsForProjects().then(function (builds) {
+	                if (!_this3.m_isMounted) return;
+
 	                _this3.setState({
 	                    isLoadingBuilds: false,
 	                    successfulBuilds: builds
 	                });
 	            }).catch(function (error) {
+	                if (!_this3.m_isMounted) return;
+
 	                _this3.setState({
 	                    isLoadingBuilds: false
 	                });
@@ -34142,88 +34377,88 @@
 	        value: function render() {
 	            var _this4 = this;
 
-	            return _react2.default.createElement(
+	            return React.createElement(
 	                "div",
 	                null,
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "h4",
 	                    null,
 	                    "Upcoming versions"
 	                ),
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "form",
 	                    { className: "form-horizontal", onSubmit: this.handleFormSubmit.bind(this) },
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "div",
 	                        { className: "form-group" },
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "label",
 	                            { htmlFor: "release", className: "col-sm-2 control-label" },
 	                            "Release:"
 	                        ),
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "div",
 	                            { className: "col-sm-10" },
-	                            _react2.default.createElement(
+	                            React.createElement(
 	                                "div",
 	                                { className: "input-group" },
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "select",
 	                                    { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "option",
 	                                        { value: "-1" },
 	                                        " "
 	                                    ),
 	                                    this.state.releases.map(function (release, index) {
-	                                        return _react2.default.createElement(
+	                                        return React.createElement(
 	                                            "option",
 	                                            { key: index, value: index },
 	                                            release.name
 	                                        );
 	                                    })
 	                                ),
-	                                _react2.default.createElement(
+	                                React.createElement(
 	                                    "span",
 	                                    { className: "input-group-btn" },
-	                                    _react2.default.createElement(
+	                                    React.createElement(
 	                                        "button",
 	                                        { className: "btn btn-default", onClick: this.handleRefreshClick.bind(this) },
-	                                        _react2.default.createElement("i", { className: "glyphicon glyphicon-refresh" })
+	                                        React.createElement("i", { className: "glyphicon glyphicon-refresh" })
 	                                    )
 	                                )
 	                            )
 	                        )
 	                    ),
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "div",
 	                        { className: "form-group" },
-	                        _react2.default.createElement(
+	                        React.createElement(
 	                            "div",
 	                            { className: "col-sm-offset-2 col-sm-10" },
 	                            function () {
 	                                if (!_this4.state.isLoadingReleases && _this4.state.selectedRelease) {
-	                                    return _react2.default.createElement(
+	                                    return React.createElement(
 	                                        "div",
 	                                        { className: "input-group" },
-	                                        _react2.default.createElement(
+	                                        React.createElement(
 	                                            "span",
 	                                            { className: "input-group-btn" },
-	                                            _react2.default.createElement(
+	                                            React.createElement(
 	                                                "button",
 	                                                { className: "btn btn-primary" },
 	                                                "Search"
 	                                            ),
-	                                            _react2.default.createElement(
+	                                            React.createElement(
 	                                                "button",
 	                                                { className: "btn btn-default", onClick: _this4.copyCommandLineScript.bind(_this4), type: "button" },
 	                                                "Copy 'sm' start script"
 	                                            )
 	                                        ),
-	                                        _react2.default.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true", value: _this4.state.commandLineScript, type: "text" })
+	                                        React.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true", value: _this4.state.commandLineScript, type: "text" })
 	                                    );
 	                                } else {
-	                                    return _react2.default.createElement(
+	                                    return React.createElement(
 	                                        "button",
 	                                        { className: "btn btn-primary" },
 	                                        "Search"
@@ -34233,7 +34468,7 @@
 	                        )
 	                    )
 	                ),
-	                _react2.default.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingReleases,
+	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingReleases,
 	                    projects: this.getSelectedReleaseApplications(),
 	                    extraColumns: this.state.extraColumns })
 	            );
@@ -34242,25 +34477,25 @@
 	        key: "renderBuildNumberCell",
 	        value: function renderBuildNumberCell(project) {
 	            if (project.isBuilding || this.state.isLoadingBuilds) {
-	                return _react2.default.createElement(_infiniteLoading2.default, null);
+	                return React.createElement(_infiniteLoading2.default, null);
 	            }
 
 	            var projectBuilds = this.state.successfulBuilds[project.name];
 
 	            if (!projectBuilds) {
-	                return _react2.default.createElement(
+	                return React.createElement(
 	                    "span",
 	                    { className: "label label-danger" },
 	                    "Project not found"
 	                );
 	            } else if (projectBuilds.hasOwnProperty(project.version)) {
-	                return _react2.default.createElement(
+	                return React.createElement(
 	                    "span",
 	                    null,
 	                    projectBuilds[project.version].buildNumber
 	                );
 	            } else {
-	                return _react2.default.createElement(
+	                return React.createElement(
 	                    "button",
 	                    { className: "btn btn-default", onClick: this.handleStartBuildClick.bind(this, project) },
 	                    "Start build"
@@ -34270,12 +34505,12 @@
 	    }]);
 
 	    return UpcomingVersionsList;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = UpcomingVersionsList;
 
 /***/ },
-/* 181 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -34285,22 +34520,21 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.buildsRepository = exports.BuildsRepository = undefined;
 
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(163);
+	var _q = __webpack_require__(164);
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _baseRepository = __webpack_require__(166);
+	var _baseRepository = __webpack_require__(167);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
-	var _productsRepository = __webpack_require__(161);
-
-	var _productsRepository2 = _interopRequireDefault(_productsRepository);
+	var _productsRepository = __webpack_require__(162);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -34313,7 +34547,7 @@
 	var singleton = Symbol();
 	var singletonEnforcer = Symbol();
 
-	var BuildsRepository = function (_BaseRepository) {
+	var BuildsRepository = exports.BuildsRepository = function (_BaseRepository) {
 	    _inherits(BuildsRepository, _BaseRepository);
 
 	    function BuildsRepository(enforcer) {
@@ -34333,15 +34567,17 @@
 	            var _this2 = this;
 
 	            var deferred = _q2.default.defer();
-	            var productNames = _productsRepository2.default.instance.getProducts().map(function (product) {
+	            var productNames = _productsRepository.productsRepository.getProducts().map(function (product) {
 	                return product.name;
 	            }).join(",");
 
-	            _jquery2.default.get("/successful-builds-for-projects?projects=" + productNames, function (data) {
+	            var request = _jquery2.default.get("/successful-builds-for-projects?projects=" + productNames, function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (error) {
 	                deferred.reject(_this2.processRequestFailure(error));
 	            });
+
+	            this.safeMonitorRequest(request);
 
 	            return deferred.promise;
 	        }
@@ -34356,11 +34592,13 @@
 	                version: version
 	            };
 
-	            _jquery2.default.post("/start-build", requestData, function (data) {
+	            var request = _jquery2.default.post("/start-build", requestData, function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (error) {
 	                deferred.reject(_this3.processRequestFailure(error));
 	            });
+
+	            this.safeMonitorRequest(request);
 
 	            return deferred.promise;
 	        }
@@ -34378,10 +34616,10 @@
 	    return BuildsRepository;
 	}(_baseRepository2.default);
 
-	exports.default = BuildsRepository;
+	var buildsRepository = exports.buildsRepository = BuildsRepository.instance;
 
 /***/ },
-/* 182 */
+/* 184 */
 /***/ function(module, exports) {
 
 	"use strict";

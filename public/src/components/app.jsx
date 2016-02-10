@@ -1,10 +1,10 @@
-import React from "react";
+import BaseComponent from "./base-component"
 import Navigation from "./navigation.jsx";
 import ProductDetails from "./product-details.jsx";
 import ProductsList from "./products-list.jsx"
 import Releases from "./releases.jsx";
 
-export default class App extends React.Component
+export default class App extends BaseComponent
 {
     constructor(props)
     {
@@ -17,6 +17,8 @@ export default class App extends React.Component
 
     componentDidMount()
     {
+        super.componentDidMount();
+
         window.addEventListener('hashchange', () =>
         {
             this.setState({

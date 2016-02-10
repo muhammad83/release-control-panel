@@ -1,16 +1,18 @@
-import React from "react";
 import $ from "jquery";
+import BaseComponent from "./base-component";
 import ErrorHandler from "../handlers/error-handler";
-import StoriesRepository from "../repositories/stories-repository";
-import {GlobalEventEmitter, Events} from "../utils/global-event-emitter";
+import {globalEventEmitter, Events} from "../utils/global-event-emitter";
 import InfiniteLoading from "./infinite-loading.jsx";
+import RequestManager from "../utils/request-manager";
+import {storiesRepository} from "../repositories/stories-repository";
 
-export default class TicketsList extends React.Component
+export default class TicketsList extends BaseComponent
 {
     constructor(props)
     {
         super(props);
 
+        this.requestManager = new RequestManager();
         this.state =
         {
             createdFilterName: null,
@@ -24,17 +26,23 @@ export default class TicketsList extends React.Component
 
     componentDidMount()
     {
+        super.componentDidMount();
+
         this._onSearchStories = this.onSearchStoriesClick.bind(this);
         this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
 
-        GlobalEventEmitter.instance.addListener(Events.SEARCH_TICKETS, this._onSearchStories);
-        GlobalEventEmitter.instance.addListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged)
+        globalEventEmitter.addListener(Events.SEARCH_TICKETS, this._onSearchStories);
+        globalEventEmitter.addListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
     }
 
     componentWillUnmount()
     {
-        GlobalEventEmitter.instance.removeListener(Events.SEARCH_TICKETS, this._onSearchStories);
-        GlobalEventEmitter.instance.removeListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged)
+        super.componentWillUnmount();
+
+        globalEventEmitter.removeListener(Events.SEARCH_TICKETS, this._onSearchStories);
+        globalEventEmitter.removeListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
+
+        this.requestManager.abortPendingRequests();
     }
 
     handleCreateReleaseFilterClick()
@@ -50,9 +58,13 @@ export default class TicketsList extends React.Component
             isCreatingFilter: true
         });
 
-        StoriesRepository.instance.createReleaseFilter(this.state.selectedRelease.name)
+        storiesRepository.setRequestManager(this.requestManager);
+        storiesRepository.createReleaseFilter(this.state.selectedRelease.name)
             .then(data =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     createdFilterName: data.name,
@@ -61,10 +73,16 @@ export default class TicketsList extends React.Component
             })
             .catch(error =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 ErrorHandler.showErrorMessage(error);
             })
             .finally(() =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     isCreatingFilter: false
@@ -84,9 +102,13 @@ export default class TicketsList extends React.Component
         if (!selectedRelease)
             return;
 
-        StoriesRepository.instance.getStoriesForRelease(selectedRelease.name)
+        storiesRepository.setRequestManager(this.requestManager);
+        storiesRepository.getStoriesForRelease(selectedRelease.name)
             .then((data) =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     isLoadingStories: false,
@@ -95,6 +117,9 @@ export default class TicketsList extends React.Component
             })
             .catch(error =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     isLoadingStories: false

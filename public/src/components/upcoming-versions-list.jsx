@@ -1,18 +1,20 @@
-import React from "react";
-import ErrorHandler from "../handlers/error-handler";
-import BuildsRepository from "../repositories/builds-repository";
-import ProductsRepository from "../repositories/products-repository";
-import ProjectVersionsList from "./project-versions-list.jsx";
+import BaseComponent from "./base-component";
+import {buildsRepository} from "../repositories/builds-repository";
 import copyContent from "../utils/copy-content";
-import {GlobalEventEmitter, Events} from "../utils/global-event-emitter";
+import ErrorHandler from "../handlers/error-handler";
+import {globalEventEmitter, Events} from "../utils/global-event-emitter";
 import InfiniteLoading from "./infinite-loading.jsx";
+import {productsRepository} from "../repositories/products-repository";
+import ProjectVersionsList from "./project-versions-list.jsx";
+import RequestManager from "../utils/request-manager";
 
-export default class UpcomingVersionsList extends React.Component
+export default class UpcomingVersionsList extends BaseComponent
 {
     constructor(props)
     {
         super(props);
-        
+
+        this.requestManager = new RequestManager();
         this.state =
         {
             commandLineScript: "",
@@ -33,6 +35,26 @@ export default class UpcomingVersionsList extends React.Component
         };
     }
     
+    componentDidMount()
+    {
+        super.componentDidMount();
+
+        this.loadAvailableReleases();
+        this.loadSuccessfulBuilds();
+    }
+
+    componentWillUnmount()
+    {
+        super.componentWillUnmount();
+
+        this.requestManager.abortPendingRequests();
+    }
+    
+    copyCommandLineScript()
+    {
+        copyContent("#commandLineScript");
+    }
+
     getCommandLineScript(selectedRelease)
     {
         let applications = selectedRelease ? (selectedRelease.applications || []) : [];
@@ -43,17 +65,6 @@ export default class UpcomingVersionsList extends React.Component
                 return `sm --restart ${smProjectName} -r ${project.version}`;
             })
             .join(" & ");
-    }
-    
-    componentDidMount()
-    {
-        this.loadAvailableReleases();
-        this.loadSuccessfulBuilds();
-    }
-    
-    copyCommandLineScript()
-    {
-        copyContent("#commandLineScript");
     }
     
     getSelectedReleaseApplications()
@@ -75,7 +86,7 @@ export default class UpcomingVersionsList extends React.Component
             return;
         }
 
-        GlobalEventEmitter.instance.emit(Events.SEARCH_TICKETS, this.state.selectedRelease);
+        globalEventEmitter.emit(Events.SEARCH_TICKETS, this.state.selectedRelease);
     }
 
     handleRefreshClick()
@@ -87,7 +98,7 @@ export default class UpcomingVersionsList extends React.Component
             selectedReleaseIndex: -1
         });
 
-        GlobalEventEmitter.instance.emit(Events.SELECTED_RELEASE_CHANGED, null);
+        globalEventEmitter.emit(Events.SELECTED_RELEASE_CHANGED, null);
 
         this.loadAvailableReleases();
     }
@@ -104,7 +115,7 @@ export default class UpcomingVersionsList extends React.Component
             selectedReleaseIndex: selectedIndex
         });
 
-        GlobalEventEmitter.instance.emit(Events.SELECTED_RELEASE_CHANGED, selectedRelease);
+        globalEventEmitter.emit(Events.SELECTED_RELEASE_CHANGED, selectedRelease);
     }
 
     handleStartBuildClick(project)
@@ -116,7 +127,8 @@ export default class UpcomingVersionsList extends React.Component
             selectedRelease: this.state.selectedRelease
         });
 
-        BuildsRepository.instance.startBuild(project.name, project.version);
+        buildsRepository.setRequestManager(this.requestManager);
+        buildsRepository.startBuild(project.name, project.version);
     }
 
     loadAvailableReleases()
@@ -126,9 +138,13 @@ export default class UpcomingVersionsList extends React.Component
             isLoadingReleases: true
         });
 
-        ProductsRepository.instance.getUpcomingReleases()
+        productsRepository.setRequestManager(this.requestManager);
+        productsRepository.getUpcomingReleases()
             .then(releases =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     releases: releases,
@@ -137,6 +153,9 @@ export default class UpcomingVersionsList extends React.Component
             })
             .catch(error =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     isLoadingReleases: false
@@ -153,9 +172,13 @@ export default class UpcomingVersionsList extends React.Component
             isLoadingBuilds: true
         });
 
-        BuildsRepository.instance.getSuccessfulBuildsForProjects()
+        buildsRepository.setRequestManager(this.requestManager);
+        buildsRepository.getSuccessfulBuildsForProjects()
             .then(builds =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     isLoadingBuilds: false,
@@ -164,6 +187,9 @@ export default class UpcomingVersionsList extends React.Component
             })
             .catch(error =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     isLoadingBuilds: false
