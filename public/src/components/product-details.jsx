@@ -1,16 +1,18 @@
-import React from "react";
 import $ from "jquery";
+import BaseComponent from "./base-component";
 import ErrorHandler from "../handlers/error-handler";
-import StoriesRepository from "../repositories/stories-repository";
-import TagsRepository from "../repositories/tags-repository";
+import RequestManager from "../utils/request-manager";
+import {storiesRepository} from "../repositories/stories-repository";
+import {tagsRepository} from "../repositories/tags-repository";
 import TicketsList from "./tickets-list.jsx";
 
-export default class ProductDetails extends React.Component
+export default class ProductDetails extends BaseComponent
 {
     constructor(params)
     {
         super(params);
 
+        this.requestManager = new RequestManager();
         this.state =
         {
             endingTags: [],
@@ -25,12 +27,21 @@ export default class ProductDetails extends React.Component
 
     componentDidMount()
     {
+        super.componentDidMount();
+
         this.loadTagsList(this.props);
     }
 
     componentWillReceiveProps(props)
     {
         this.loadTagsList(props);
+    }
+
+    componentWillUnmount()
+    {
+        super.componentWillUnmount();
+
+        this.requestManager.abortPendingRequests();
     }
 
     getEndingTagsForStartTag(startTag)
@@ -78,9 +89,13 @@ export default class ProductDetails extends React.Component
         {
             this.setState({ searchingInProgress: true });
 
-            TagsRepository.instance.getStableTags(this.props.productName)
+            tagsRepository.setRequestManager(this.requestManager);
+            tagsRepository.getStableTags(this.props.productName)
                 .then(data =>
                 {
+                    if (!this.m_isMounted)
+                        return;
+
                     this.setState(
                     {
                         endingTagIndex: -1,
@@ -90,6 +105,9 @@ export default class ProductDetails extends React.Component
                 })
                 .catch(error =>
                 {
+                    if (!this.m_isMounted)
+                        return;
+
                     this.setState(
                     {
                         searchingInProgress: false
@@ -114,9 +132,13 @@ export default class ProductDetails extends React.Component
     {
         this.setState({ searchingInProgress: true });
 
-        TagsRepository.instance.getTags(props.productName)
+        tagsRepository.setRequestManager(this.requestManager);
+        tagsRepository.getTags(props.productName)
             .then(data =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     endingTagIndex: -1,
@@ -137,6 +159,9 @@ export default class ProductDetails extends React.Component
             })
             .catch(error =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     searchingInProgress: false
@@ -164,9 +189,13 @@ export default class ProductDetails extends React.Component
         let startTag = this.state.tags[this.state.startingTagIndex].name;
         let endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-        StoriesRepository.instance.getStories(serviceName, startTag, endTag)
+        storiesRepository.setRequestManager(this.requestManager);
+        storiesRepository.getStories(serviceName, startTag, endTag)
             .then(data =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     jiraTickets: data,
@@ -175,6 +204,9 @@ export default class ProductDetails extends React.Component
             })
             .catch(error =>
             {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
                     searchingInProgress: false

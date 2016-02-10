@@ -34,3 +34,5 @@ export class GlobalEventEmitter extends EventEmitter
         return this[singleton];
     }
 }
+
+export const globalEventEmitter = GlobalEventEmitter.instance;

@@ -6,7 +6,7 @@ import BaseRepository from "./base-repository";
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
 
-export default class TagsRepository extends BaseRepository
+export class TagsRepository extends BaseRepository
 {
     constructor(enforcer)
     {
@@ -32,7 +32,7 @@ export default class TagsRepository extends BaseRepository
     {
         let deferred = q.defer();
 
-        $.get(`/stable-tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
+        let request = $.get(`/stable-tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
         {
             let jsonData = JSON.parse(data);
             let tags = jsonData.map((tag) => new Tag(tag));
@@ -43,6 +43,8 @@ export default class TagsRepository extends BaseRepository
             deferred.reject(this.processRequestFailure(error));
         });
 
+        this.safeMonitorRequest(request);
+
         return deferred.promise;
     }
 
@@ -50,7 +52,7 @@ export default class TagsRepository extends BaseRepository
     {
         let deferred = q.defer();
 
-        $.get(`/tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
+        let request = $.get(`/tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
         {
             let jsonData = JSON.parse(data);
             let tags = jsonData.tags.map((tag) => new Tag(tag));
@@ -66,6 +68,10 @@ export default class TagsRepository extends BaseRepository
             deferred.reject(this.processRequestFailure(error));
         });
 
+        this.safeMonitorRequest(request);
+
         return deferred.promise;
     }
 }
+
+export const tagsRepository = TagsRepository.instance;

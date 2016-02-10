@@ -1,12 +1,12 @@
 import $ from "jquery";
 import q from "q";
 import BaseRepository from "./base-repository"
-import ProductsRepository from "./products-repository";
+import {productsRepository} from "./products-repository";
 
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
 
-export default class BuildsRepository extends BaseRepository
+export class BuildsRepository extends BaseRepository
 {
     constructor(enforcer)
     {
@@ -31,9 +31,9 @@ export default class BuildsRepository extends BaseRepository
     getSuccessfulBuildsForProjects()
     {
         let deferred = q.defer();
-        let productNames = ProductsRepository.instance.getProducts().map((product) => product.name).join(",");
+        let productNames = productsRepository.getProducts().map((product) => product.name).join(",");
 
-        $.get(`/successful-builds-for-projects?projects=${productNames}`, data =>
+        let request = $.get(`/successful-builds-for-projects?projects=${productNames}`, data =>
         {
             deferred.resolve(JSON.parse(data));
         })
@@ -41,6 +41,8 @@ export default class BuildsRepository extends BaseRepository
         {
             deferred.reject(this.processRequestFailure(error));
         });
+
+        this.safeMonitorRequest(request);
 
         return deferred.promise;
     }
@@ -54,7 +56,7 @@ export default class BuildsRepository extends BaseRepository
             version: version
         };
 
-        $.post(`/start-build`, requestData, data =>
+        let request = $.post(`/start-build`, requestData, data =>
         {
             deferred.resolve(JSON.parse(data));
         })
@@ -63,6 +65,10 @@ export default class BuildsRepository extends BaseRepository
             deferred.reject(this.processRequestFailure(error));
         });
 
+        this.safeMonitorRequest(request);
+
         return deferred.promise;
     }
 }
+
+export const buildsRepository = BuildsRepository.instance;

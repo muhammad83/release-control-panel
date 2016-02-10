@@ -6,7 +6,7 @@ import ProductsRepository from "./products-repository";
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
 
-export default class StoriesRepository extends BaseRepository
+export class StoriesRepository extends BaseRepository
 {
     constructor(enforcer)
     {
@@ -33,7 +33,7 @@ export default class StoriesRepository extends BaseRepository
         let deferred = q.defer();
         let products = ProductsRepository.instance.getProducts().map(function (p) { return p.name; }).join(",");
 
-        $.post(`/create-release-filter?version=${releaseName}&projects=${products}&timestamp=${+new Date()}`, data =>
+        let request = $.post(`/create-release-filter?version=${releaseName}&projects=${products}&timestamp=${+new Date()}`, data =>
         {
             deferred.resolve(data);
         })
@@ -41,6 +41,8 @@ export default class StoriesRepository extends BaseRepository
         {
             deferred.reject(this.processRequestFailure(response));
         });
+
+        this.safeMonitorRequest(request);
 
         return deferred.promise;
     }
@@ -51,7 +53,7 @@ export default class StoriesRepository extends BaseRepository
         let encodedStartTag = encodeURIComponent(startTag);
         let encodedEndTag = encodeURIComponent(endTag);
 
-        $.get(`/stories?serviceName=${serviceName}&startTag=${encodedStartTag}&endTag=${encodedEndTag}&timestamp=${+new Date()}`, data =>
+        let request = $.get(`/stories?serviceName=${serviceName}&startTag=${encodedStartTag}&endTag=${encodedEndTag}&timestamp=${+new Date()}`, data =>
         {
             deferred.resolve(JSON.parse(data));
         })
@@ -59,6 +61,8 @@ export default class StoriesRepository extends BaseRepository
         {
             deferred.reject(this.processRequestFailure(response));
         });
+
+        this.safeMonitorRequest(request);
 
         return deferred.promise;
     }
@@ -68,7 +72,7 @@ export default class StoriesRepository extends BaseRepository
         let deferred = q.defer();
         let products = ProductsRepository.instance.getProducts().map(function (p) { return p.name; }).join(",");
 
-        $.get(`/stories-for-projects?version=${releaseName}&projects=${products}&timestamp=${+new Date()}`, data =>
+        let request = $.get(`/stories-for-projects?version=${releaseName}&projects=${products}&timestamp=${+new Date()}`, data =>
         {
             deferred.resolve(JSON.parse(data));
         })
@@ -77,6 +81,10 @@ export default class StoriesRepository extends BaseRepository
             deferred.reject(this.processRequestFailure(response));
         });
 
+        this.safeMonitorRequest(request);
+
         return deferred.promise;
     }
 }
+
+export const storiesRepository = StoriesRepository.instance;

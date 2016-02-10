@@ -1,13 +1,13 @@
-import React from "react";
-import ProductsRepository from "../repositories/products-repository";
+import BaseComponent from "./base-component";
+import {productsRepository} from "../repositories/products-repository";
 
-export default class ProductsList extends React.Component
+export default class ProductsList extends BaseComponent
 {
     constructor(props) {
         super(props);
 
         this.state = {
-            products: ProductsRepository.instance.getProducts()
+            products: productsRepository.getProducts()
         };
     }
 

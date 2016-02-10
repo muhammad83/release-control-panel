@@ -1,13 +1,8 @@
-import React from "react";
+import BaseComponent from "./base-component";
 import InfiniteLoading from "./infinite-loading.jsx";
 
-export default class ProjectVersionsList extends React.Component
+export default class ProjectVersionsList extends BaseComponent
 {
-    constructor(props)
-    {
-        super(props);
-    }
-    
     render()
     {
         return (

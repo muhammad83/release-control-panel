@@ -1,6 +1,6 @@
-import React from "react";
+import BaseComponent from "./base-component";
 
-export default class CurrentVersionsList extends React.Component
+export default class CurrentVersionsList extends BaseComponent
 {
     render()
     {
