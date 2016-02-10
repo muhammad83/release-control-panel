@@ -203,55 +203,51 @@ export default class UpcomingVersionsList extends BaseComponent
     {
         return (
             <div>
-                <h4>Upcoming versions</h4>
-                <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
+                <h2>Upcoming versions</h2>
+                <form onSubmit={this.handleFormSubmit.bind(this)}>
                     <div className="form-group">
-                        <label htmlFor="release" className="col-sm-2 control-label">Release:</label>
-                        <div className="col-sm-10">
-                            <div className="input-group">
-                                <select id="release" className="form-control" onChange={this.handleReleaseChange.bind(this)} value={this.state.selectedReleaseIndex}>
-                                    <option value="-1"> </option>
+                        <label htmlFor="release">Release:</label>
+                        <div className="input-group">
+                            <select id="release" className="form-control" onChange={this.handleReleaseChange.bind(this)} value={this.state.selectedReleaseIndex}>
+                                <option value="-1"> </option>
+                                {
+                                    this.state.releases.map((release, index) =>
                                     {
-                                        this.state.releases.map((release, index) =>
-                                        {
-                                            return (
-                                                <option key={index} value={index}>{release.name}</option>
-                                            );
-                                        })
-                                    }
-                                </select>
-                                <span className="input-group-btn">
-                                    <button className="btn btn-default" onClick={this.handleRefreshClick.bind(this)}>
-                                        <i className="glyphicon glyphicon-refresh"></i>
-                                    </button>
-                                </span>
-                            </div>
+                                        return (
+                                            <option key={index} value={index}>{release.name}</option>
+                                        );
+                                    })
+                                }
+                            </select>
+                            <span className="input-group-btn">
+                                <button className="btn btn-default" onClick={this.handleRefreshClick.bind(this)}>
+                                    Refresh
+                                </button>
+                            </span>
                         </div>
                     </div>
                     <div className="form-group">
-                        <div className="col-sm-offset-2 col-sm-10">
+                        {
+                            (() =>
                             {
-                                (() =>
+                                if (!this.state.isLoadingReleases && this.state.selectedRelease)
                                 {
-                                    if (!this.state.isLoadingReleases && this.state.selectedRelease)
-                                    {
-                                        return (
-                                            <div className="input-group">
-                                                <span className="input-group-btn">
-                                                    <button className="btn btn-primary">Search</button>
-                                                    <button className="btn btn-default" onClick={this.copyCommandLineScript.bind(this)} type="button">Copy 'sm' start script</button>
-                                                </span>
-                                                <input id="commandLineScript" className="form-control" readOnly="true" value={this.state.commandLineScript} type="text" />
-                                            </div>
-                                        );
-                                    }
-                                    else
-                                    {
-                                        return <button className="btn btn-primary">Search</button>;
-                                    }
-                                })()
-                            }
-                        </div>
+                                    return (
+                                        <div className="input-group">
+                                            <span className="input-group-btn">
+                                                <button className="btn btn-primary">Search</button>
+                                                <button className="btn btn-default" onClick={this.copyCommandLineScript.bind(this)} type="button">Copy 'sm' start script</button>
+                                            </span>
+                                            <input id="commandLineScript" className="form-control" readOnly="true" value={this.state.commandLineScript} type="text" />
+                                        </div>
+                                    );
+                                }
+                                else
+                                {
+                                    return <button className="btn btn-primary">Search</button>;
+                                }
+                            })()
+                        }
                     </div>
                 </form>
                 <ProjectVersionsList isLoading={this.state.isLoadingReleases}

@@ -28,9 +28,11 @@ export default class TicketsList extends BaseComponent
     {
         super.componentDidMount();
 
+        this._onSearchProjectStories = this.onSearchProjectStories.bind(this);
         this._onSearchStories = this.onSearchStoriesClick.bind(this);
         this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
 
+        globalEventEmitter.addListener(Events.SEARCH_PROJECT_TICKETS, this._onSearchProjectStories);
         globalEventEmitter.addListener(Events.SEARCH_TICKETS, this._onSearchStories);
         globalEventEmitter.addListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
     }
@@ -39,6 +41,7 @@ export default class TicketsList extends BaseComponent
     {
         super.componentWillUnmount();
 
+        globalEventEmitter.removeListener(Events.SEARCH_PROJECT_TICKETS, this._onSearchProjectStories);
         globalEventEmitter.removeListener(Events.SEARCH_TICKETS, this._onSearchStories);
         globalEventEmitter.removeListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
 
@@ -87,6 +90,43 @@ export default class TicketsList extends BaseComponent
                 {
                     isCreatingFilter: false
                 });
+            });
+    }
+
+    onSearchProjectStories(projectSettings)
+    {
+        let {projectName, startTag, endTag} = projectSettings;
+
+        this.setState(
+        {
+            isLoadingStories: true,
+            jiraTickets: []
+        });
+
+        storiesRepository.setRequestManager(this.requestManager);
+        storiesRepository.getStories(projectName, startTag, endTag)
+            .then(data =>
+            {
+                if (!this.m_isMounted)
+                    return;
+
+                this.setState(
+                {
+                    jiraTickets: data,
+                    isLoadingStories: false
+                });
+            })
+            .catch(error =>
+            {
+                if (!this.m_isMounted)
+                    return;
+
+                this.setState(
+                {
+                    isLoadingStories: false
+                });
+
+                ErrorHandler.showErrorMessage(error);
             });
     }
 

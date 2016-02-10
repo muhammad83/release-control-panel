@@ -21,7 +21,7 @@ app.use(morgan("combined"));
 
 require("./routes/routes")(app);
 
-app.use("/libs/bootstrap/", express.static("node_modules/bootstrap/dist"));
+app.use("/libs/bootstrap/", express.static("bootstrap/"));
 app.use("/libs/jquery/", express.static("node_modules/jquery/dist"));
 app.use("/libs/react/", express.static("node_modules/react/dist"));
 
