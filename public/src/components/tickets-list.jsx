@@ -1,14 +1,151 @@
 import React from "react";
 import $ from "jquery";
+import ErrorHandler from "../handlers/error-handler";
+import StoriesRepository from "../repositories/stories-repository";
+import {GlobalEventEmitter, Events} from "../utils/global-event-emitter";
+import InfiniteLoading from "./infinite-loading.jsx";
 
 export default class TicketsList extends React.Component
 {
+    constructor(props)
+    {
+        super(props);
+
+        this.state =
+        {
+            createdFilterName: null,
+            createdFilterUrl: null,
+            isCreatingFilter: false,
+            isLoadingStories: false,
+            jiraTickets: [],
+            selectedRelease: null
+        };
+    }
+
+    componentDidMount()
+    {
+        this._onSearchStories = this.onSearchStoriesClick.bind(this);
+        this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
+
+        GlobalEventEmitter.instance.addListener(Events.SEARCH_TICKETS, this._onSearchStories);
+        GlobalEventEmitter.instance.addListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged)
+    }
+
+    componentWillUnmount()
+    {
+        GlobalEventEmitter.instance.removeListener(Events.SEARCH_TICKETS, this._onSearchStories);
+        GlobalEventEmitter.instance.removeListener(Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged)
+    }
+
+    handleCreateReleaseFilterClick()
+    {
+        if (!this.state.selectedRelease)
+        {
+            alert("Please select release first.");
+            return;
+        }
+
+        this.setState(
+        {
+            isCreatingFilter: true
+        });
+
+        StoriesRepository.instance.createReleaseFilter(this.state.selectedRelease.name)
+            .then(data =>
+            {
+                this.setState(
+                {
+                    createdFilterName: data.name,
+                    createdFilterUrl: data.url
+                });
+            })
+            .catch(error =>
+            {
+                ErrorHandler.showErrorMessage(error);
+            })
+            .finally(() =>
+            {
+                this.setState(
+                {
+                    isCreatingFilter: false
+                });
+            });
+    }
+
+    onSearchStoriesClick(selectedRelease)
+    {
+        this.setState(
+        {
+            isLoadingStories: true,
+            jiraTickets: [],
+            selectedRelease: selectedRelease
+        });
+
+        if (!selectedRelease)
+            return;
+
+        StoriesRepository.instance.getStoriesForRelease(selectedRelease.name)
+            .then((data) =>
+            {
+                this.setState(
+                {
+                    isLoadingStories: false,
+                    jiraTickets: data
+                });
+            })
+            .catch(error =>
+            {
+                this.setState(
+                {
+                    isLoadingStories: false
+                });
+
+                ErrorHandler.showErrorMessage(error);
+            });
+    }
+
+    onSelectedReleaseChanged(selectedRelease)
+    {
+        this.setState(
+        {
+            jiraTickets: [],
+            selectedRelease: selectedRelease
+        });
+    }
+
     render()
     {
         return (
             <div className="row">
                 <div className="col-md-12">
                     <h2>Jira tickets</h2>
+                    {
+                        (() =>
+                        {
+                            if (this.state.selectedRelease)
+                            {
+                                if (this.state.createdFilterName)
+                                {
+                                    return <p>Created JIRA filter: <a href={this.state.createdFilterUrl} target="_blank" rel="external">{this.state.createdFilterName}</a></p>;
+                                }
+                                else
+                                {
+                                    return (
+                                        <div className="row">
+                                            <div className="col-md-1">
+                                                <div className="btn-group" role="group">
+                                                    <button className="btn btn-default" onClick={this.handleCreateReleaseFilterClick.bind(this)}>Create release filter</button>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-1">
+                                                <InfiniteLoading isLoading={this.state.isCreatingFilter} />
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                            }
+                        })()
+                    }
                     <table className="table">
                         <thead>
                         <tr>
@@ -25,22 +162,18 @@ export default class TicketsList extends React.Component
                         {
                             (() =>
                             {
-                                if (this.props.isSearching)
+                                if (this.state.isLoadingStories)
                                 {
                                     return (
                                         <tr>
                                             <td colSpan="7">
-                                                <div className="progress">
-                                                    <div className="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style={{width: "100%"}}>
-                                                        <span className="sr-only">100% Complete</span>
-                                                    </div>
-                                                </div>
+                                                <InfiniteLoading />
                                             </td>
                                         </tr>
                                     );
                                 }
 
-                                if (!this.props.jiraTickets || !this.props.jiraTickets.length)
+                                if (!this.state.jiraTickets || !this.state.jiraTickets.length)
                                 {
                                     return (
                                         <tr>
@@ -51,7 +184,7 @@ export default class TicketsList extends React.Component
                                     );
                                 }
 
-                                return this.props.jiraTickets.map(function (ticket, ticketIndex)
+                                return this.state.jiraTickets.map(function (ticket, ticketIndex)
                                 {
                                     return (
                                         <tr key={ticketIndex}>

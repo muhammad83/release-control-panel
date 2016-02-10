@@ -19679,11 +19679,11 @@
 
 	var _productDetails2 = _interopRequireDefault(_productDetails);
 
-	var _productsList = __webpack_require__(173);
+	var _productsList = __webpack_require__(176);
 
 	var _productsList2 = _interopRequireDefault(_productsList);
 
-	var _releases = __webpack_require__(174);
+	var _releases = __webpack_require__(177);
 
 	var _releases2 = _interopRequireDefault(_releases);
 
@@ -19788,7 +19788,7 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Navigation).call(this, props));
 
 	        _this.state = {
-	            products: _productsRepository2.default.getProducts()
+	            products: _productsRepository2.default.instance.getProducts()
 	        };
 	        return _this;
 	    }
@@ -19920,16 +19920,24 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
 	var ProductsRepository = function (_BaseRepository) {
 	    _inherits(ProductsRepository, _BaseRepository);
 
-	    function ProductsRepository() {
+	    function ProductsRepository(enforcer) {
 	        _classCallCheck(this, ProductsRepository);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(ProductsRepository).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ProductsRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton";
+	        }
+	        return _this;
 	    }
 
-	    _createClass(ProductsRepository, null, [{
+	    _createClass(ProductsRepository, [{
 	        key: "getCurrentVersions",
 	        value: function getCurrentVersions() {
 	            var _this2 = this;
@@ -19976,6 +19984,15 @@
 	            });
 
 	            return deferred.promise;
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new ProductsRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
 	        }
 	    }]);
 
@@ -32000,7 +32017,7 @@
 	        _classCallCheck(this, BaseRepository);
 	    }
 
-	    _createClass(BaseRepository, null, [{
+	    _createClass(BaseRepository, [{
 	        key: "processRequestFailure",
 	        value: function processRequestFailure(errorResponse) {
 	            var data = undefined;
@@ -32141,7 +32158,7 @@
 	            if (showStableVersions) {
 	                this.setState({ searchingInProgress: true });
 
-	                _tagsRepository2.default.getStableTags(this.props.productName).then(function (data) {
+	                _tagsRepository2.default.instance.getStableTags(this.props.productName).then(function (data) {
 	                    _this2.setState({
 	                        endingTagIndex: -1,
 	                        endingTags: data,
@@ -32170,7 +32187,7 @@
 
 	            this.setState({ searchingInProgress: true });
 
-	            _tagsRepository2.default.getTags(props.productName).then(function (data) {
+	            _tagsRepository2.default.instance.getTags(props.productName).then(function (data) {
 	                _this3.setState({
 	                    endingTagIndex: -1,
 	                    endingTags: [],
@@ -32212,7 +32229,7 @@
 	            var startTag = this.state.tags[this.state.startingTagIndex].name;
 	            var endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-	            _storiesRepository2.default.getStories(serviceName, startTag, endTag).then(function (data) {
+	            _storiesRepository2.default.instance.getStories(serviceName, startTag, endTag).then(function (data) {
 	                _this4.setState({
 	                    jiraTickets: data,
 	                    searchingInProgress: false
@@ -32423,19 +32440,45 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
 	var StoriesRepository = function (_BaseRepository) {
 	    _inherits(StoriesRepository, _BaseRepository);
 
-	    function StoriesRepository() {
+	    function StoriesRepository(enforcer) {
 	        _classCallCheck(this, StoriesRepository);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(StoriesRepository).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StoriesRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton";
+	        }
+	        return _this;
 	    }
 
-	    _createClass(StoriesRepository, null, [{
+	    _createClass(StoriesRepository, [{
+	        key: "createReleaseFilter",
+	        value: function createReleaseFilter(releaseName) {
+	            var _this2 = this;
+
+	            var deferred = _q2.default.defer();
+	            var products = _productsRepository2.default.instance.getProducts().map(function (p) {
+	                return p.name;
+	            }).join(",");
+
+	            _jquery2.default.post("/create-release-filter?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (response) {
+	                deferred.reject(_this2.processRequestFailure(response));
+	            });
+
+	            return deferred.promise;
+	        }
+	    }, {
 	        key: "getStories",
 	        value: function getStories(serviceName, startTag, endTag) {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            var deferred = _q2.default.defer();
 	            var encodedStartTag = encodeURIComponent(startTag);
@@ -32444,7 +32487,7 @@
 	            _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (response) {
-	                deferred.reject(_this2.processRequestFailure(response));
+	                deferred.reject(_this3.processRequestFailure(response));
 	            });
 
 	            return deferred.promise;
@@ -32452,20 +32495,29 @@
 	    }, {
 	        key: "getStoriesForRelease",
 	        value: function getStoriesForRelease(releaseName) {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            var deferred = _q2.default.defer();
-	            var products = _productsRepository2.default.getProducts().map(function (p) {
+	            var products = _productsRepository2.default.instance.getProducts().map(function (p) {
 	                return p.name;
 	            }).join(",");
 
 	            _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (response) {
-	                deferred.reject(_this3.processRequestFailure(response));
+	                deferred.reject(_this4.processRequestFailure(response));
 	            });
 
 	            return deferred.promise;
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new StoriesRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
 	        }
 	    }]);
 
@@ -32510,16 +32562,24 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
 	var TagsRepository = function (_BaseRepository) {
 	    _inherits(TagsRepository, _BaseRepository);
 
-	    function TagsRepository() {
+	    function TagsRepository(enforcer) {
 	        _classCallCheck(this, TagsRepository);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(TagsRepository).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TagsRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton";
+	        }
+	        return _this;
 	    }
 
-	    _createClass(TagsRepository, null, [{
+	    _createClass(TagsRepository, [{
 	        key: "getStableTags",
 	        value: function getStableTags(productName) {
 	            var _this2 = this;
@@ -32564,6 +32624,15 @@
 	            });
 
 	            return deferred.promise;
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new TagsRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
 	        }
 	    }]);
 
@@ -32612,6 +32681,20 @@
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
+	var _errorHandler = __webpack_require__(168);
+
+	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+
+	var _storiesRepository = __webpack_require__(169);
+
+	var _storiesRepository2 = _interopRequireDefault(_storiesRepository);
+
+	var _globalEventEmitter = __webpack_require__(173);
+
+	var _infiniteLoading = __webpack_require__(175);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -32623,16 +32706,102 @@
 	var TicketsList = function (_React$Component) {
 	    _inherits(TicketsList, _React$Component);
 
-	    function TicketsList() {
+	    function TicketsList(props) {
 	        _classCallCheck(this, TicketsList);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).call(this, props));
+
+	        _this.state = {
+	            createdFilterName: null,
+	            createdFilterUrl: null,
+	            isCreatingFilter: false,
+	            isLoadingStories: false,
+	            jiraTickets: [],
+	            selectedRelease: null
+	        };
+	        return _this;
 	    }
 
 	    _createClass(TicketsList, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            this._onSearchStories = this.onSearchStoriesClick.bind(this);
+	            this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
+
+	            _globalEventEmitter.GlobalEventEmitter.instance.addListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
+	            _globalEventEmitter.GlobalEventEmitter.instance.addListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            _globalEventEmitter.GlobalEventEmitter.instance.removeListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
+	            _globalEventEmitter.GlobalEventEmitter.instance.removeListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
+	        }
+	    }, {
+	        key: "handleCreateReleaseFilterClick",
+	        value: function handleCreateReleaseFilterClick() {
+	            var _this2 = this;
+
+	            if (!this.state.selectedRelease) {
+	                alert("Please select release first.");
+	                return;
+	            }
+
+	            this.setState({
+	                isCreatingFilter: true
+	            });
+
+	            _storiesRepository2.default.instance.createReleaseFilter(this.state.selectedRelease.name).then(function (data) {
+	                _this2.setState({
+	                    createdFilterName: data.name,
+	                    createdFilterUrl: data.url
+	                });
+	            }).catch(function (error) {
+	                _errorHandler2.default.showErrorMessage(error);
+	            }).finally(function () {
+	                _this2.setState({
+	                    isCreatingFilter: false
+	                });
+	            });
+	        }
+	    }, {
+	        key: "onSearchStoriesClick",
+	        value: function onSearchStoriesClick(selectedRelease) {
+	            var _this3 = this;
+
+	            this.setState({
+	                isLoadingStories: true,
+	                jiraTickets: [],
+	                selectedRelease: selectedRelease
+	            });
+
+	            if (!selectedRelease) return;
+
+	            _storiesRepository2.default.instance.getStoriesForRelease(selectedRelease.name).then(function (data) {
+	                _this3.setState({
+	                    isLoadingStories: false,
+	                    jiraTickets: data
+	                });
+	            }).catch(function (error) {
+	                _this3.setState({
+	                    isLoadingStories: false
+	                });
+
+	                _errorHandler2.default.showErrorMessage(error);
+	            });
+	        }
+	    }, {
+	        key: "onSelectedReleaseChanged",
+	        value: function onSelectedReleaseChanged(selectedRelease) {
+	            this.setState({
+	                jiraTickets: [],
+	                selectedRelease: selectedRelease
+	            });
+	        }
+	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this2 = this;
+	            var _this4 = this;
 
 	            return _react2.default.createElement(
 	                "div",
@@ -32645,6 +32814,45 @@
 	                        null,
 	                        "Jira tickets"
 	                    ),
+	                    function () {
+	                        if (_this4.state.selectedRelease) {
+	                            if (_this4.state.createdFilterName) {
+	                                return _react2.default.createElement(
+	                                    "p",
+	                                    null,
+	                                    "Created JIRA filter: ",
+	                                    _react2.default.createElement(
+	                                        "a",
+	                                        { href: _this4.state.createdFilterUrl, target: "_blank", rel: "external" },
+	                                        _this4.state.createdFilterName
+	                                    )
+	                                );
+	                            } else {
+	                                return _react2.default.createElement(
+	                                    "div",
+	                                    { className: "row" },
+	                                    _react2.default.createElement(
+	                                        "div",
+	                                        { className: "col-md-1" },
+	                                        _react2.default.createElement(
+	                                            "div",
+	                                            { className: "btn-group", role: "group" },
+	                                            _react2.default.createElement(
+	                                                "button",
+	                                                { className: "btn btn-default", onClick: _this4.handleCreateReleaseFilterClick.bind(_this4) },
+	                                                "Create release filter"
+	                                            )
+	                                        )
+	                                    ),
+	                                    _react2.default.createElement(
+	                                        "div",
+	                                        { className: "col-md-1" },
+	                                        _react2.default.createElement(_infiniteLoading2.default, { isLoading: _this4.state.isCreatingFilter })
+	                                    )
+	                                );
+	                            }
+	                        }
+	                    }(),
 	                    _react2.default.createElement(
 	                        "table",
 	                        { className: "table" },
@@ -32695,31 +32903,19 @@
 	                            "tbody",
 	                            null,
 	                            function () {
-	                                if (_this2.props.isSearching) {
+	                                if (_this4.state.isLoadingStories) {
 	                                    return _react2.default.createElement(
 	                                        "tr",
 	                                        null,
 	                                        _react2.default.createElement(
 	                                            "td",
 	                                            { colSpan: "7" },
-	                                            _react2.default.createElement(
-	                                                "div",
-	                                                { className: "progress" },
-	                                                _react2.default.createElement(
-	                                                    "div",
-	                                                    { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                                    _react2.default.createElement(
-	                                                        "span",
-	                                                        { className: "sr-only" },
-	                                                        "100% Complete"
-	                                                    )
-	                                                )
-	                                            )
+	                                            _react2.default.createElement(_infiniteLoading2.default, null)
 	                                        )
 	                                    );
 	                                }
 
-	                                if (!_this2.props.jiraTickets || !_this2.props.jiraTickets.length) {
+	                                if (!_this4.state.jiraTickets || !_this4.state.jiraTickets.length) {
 	                                    return _react2.default.createElement(
 	                                        "tr",
 	                                        null,
@@ -32735,7 +32931,7 @@
 	                                    );
 	                                }
 
-	                                return _this2.props.jiraTickets.map(function (ticket, ticketIndex) {
+	                                return _this4.state.jiraTickets.map(function (ticket, ticketIndex) {
 	                                    return _react2.default.createElement(
 	                                        "tr",
 	                                        { key: ticketIndex },
@@ -32855,6 +33051,434 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.GlobalEventEmitter = exports.Events = undefined;
+
+	var _events = __webpack_require__(174);
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
+	var Events = exports.Events = {
+	    SEARCH_TICKETS: "search-tickets",
+	    SELECTED_RELEASE_CHANGED: "selected-release-changed"
+	};
+
+	/**
+	 * Docummentation can be found here: https://nodejs.org/api/events.html
+	 */
+
+	var GlobalEventEmitter = exports.GlobalEventEmitter = function (_EventEmitter) {
+	    _inherits(GlobalEventEmitter, _EventEmitter);
+
+	    function GlobalEventEmitter(enforcer) {
+	        _classCallCheck(this, GlobalEventEmitter);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(GlobalEventEmitter).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton";
+	        }
+	        return _this;
+	    }
+
+	    _createClass(GlobalEventEmitter, null, [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new GlobalEventEmitter(singletonEnforcer);
+	            }
+
+	            return this[singleton];
+	        }
+	    }]);
+
+	    return GlobalEventEmitter;
+	}(_events.EventEmitter);
+
+/***/ },
+/* 174 */
+/***/ function(module, exports) {
+
+	// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	function EventEmitter() {
+	  this._events = this._events || {};
+	  this._maxListeners = this._maxListeners || undefined;
+	}
+	module.exports = EventEmitter;
+
+	// Backwards-compat with node 0.10.x
+	EventEmitter.EventEmitter = EventEmitter;
+
+	EventEmitter.prototype._events = undefined;
+	EventEmitter.prototype._maxListeners = undefined;
+
+	// By default EventEmitters will print a warning if more than 10 listeners are
+	// added to it. This is a useful default which helps finding memory leaks.
+	EventEmitter.defaultMaxListeners = 10;
+
+	// Obviously not all Emitters should be limited to 10. This function allows
+	// that to be increased. Set to zero for unlimited.
+	EventEmitter.prototype.setMaxListeners = function(n) {
+	  if (!isNumber(n) || n < 0 || isNaN(n))
+	    throw TypeError('n must be a positive number');
+	  this._maxListeners = n;
+	  return this;
+	};
+
+	EventEmitter.prototype.emit = function(type) {
+	  var er, handler, len, args, i, listeners;
+
+	  if (!this._events)
+	    this._events = {};
+
+	  // If there is no 'error' event listener then throw.
+	  if (type === 'error') {
+	    if (!this._events.error ||
+	        (isObject(this._events.error) && !this._events.error.length)) {
+	      er = arguments[1];
+	      if (er instanceof Error) {
+	        throw er; // Unhandled 'error' event
+	      }
+	      throw TypeError('Uncaught, unspecified "error" event.');
+	    }
+	  }
+
+	  handler = this._events[type];
+
+	  if (isUndefined(handler))
+	    return false;
+
+	  if (isFunction(handler)) {
+	    switch (arguments.length) {
+	      // fast cases
+	      case 1:
+	        handler.call(this);
+	        break;
+	      case 2:
+	        handler.call(this, arguments[1]);
+	        break;
+	      case 3:
+	        handler.call(this, arguments[1], arguments[2]);
+	        break;
+	      // slower
+	      default:
+	        args = Array.prototype.slice.call(arguments, 1);
+	        handler.apply(this, args);
+	    }
+	  } else if (isObject(handler)) {
+	    args = Array.prototype.slice.call(arguments, 1);
+	    listeners = handler.slice();
+	    len = listeners.length;
+	    for (i = 0; i < len; i++)
+	      listeners[i].apply(this, args);
+	  }
+
+	  return true;
+	};
+
+	EventEmitter.prototype.addListener = function(type, listener) {
+	  var m;
+
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+
+	  if (!this._events)
+	    this._events = {};
+
+	  // To avoid recursion in the case that type === "newListener"! Before
+	  // adding it to the listeners, first emit "newListener".
+	  if (this._events.newListener)
+	    this.emit('newListener', type,
+	              isFunction(listener.listener) ?
+	              listener.listener : listener);
+
+	  if (!this._events[type])
+	    // Optimize the case of one listener. Don't need the extra array object.
+	    this._events[type] = listener;
+	  else if (isObject(this._events[type]))
+	    // If we've already got an array, just append.
+	    this._events[type].push(listener);
+	  else
+	    // Adding the second element, need to change to array.
+	    this._events[type] = [this._events[type], listener];
+
+	  // Check for listener leak
+	  if (isObject(this._events[type]) && !this._events[type].warned) {
+	    if (!isUndefined(this._maxListeners)) {
+	      m = this._maxListeners;
+	    } else {
+	      m = EventEmitter.defaultMaxListeners;
+	    }
+
+	    if (m && m > 0 && this._events[type].length > m) {
+	      this._events[type].warned = true;
+	      console.error('(node) warning: possible EventEmitter memory ' +
+	                    'leak detected. %d listeners added. ' +
+	                    'Use emitter.setMaxListeners() to increase limit.',
+	                    this._events[type].length);
+	      if (typeof console.trace === 'function') {
+	        // not supported in IE 10
+	        console.trace();
+	      }
+	    }
+	  }
+
+	  return this;
+	};
+
+	EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+	EventEmitter.prototype.once = function(type, listener) {
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+
+	  var fired = false;
+
+	  function g() {
+	    this.removeListener(type, g);
+
+	    if (!fired) {
+	      fired = true;
+	      listener.apply(this, arguments);
+	    }
+	  }
+
+	  g.listener = listener;
+	  this.on(type, g);
+
+	  return this;
+	};
+
+	// emits a 'removeListener' event iff the listener was removed
+	EventEmitter.prototype.removeListener = function(type, listener) {
+	  var list, position, length, i;
+
+	  if (!isFunction(listener))
+	    throw TypeError('listener must be a function');
+
+	  if (!this._events || !this._events[type])
+	    return this;
+
+	  list = this._events[type];
+	  length = list.length;
+	  position = -1;
+
+	  if (list === listener ||
+	      (isFunction(list.listener) && list.listener === listener)) {
+	    delete this._events[type];
+	    if (this._events.removeListener)
+	      this.emit('removeListener', type, listener);
+
+	  } else if (isObject(list)) {
+	    for (i = length; i-- > 0;) {
+	      if (list[i] === listener ||
+	          (list[i].listener && list[i].listener === listener)) {
+	        position = i;
+	        break;
+	      }
+	    }
+
+	    if (position < 0)
+	      return this;
+
+	    if (list.length === 1) {
+	      list.length = 0;
+	      delete this._events[type];
+	    } else {
+	      list.splice(position, 1);
+	    }
+
+	    if (this._events.removeListener)
+	      this.emit('removeListener', type, listener);
+	  }
+
+	  return this;
+	};
+
+	EventEmitter.prototype.removeAllListeners = function(type) {
+	  var key, listeners;
+
+	  if (!this._events)
+	    return this;
+
+	  // not listening for removeListener, no need to emit
+	  if (!this._events.removeListener) {
+	    if (arguments.length === 0)
+	      this._events = {};
+	    else if (this._events[type])
+	      delete this._events[type];
+	    return this;
+	  }
+
+	  // emit removeListener for all listeners on all events
+	  if (arguments.length === 0) {
+	    for (key in this._events) {
+	      if (key === 'removeListener') continue;
+	      this.removeAllListeners(key);
+	    }
+	    this.removeAllListeners('removeListener');
+	    this._events = {};
+	    return this;
+	  }
+
+	  listeners = this._events[type];
+
+	  if (isFunction(listeners)) {
+	    this.removeListener(type, listeners);
+	  } else if (listeners) {
+	    // LIFO order
+	    while (listeners.length)
+	      this.removeListener(type, listeners[listeners.length - 1]);
+	  }
+	  delete this._events[type];
+
+	  return this;
+	};
+
+	EventEmitter.prototype.listeners = function(type) {
+	  var ret;
+	  if (!this._events || !this._events[type])
+	    ret = [];
+	  else if (isFunction(this._events[type]))
+	    ret = [this._events[type]];
+	  else
+	    ret = this._events[type].slice();
+	  return ret;
+	};
+
+	EventEmitter.prototype.listenerCount = function(type) {
+	  if (this._events) {
+	    var evlistener = this._events[type];
+
+	    if (isFunction(evlistener))
+	      return 1;
+	    else if (evlistener)
+	      return evlistener.length;
+	  }
+	  return 0;
+	};
+
+	EventEmitter.listenerCount = function(emitter, type) {
+	  return emitter.listenerCount(type);
+	};
+
+	function isFunction(arg) {
+	  return typeof arg === 'function';
+	}
+
+	function isNumber(arg) {
+	  return typeof arg === 'number';
+	}
+
+	function isObject(arg) {
+	  return typeof arg === 'object' && arg !== null;
+	}
+
+	function isUndefined(arg) {
+	  return arg === void 0;
+	}
+
+
+/***/ },
+/* 175 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var CurrentVersionsList = function (_React$Component) {
+	    _inherits(CurrentVersionsList, _React$Component);
+
+	    function CurrentVersionsList() {
+	        _classCallCheck(this, CurrentVersionsList);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(CurrentVersionsList).apply(this, arguments));
+	    }
+
+	    _createClass(CurrentVersionsList, [{
+	        key: "render",
+	        value: function render() {
+	            var isLoadingProp = this.props.isLoading;
+
+	            if (isLoadingProp == undefined || isLoadingProp == null || isLoadingProp) {
+	                return _react2.default.createElement(
+	                    "div",
+	                    { className: "progress" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
+	                        _react2.default.createElement(
+	                            "span",
+	                            { className: "sr-only" },
+	                            "100% Complete"
+	                        )
+	                    )
+	                );
+	            } else {
+	                return null;
+	            }
+	        }
+	    }]);
+
+	    return CurrentVersionsList;
+	}(_react2.default.Component);
+
+	exports.default = CurrentVersionsList;
+
+/***/ },
+/* 176 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 
 	var _react = __webpack_require__(1);
 
@@ -32881,7 +33505,7 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ProductsList).call(this, props));
 
 	        _this.state = {
-	            products: _productsRepository2.default.getProducts()
+	            products: _productsRepository2.default.instance.getProducts()
 	        };
 	        return _this;
 	    }
@@ -32967,7 +33591,7 @@
 	exports.default = ProductsList;
 
 /***/ },
-/* 174 */
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -32998,7 +33622,7 @@
 
 	var _tagsRepository2 = _interopRequireDefault(_tagsRepository);
 
-	var _currentVersionsList = __webpack_require__(175);
+	var _currentVersionsList = __webpack_require__(178);
 
 	var _currentVersionsList2 = _interopRequireDefault(_currentVersionsList);
 
@@ -33006,7 +33630,7 @@
 
 	var _ticketsList2 = _interopRequireDefault(_ticketsList);
 
-	var _upcomingVersionsList = __webpack_require__(177);
+	var _upcomingVersionsList = __webpack_require__(180);
 
 	var _upcomingVersionsList2 = _interopRequireDefault(_upcomingVersionsList);
 
@@ -33021,48 +33645,13 @@
 	var Releases = function (_React$Component) {
 	    _inherits(Releases, _React$Component);
 
-	    function Releases(props) {
+	    function Releases() {
 	        _classCallCheck(this, Releases);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Releases).call(this, props));
-
-	        _this.state = {
-	            isLoadingStories: false,
-	            jiraTickets: []
-	        };
-	        return _this;
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Releases).apply(this, arguments));
 	    }
 
 	    _createClass(Releases, [{
-	        key: "onSelectedReleaseChanged",
-	        value: function onSelectedReleaseChanged(selectedRelease) {
-	            this.setState({
-	                jiraTickets: []
-	            });
-	        }
-	    }, {
-	        key: "onSearchStoriesClick",
-	        value: function onSearchStoriesClick(selectedRelease) {
-	            var _this2 = this;
-
-	            this.setState({
-	                isLoadingStories: true
-	            });
-
-	            _storiesRepository2.default.getStoriesForRelease(selectedRelease.name).then(function (data) {
-	                _this2.setState({
-	                    isLoadingStories: false,
-	                    jiraTickets: data
-	                });
-	            }).catch(function (error) {
-	                _this2.setState({
-	                    isLoadingStories: false
-	                });
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            });
-	        }
-	    }, {
 	        key: "render",
 	        value: function render() {
 	            return _react2.default.createElement(
@@ -33079,10 +33668,10 @@
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-6" },
-	                        _react2.default.createElement(_upcomingVersionsList2.default, { onSearch: this.onSearchStoriesClick.bind(this), onSelectedReleaseChanged: this.onSelectedReleaseChanged.bind(this) })
+	                        _react2.default.createElement(_upcomingVersionsList2.default, null)
 	                    )
 	                ),
-	                _react2.default.createElement(_ticketsList2.default, { jiraTickets: this.state.jiraTickets, isSearching: this.state.isLoadingStories })
+	                _react2.default.createElement(_ticketsList2.default, null)
 	            );
 	        }
 	    }]);
@@ -33093,7 +33682,7 @@
 	exports.default = Releases;
 
 /***/ },
-/* 175 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33116,7 +33705,7 @@
 
 	var _productsRepository2 = _interopRequireDefault(_productsRepository);
 
-	var _projectVersionsList = __webpack_require__(176);
+	var _projectVersionsList = __webpack_require__(179);
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
@@ -33157,7 +33746,7 @@
 	                isLoadingCurrentVersions: true
 	            });
 
-	            _productsRepository2.default.getCurrentVersions().then(function (versions) {
+	            _productsRepository2.default.instance.getCurrentVersions().then(function (versions) {
 	                _this2.setState({
 	                    currentVersions: versions,
 	                    isLoadingCurrentVersions: false
@@ -33192,7 +33781,7 @@
 	exports.default = CurrentVersionsList;
 
 /***/ },
-/* 176 */
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33206,6 +33795,10 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
+
+	var _infiniteLoading = __webpack_require__(175);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33272,19 +33865,7 @@
 	                                _react2.default.createElement(
 	                                    "td",
 	                                    { colSpan: 2 + (_this2.props.extraColumns && _this2.props.extraColumns.length || 0) },
-	                                    _react2.default.createElement(
-	                                        "div",
-	                                        { className: "progress" },
-	                                        _react2.default.createElement(
-	                                            "div",
-	                                            { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                            _react2.default.createElement(
-	                                                "span",
-	                                                { className: "sr-only" },
-	                                                "100% Complete"
-	                                            )
-	                                        )
-	                                    )
+	                                    _react2.default.createElement(_infiniteLoading2.default, null)
 	                                )
 	                            );
 	                        } else if (!_this2.props.projects.length) {
@@ -33360,7 +33941,7 @@
 	exports.default = ProjectVersionsList;
 
 /***/ },
-/* 177 */
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33379,7 +33960,7 @@
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _buildsRepository = __webpack_require__(178);
+	var _buildsRepository = __webpack_require__(181);
 
 	var _buildsRepository2 = _interopRequireDefault(_buildsRepository);
 
@@ -33387,9 +33968,19 @@
 
 	var _productsRepository2 = _interopRequireDefault(_productsRepository);
 
-	var _projectVersionsList = __webpack_require__(176);
+	var _projectVersionsList = __webpack_require__(179);
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
+
+	var _copyContent = __webpack_require__(182);
+
+	var _copyContent2 = _interopRequireDefault(_copyContent);
+
+	var _globalEventEmitter = __webpack_require__(173);
+
+	var _infiniteLoading = __webpack_require__(175);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33412,45 +34003,7 @@
 	            extraColumns: [{
 	                heading: "Build number",
 	                type: "template",
-	                template: function template(project) {
-	                    if (project.isBuilding || _this.state.isLoadingBuilds) {
-	                        return _react2.default.createElement(
-	                            "div",
-	                            { className: "progress" },
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                                _react2.default.createElement(
-	                                    "span",
-	                                    { className: "sr-only" },
-	                                    "100% Complete"
-	                                )
-	                            )
-	                        );
-	                    }
-
-	                    var projectBuilds = _this.state.successfulBuilds[project.name];
-
-	                    if (!projectBuilds) {
-	                        return _react2.default.createElement(
-	                            "span",
-	                            { className: "label label-danger" },
-	                            "Project not found"
-	                        );
-	                    } else if (projectBuilds.hasOwnProperty(project.version)) {
-	                        return _react2.default.createElement(
-	                            "span",
-	                            null,
-	                            projectBuilds[project.version].buildNumber
-	                        );
-	                    } else {
-	                        return _react2.default.createElement(
-	                            "button",
-	                            { className: "btn btn-default", onClick: _this.handleStartBuildClick.bind(_this, project) },
-	                            "Start build"
-	                        );
-	                    }
-	                }
+	                template: _this.renderBuildNumberCell.bind(_this)
 	            }],
 	            isLoadingBuilds: false,
 	            isLoadingReleases: false,
@@ -33480,31 +34033,7 @@
 	    }, {
 	        key: "copyCommandLineScript",
 	        value: function copyCommandLineScript() {
-	            var commandLineScript = document.getElementById("commandLineScript");
-	            var range = document.createRange();
-	            var selection = window.getSelection();
-	            range.selectNode(commandLineScript);
-	            selection.removeAllRanges();
-	            selection.addRange(range);
-
-	            try {
-	                document.execCommand("copy");
-	            } catch (ex) {
-	                console.error("Oops - something went wrong.");
-	            }
-
-	            if (window.getSelection) {
-	                if (window.getSelection().empty) // Chrome
-	                    {
-	                        window.getSelection().empty();
-	                    } else if (window.getSelection().removeAllRanges) // Firefox
-	                    {
-	                        window.getSelection().removeAllRanges();
-	                    }
-	            } else if (document.selection) // IE?
-	                {
-	                    document.selection.empty();
-	                }
+	            (0, _copyContent2.default)("#commandLineScript");
 	        }
 	    }, {
 	        key: "getSelectedReleaseApplications",
@@ -33524,11 +34053,20 @@
 	                return;
 	            }
 
-	            if (!this.props.onSearch) {
-	                return;
-	            }
+	            _globalEventEmitter.GlobalEventEmitter.instance.emit(_globalEventEmitter.Events.SEARCH_TICKETS, this.state.selectedRelease);
+	        }
+	    }, {
+	        key: "handleRefreshClick",
+	        value: function handleRefreshClick() {
+	            this.setState({
+	                releases: [],
+	                selectedRelease: null,
+	                selectedReleaseIndex: -1
+	            });
 
-	            this.props.onSearch(this.state.selectedRelease);
+	            _globalEventEmitter.GlobalEventEmitter.instance.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, null);
+
+	            this.loadAvailableReleases();
 	        }
 	    }, {
 	        key: "handleReleaseChange",
@@ -33542,11 +34080,7 @@
 	                selectedReleaseIndex: selectedIndex
 	            });
 
-	            if (!this.props.onSelectedReleaseChanged) {
-	                return;
-	            }
-
-	            this.props.onSelectedReleaseChanged(this.state.selectedRelease);
+	            _globalEventEmitter.GlobalEventEmitter.instance.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, selectedRelease);
 	        }
 	    }, {
 	        key: "handleStartBuildClick",
@@ -33557,7 +34091,7 @@
 	                selectedRelease: this.state.selectedRelease
 	            });
 
-	            _buildsRepository2.default.startBuild(project.name, project.version);
+	            _buildsRepository2.default.instance.startBuild(project.name, project.version);
 	        }
 	    }, {
 	        key: "loadAvailableReleases",
@@ -33568,7 +34102,7 @@
 	                isLoadingReleases: true
 	            });
 
-	            _productsRepository2.default.getUpcomingReleases().then(function (releases) {
+	            _productsRepository2.default.instance.getUpcomingReleases().then(function (releases) {
 	                _this2.setState({
 	                    releases: releases,
 	                    isLoadingReleases: false
@@ -33590,7 +34124,7 @@
 	                isLoadingBuilds: true
 	            });
 
-	            _buildsRepository2.default.getSuccessfulBuildsForProjects().then(function (builds) {
+	            _buildsRepository2.default.instance.getSuccessfulBuildsForProjects().then(function (builds) {
 	                _this3.setState({
 	                    isLoadingBuilds: false,
 	                    successfulBuilds: builds
@@ -33631,20 +34165,33 @@
 	                            "div",
 	                            { className: "col-sm-10" },
 	                            _react2.default.createElement(
-	                                "select",
-	                                { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
+	                                "div",
+	                                { className: "input-group" },
 	                                _react2.default.createElement(
-	                                    "option",
-	                                    { value: "-1" },
-	                                    " "
-	                                ),
-	                                this.state.releases.map(function (release, index) {
-	                                    return _react2.default.createElement(
+	                                    "select",
+	                                    { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
+	                                    _react2.default.createElement(
 	                                        "option",
-	                                        { key: index, value: index },
-	                                        release.name
-	                                    );
-	                                })
+	                                        { value: "-1" },
+	                                        " "
+	                                    ),
+	                                    this.state.releases.map(function (release, index) {
+	                                        return _react2.default.createElement(
+	                                            "option",
+	                                            { key: index, value: index },
+	                                            release.name
+	                                        );
+	                                    })
+	                                ),
+	                                _react2.default.createElement(
+	                                    "span",
+	                                    { className: "input-group-btn" },
+	                                    _react2.default.createElement(
+	                                        "button",
+	                                        { className: "btn btn-default", onClick: this.handleRefreshClick.bind(this) },
+	                                        _react2.default.createElement("i", { className: "glyphicon glyphicon-refresh" })
+	                                    )
+	                                )
 	                            )
 	                        )
 	                    ),
@@ -33691,6 +34238,35 @@
 	                    extraColumns: this.state.extraColumns })
 	            );
 	        }
+	    }, {
+	        key: "renderBuildNumberCell",
+	        value: function renderBuildNumberCell(project) {
+	            if (project.isBuilding || this.state.isLoadingBuilds) {
+	                return _react2.default.createElement(_infiniteLoading2.default, null);
+	            }
+
+	            var projectBuilds = this.state.successfulBuilds[project.name];
+
+	            if (!projectBuilds) {
+	                return _react2.default.createElement(
+	                    "span",
+	                    { className: "label label-danger" },
+	                    "Project not found"
+	                );
+	            } else if (projectBuilds.hasOwnProperty(project.version)) {
+	                return _react2.default.createElement(
+	                    "span",
+	                    null,
+	                    projectBuilds[project.version].buildNumber
+	                );
+	            } else {
+	                return _react2.default.createElement(
+	                    "button",
+	                    { className: "btn btn-default", onClick: this.handleStartBuildClick.bind(this, project) },
+	                    "Start build"
+	                );
+	            }
+	        }
 	    }]);
 
 	    return UpcomingVersionsList;
@@ -33699,7 +34275,7 @@
 	exports.default = UpcomingVersionsList;
 
 /***/ },
-/* 178 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33734,22 +34310,30 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
 	var BuildsRepository = function (_BaseRepository) {
 	    _inherits(BuildsRepository, _BaseRepository);
 
-	    function BuildsRepository() {
+	    function BuildsRepository(enforcer) {
 	        _classCallCheck(this, BuildsRepository);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(BuildsRepository).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BuildsRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton!";
+	        }
+	        return _this;
 	    }
 
-	    _createClass(BuildsRepository, null, [{
+	    _createClass(BuildsRepository, [{
 	        key: "getSuccessfulBuildsForProjects",
 	        value: function getSuccessfulBuildsForProjects() {
 	            var _this2 = this;
 
 	            var deferred = _q2.default.defer();
-	            var productNames = _productsRepository2.default.getProducts().map(function (product) {
+	            var productNames = _productsRepository2.default.instance.getProducts().map(function (product) {
 	                return product.name;
 	            }).join(",");
 
@@ -33780,12 +34364,62 @@
 
 	            return deferred.promise;
 	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new BuildsRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
+	        }
 	    }]);
 
 	    return BuildsRepository;
 	}(_baseRepository2.default);
 
 	exports.default = BuildsRepository;
+
+/***/ },
+/* 182 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = copyContent;
+	function clearSelection() {
+	    if (window.getSelection) {
+	        if (window.getSelection().empty) {
+	            window.getSelection().empty();
+	        } else if (window.getSelection().removeAllRanges) {
+	            window.getSelection().removeAllRanges();
+	        }
+	    } else if (document.selection) {
+	        document.selection.empty();
+	    }
+	}
+
+	function copyContent(selector) {
+	    var commandLineScript = document.querySelector(selector);
+	    var range = document.createRange();
+	    var selection = window.getSelection();
+
+	    clearSelection();
+
+	    range.selectNode(commandLineScript);
+	    selection.addRange(range);
+
+	    try {
+	        document.execCommand("copy");
+	    } catch (ex) {
+	        console.error("Sorry bro, your browser does not support 'copy' command. Move on and get something which actually works!");
+	    }
+
+	    clearSelection();
+	}
 
 /***/ }
 /******/ ]);

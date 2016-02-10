@@ -28,7 +28,7 @@ export default class CurrentVersionsList extends React.Component
             isLoadingCurrentVersions: true
         });
 
-        ProductsRepository.getCurrentVersions()
+        ProductsRepository.instance.getCurrentVersions()
             .then(versions =>
             {
                 this.setState(

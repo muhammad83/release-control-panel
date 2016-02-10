@@ -34,9 +34,9 @@ class Builds
         let version = request.body.version;
 
         buildsRepository.startBuild(project, version)
-            .then(data =>
+            .then(() =>
             {
-                response.send(JSON.stringify(data));
+                response.status(201).send(null);
             })
             .catch(ex =>
             {

@@ -8,7 +8,7 @@ export default class Navigation extends React.Component
         super(props);
 
         this.state = {
-            products: ProductsRepository.getProducts()
+            products: ProductsRepository.instance.getProducts()
         };
     }
 

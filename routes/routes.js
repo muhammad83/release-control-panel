@@ -6,6 +6,7 @@ const tagsController = require("./tags");
 
 module.exports = (app) =>
 {
+    app.post("/create-release-filter", storiesController.createReleaseFilter);
     app.get("/current-versions", tagsController.getCurrentVersions);
     app.get("/releases", tagsController.getReleases);
     app.get("/stable-tags", tagsController.getStableTags);
