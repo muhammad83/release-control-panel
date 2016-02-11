@@ -68,8 +68,8 @@ export default class CurrentVersionsList extends BaseComponent
     {
         return (
             <div>
-                <h2>Current versions</h2>
-                <ProjectVersionsList isLoading={this.state.isLoadingCurrentVersions} projects={this.state.currentVersions} style={{ marginTop: "10.3em" }} />
+                <h2 style={{ marginTop: "4.6em" }}>Current versions</h2>
+                <ProjectVersionsList isLoading={this.state.isLoadingCurrentVersions} projects={this.state.currentVersions} />
             </div>
         );
     }

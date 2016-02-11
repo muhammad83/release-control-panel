@@ -1,0 +1,46 @@
+h2
+{
+    font-size: normal;
+    text-transform: uppercase;
+}
+
+.btn
+{
+    padding-bottom: 7px;
+    padding-top: 7px;
+}
+
+.btn-default
+{
+    background: #FAAF40;
+    border: none;
+    text-shadow: none;
+}
+
+.btn-primary
+{
+    background: #26A9E0;
+    border: none;
+    text-shadow: none;
+}
+
+.input-group .form-control
+{
+    border: none;
+}
+
+.label
+{
+    border-radius: 0;
+    font-size: 100%;
+}
+
+.navbar-default
+{
+    background: black;
+}
+
+.navbar-brand
+{
+    text-transform: uppercase;
+}
