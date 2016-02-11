@@ -203,27 +203,28 @@ export default class UpcomingVersionsList extends BaseComponent
     {
         return (
             <div>
-                <h2>Upcoming versions</h2>
                 <form onSubmit={this.handleFormSubmit.bind(this)}>
                     <div className="form-group">
                         <label htmlFor="release">Release:</label>
-                        <div className="input-group">
-                            <select id="release" className="form-control" onChange={this.handleReleaseChange.bind(this)} value={this.state.selectedReleaseIndex}>
-                                <option value="-1"> </option>
-                                {
-                                    this.state.releases.map((release, index) =>
+                        <div className="row">
+                            <div className="col-md-10">
+                                <select id="release" className="form-control" onChange={this.handleReleaseChange.bind(this)} value={this.state.selectedReleaseIndex}>
+                                    <option value="-1"> </option>
                                     {
-                                        return (
-                                            <option key={index} value={index}>{release.name}</option>
-                                        );
-                                    })
-                                }
-                            </select>
-                            <span className="input-group-btn">
+                                        this.state.releases.map((release, index) =>
+                                        {
+                                            return (
+                                                <option key={index} value={index}>{release.name}</option>
+                                            );
+                                        })
+                                    }
+                                </select>
+                            </div>
+                            <div className="col-md-2">
                                 <button className="btn btn-default" onClick={this.handleRefreshClick.bind(this)}>
                                     Refresh
                                 </button>
-                            </span>
+                            </div>
                         </div>
                     </div>
                     <div className="form-group">
@@ -250,6 +251,7 @@ export default class UpcomingVersionsList extends BaseComponent
                         }
                     </div>
                 </form>
+                <h2>Upcoming versions</h2>
                 <ProjectVersionsList isLoading={this.state.isLoadingReleases}
                                      projects={this.getSelectedReleaseApplications()}
                                      extraColumns={ this.state.extraColumns } />

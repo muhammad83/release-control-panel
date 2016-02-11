@@ -34007,10 +34007,10 @@
 	                null,
 	                React.createElement(
 	                    "h2",
-	                    null,
+	                    { style: { marginTop: "4.6em" } },
 	                    "Current versions"
 	                ),
-	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingCurrentVersions, projects: this.state.currentVersions, style: { marginTop: "10.3em" } })
+	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingCurrentVersions, projects: this.state.currentVersions })
 	            );
 	        }
 	    }]);
@@ -34409,11 +34409,6 @@
 	                "div",
 	                null,
 	                React.createElement(
-	                    "h2",
-	                    null,
-	                    "Upcoming versions"
-	                ),
-	                React.createElement(
 	                    "form",
 	                    { onSubmit: this.handleFormSubmit.bind(this) },
 	                    React.createElement(
@@ -34426,26 +34421,30 @@
 	                        ),
 	                        React.createElement(
 	                            "div",
-	                            { className: "input-group" },
+	                            { className: "row" },
 	                            React.createElement(
-	                                "select",
-	                                { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
+	                                "div",
+	                                { className: "col-md-10" },
 	                                React.createElement(
-	                                    "option",
-	                                    { value: "-1" },
-	                                    " "
-	                                ),
-	                                this.state.releases.map(function (release, index) {
-	                                    return React.createElement(
+	                                    "select",
+	                                    { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
+	                                    React.createElement(
 	                                        "option",
-	                                        { key: index, value: index },
-	                                        release.name
-	                                    );
-	                                })
+	                                        { value: "-1" },
+	                                        " "
+	                                    ),
+	                                    this.state.releases.map(function (release, index) {
+	                                        return React.createElement(
+	                                            "option",
+	                                            { key: index, value: index },
+	                                            release.name
+	                                        );
+	                                    })
+	                                )
 	                            ),
 	                            React.createElement(
-	                                "span",
-	                                { className: "input-group-btn" },
+	                                "div",
+	                                { className: "col-md-2" },
 	                                React.createElement(
 	                                    "button",
 	                                    { className: "btn btn-default", onClick: this.handleRefreshClick.bind(this) },
@@ -34487,6 +34486,11 @@
 	                            }
 	                        }()
 	                    )
+	                ),
+	                React.createElement(
+	                    "h2",
+	                    null,
+	                    "Upcoming versions"
 	                ),
 	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingReleases,
 	                    projects: this.getSelectedReleaseApplications(),
