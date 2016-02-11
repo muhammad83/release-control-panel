@@ -9,6 +9,43 @@ const workspace = process.env.WORKSPACE;
 
 class StoriesRepository
 {
+    static checkIfIssueExists(key)
+    {
+        let deferred = q.defer();
+        let requestOptions = {
+            method: "GET",
+            url: `${config.jiraUrl}/rest/api/2/issue/${key}/watchers`,
+            auth:
+            {
+                user: config.jiraUserName,
+                pass: config.jiraPassword
+            },
+            headers:
+            {
+                "Content-Type": "application/json"
+            }
+        };
+        let responseHandler = (error, response, data) =>
+        {
+            if (error)
+            {
+                deferred.reject(
+                {
+                    data: error,
+                    message: "Unknown error when searching JIRA tickets.",
+                    status: 500
+                });
+                return;
+            }
+
+            deferred.resolve(response.statusCode === 200);
+        };
+
+        request(requestOptions, responseHandler);
+
+        return deferred.promise;
+    }
+
     static createReleaseFilter(releaseName, projectsAndTags)
     {
         let deferred = q.defer();
@@ -182,10 +219,30 @@ class StoriesRepository
     static getStoriesFromGitLog(projectsAndTags)
     {
         let promises = projectsAndTags.map(project => this.findJiraKeysInProjectsGitLog(project));
-        return q.all(promises).then(results =>
-        {
-            return results.reduce((left, right) => left.concat(right), [])
-        });
+        let foundKeys;
+        return q.all(promises)
+            .then(results =>
+            {
+                let flattenedResults = results.reduce((left, right) => left.concat(right), []);
+                let uniqueResults = [];
+                for (let key of flattenedResults)
+                {
+                    if (uniqueResults.indexOf(key) !== -1)
+                        continue;
+
+                    uniqueResults.push(key);
+                }
+                return uniqueResults;
+            })
+            .then(keys =>
+            {
+                foundKeys = keys;
+                return q.all(keys.map(key => this.checkIfIssueExists(key)));
+            })
+            .then(results =>
+            {
+                return foundKeys.filter((key, index) => results[index]);
+            });
     }
 
     static getStoriesFromJira(jql)
