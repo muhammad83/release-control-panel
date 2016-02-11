@@ -1,7 +1,7 @@
 import $ from "jquery";
 import q from "q";
 import BaseRepository from "./base-repository";
-import ProductsRepository from "./products-repository";
+import {productsRepository} from "./products-repository";
 
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
@@ -70,7 +70,7 @@ export class StoriesRepository extends BaseRepository
     getStoriesForRelease(releaseName)
     {
         let deferred = q.defer();
-        let products = ProductsRepository.instance.getProducts().map(function (p) { return p.name; }).join(",");
+        let products = productsRepository.getProducts().map(function (p) { return p.name; }).join(",");
 
         let request = $.get(`/stories-for-projects?version=${releaseName}&projects=${products}&timestamp=${+new Date()}`, data =>
         {

@@ -6,7 +6,7 @@ export default class ProjectVersionsList extends BaseComponent
     render()
     {
         return (
-            <table className="table">
+            <table className="table" style={this.props.style}>
                 <thead>
                 <tr>
                     <th>Project name</th>

@@ -32139,15 +32139,21 @@
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _requestManager = __webpack_require__(170);
+	var _globalEventEmitter = __webpack_require__(170);
+
+	var _infiniteLoading = __webpack_require__(172);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
+
+	var _requestManager = __webpack_require__(173);
 
 	var _requestManager2 = _interopRequireDefault(_requestManager);
 
-	var _storiesRepository = __webpack_require__(171);
+	var _storiesRepository = __webpack_require__(174);
 
-	var _tagsRepository = __webpack_require__(172);
+	var _tagsRepository = __webpack_require__(175);
 
-	var _ticketsList = __webpack_require__(174);
+	var _ticketsList = __webpack_require__(177);
 
 	var _ticketsList2 = _interopRequireDefault(_ticketsList);
 
@@ -32171,8 +32177,8 @@
 	        _this.state = {
 	            endingTags: [],
 	            endingTagIndex: -1,
-	            jiraTickets: [],
-	            searchingInProgress: false,
+	            isLoadingTags: false,
+	            isLoadingStableTags: false,
 	            showStableVersions: false,
 	            startingTagIndex: -1,
 	            tags: []
@@ -32219,7 +32225,6 @@
 	            this.setState({
 	                endingTags: [],
 	                endingTagIndex: -1,
-	                jiraTickets: [],
 	                showStableVersions: event.target.checked
 	            });
 
@@ -32240,7 +32245,9 @@
 	            var _this2 = this;
 
 	            if (showStableVersions) {
-	                this.setState({ searchingInProgress: true });
+	                this.setState({
+	                    isLoadingStableTags: true
+	                });
 
 	                _tagsRepository.tagsRepository.setRequestManager(this.requestManager);
 	                _tagsRepository.tagsRepository.getStableTags(this.props.productName).then(function (data) {
@@ -32248,17 +32255,18 @@
 
 	                    _this2.setState({
 	                        endingTagIndex: -1,
-	                        endingTags: data,
-	                        searchingInProgress: false
+	                        endingTags: data
 	                    });
 	                }).catch(function (error) {
 	                    if (!_this2.m_isMounted) return;
 
-	                    _this2.setState({
-	                        searchingInProgress: false
-	                    });
-
 	                    _errorHandler2.default.showErrorMessage(error);
+	                }).finally(function () {
+	                    if (!_this2.m_isMounted) return;
+
+	                    _this2.setState({
+	                        isLoadingStableTags: false
+	                    });
 	                });
 	            } else {
 	                var endingTags = this.getEndingTagsForStartTag(this.state.startingTagIndex);
@@ -32274,7 +32282,9 @@
 	        value: function loadTagsList(props) {
 	            var _this3 = this;
 
-	            this.setState({ searchingInProgress: true });
+	            this.setState({
+	                isLoadingTags: true
+	            });
 
 	            _tagsRepository.tagsRepository.setRequestManager(this.requestManager);
 	            _tagsRepository.tagsRepository.getTags(props.productName).then(function (data) {
@@ -32283,8 +32293,6 @@
 	                _this3.setState({
 	                    endingTagIndex: -1,
 	                    endingTags: [],
-	                    jiraTickets: [],
-	                    searchingInProgress: false,
 	                    startingTagIndex: data.startingTagIndex,
 	                    tags: data.tags
 	                });
@@ -32297,48 +32305,32 @@
 	            }).catch(function (error) {
 	                if (!_this3.m_isMounted) return;
 
-	                _this3.setState({
-	                    searchingInProgress: false
-	                });
-
 	                _errorHandler2.default.showErrorMessage(error);
+	            }).finally(function () {
+	                if (!_this3.m_isMounted) return;
+
+	                _this3.setState({
+	                    isLoadingTags: false
+	                });
 	            });
 	        }
 	    }, {
 	        key: "searchJiraTikets",
 	        value: function searchJiraTikets(event) {
-	            var _this4 = this;
-
 	            event.preventDefault();
 
 	            if (!(this.state.startingTagIndex >= 0) || !(this.state.endingTagIndex >= 0)) {
 	                return;
 	            }
 
-	            this.setState({
-	                searchingInProgress: true
-	            });
-
-	            var serviceName = this.props.productName;
+	            var projectName = this.props.productName;
 	            var startTag = this.state.tags[this.state.startingTagIndex].name;
 	            var endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
-	            _storiesRepository.storiesRepository.getStories(serviceName, startTag, endTag).then(function (data) {
-	                if (!_this4.m_isMounted) return;
-
-	                _this4.setState({
-	                    jiraTickets: data,
-	                    searchingInProgress: false
-	                });
-	            }).catch(function (error) {
-	                if (!_this4.m_isMounted) return;
-
-	                _this4.setState({
-	                    searchingInProgress: false
-	                });
-
-	                _errorHandler2.default.showErrorMessage(error);
+	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SEARCH_PROJECT_TICKETS, {
+	                projectName: projectName,
+	                startTag: startTag,
+	                endTag: endTag
 	            });
 	        }
 	    }, {
@@ -32396,7 +32388,8 @@
 	                                                tag.name
 	                                            );
 	                                        })
-	                                    )
+	                                    ),
+	                                    React.createElement(_infiniteLoading2.default, { isLoading: this.state.isLoadingTags })
 	                                )
 	                            ),
 	                            React.createElement(
@@ -32443,7 +32436,8 @@
 	                                                tag.name
 	                                            );
 	                                        })
-	                                    )
+	                                    ),
+	                                    React.createElement(_infiniteLoading2.default, { isLoading: this.state.isLoadingStableTags })
 	                                )
 	                            ),
 	                            React.createElement(
@@ -32462,7 +32456,7 @@
 	                        )
 	                    )
 	                ),
-	                React.createElement(_ticketsList2.default, { jiraTickets: this.state.jiraTickets, isSearching: this.state.searchingInProgress })
+	                React.createElement(_ticketsList2.default, null)
 	            );
 	        }
 	    }]);
@@ -32505,754 +32499,6 @@
 
 /***/ },
 /* 170 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var RequestManager = function () {
-	    function RequestManager() {
-	        _classCallCheck(this, RequestManager);
-
-	        this.isAborting = false;
-	        this.requests = [];
-	    }
-
-	    _createClass(RequestManager, [{
-	        key: "abortPendingRequests",
-	        value: function abortPendingRequests() {
-	            this.isAborting = true;
-
-	            var _iteratorNormalCompletion = true;
-	            var _didIteratorError = false;
-	            var _iteratorError = undefined;
-
-	            try {
-	                for (var _iterator = this.requests[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                    var request = _step.value;
-
-	                    request.abort();
-	                }
-	            } catch (err) {
-	                _didIteratorError = true;
-	                _iteratorError = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion && _iterator.return) {
-	                        _iterator.return();
-	                    }
-	                } finally {
-	                    if (_didIteratorError) {
-	                        throw _iteratorError;
-	                    }
-	                }
-	            }
-
-	            this.requests = [];
-	        }
-	    }, {
-	        key: "onRequestFinished",
-	        value: function onRequestFinished(request) {
-	            if (this.isAborting) return;
-
-	            var index = this.requests.indexOf(request);
-	            if (index === -1) return;
-
-	            this.requests.splice(index, 1);
-	        }
-	    }, {
-	        key: "monitorRequest",
-	        value: function monitorRequest(request) {
-	            request.always(this.onRequestFinished.bind(this, request));
-	            this.requests.push(request);
-	        }
-	    }]);
-
-	    return RequestManager;
-	}();
-
-	exports.default = RequestManager;
-
-/***/ },
-/* 171 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.storiesRepository = exports.StoriesRepository = undefined;
-
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _q = __webpack_require__(164);
-
-	var _q2 = _interopRequireDefault(_q);
-
-	var _baseRepository = __webpack_require__(167);
-
-	var _baseRepository2 = _interopRequireDefault(_baseRepository);
-
-	var _productsRepository = __webpack_require__(162);
-
-	var _productsRepository2 = _interopRequireDefault(_productsRepository);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var singleton = Symbol();
-	var singletonEnforcer = Symbol();
-
-	var StoriesRepository = exports.StoriesRepository = function (_BaseRepository) {
-	    _inherits(StoriesRepository, _BaseRepository);
-
-	    function StoriesRepository(enforcer) {
-	        _classCallCheck(this, StoriesRepository);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StoriesRepository).call(this));
-
-	        if (enforcer !== singletonEnforcer) {
-	            throw "Cannot construct singleton";
-	        }
-	        return _this;
-	    }
-
-	    _createClass(StoriesRepository, [{
-	        key: "createReleaseFilter",
-	        value: function createReleaseFilter(releaseName) {
-	            var _this2 = this;
-
-	            var deferred = _q2.default.defer();
-	            var products = _productsRepository2.default.instance.getProducts().map(function (p) {
-	                return p.name;
-	            }).join(",");
-
-	            var request = _jquery2.default.post("/create-release-filter?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
-	                deferred.resolve(data);
-	            }).fail(function (response) {
-	                deferred.reject(_this2.processRequestFailure(response));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "getStories",
-	        value: function getStories(serviceName, startTag, endTag) {
-	            var _this3 = this;
-
-	            var deferred = _q2.default.defer();
-	            var encodedStartTag = encodeURIComponent(startTag);
-	            var encodedEndTag = encodeURIComponent(endTag);
-
-	            var request = _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
-	                deferred.resolve(JSON.parse(data));
-	            }).fail(function (response) {
-	                deferred.reject(_this3.processRequestFailure(response));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "getStoriesForRelease",
-	        value: function getStoriesForRelease(releaseName) {
-	            var _this4 = this;
-
-	            var deferred = _q2.default.defer();
-	            var products = _productsRepository2.default.instance.getProducts().map(function (p) {
-	                return p.name;
-	            }).join(",");
-
-	            var request = _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
-	                deferred.resolve(JSON.parse(data));
-	            }).fail(function (response) {
-	                deferred.reject(_this4.processRequestFailure(response));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }], [{
-	        key: "instance",
-	        get: function get() {
-	            if (!this[singleton]) {
-	                this[singleton] = new StoriesRepository(singletonEnforcer);
-	            }
-
-	            return this[singleton];
-	        }
-	    }]);
-
-	    return StoriesRepository;
-	}(_baseRepository2.default);
-
-	var storiesRepository = exports.storiesRepository = StoriesRepository.instance;
-
-/***/ },
-/* 172 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.tagsRepository = exports.TagsRepository = undefined;
-
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _q = __webpack_require__(164);
-
-	var _q2 = _interopRequireDefault(_q);
-
-	var _tag = __webpack_require__(173);
-
-	var _tag2 = _interopRequireDefault(_tag);
-
-	var _baseRepository = __webpack_require__(167);
-
-	var _baseRepository2 = _interopRequireDefault(_baseRepository);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var singleton = Symbol();
-	var singletonEnforcer = Symbol();
-
-	var TagsRepository = exports.TagsRepository = function (_BaseRepository) {
-	    _inherits(TagsRepository, _BaseRepository);
-
-	    function TagsRepository(enforcer) {
-	        _classCallCheck(this, TagsRepository);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TagsRepository).call(this));
-
-	        if (enforcer !== singletonEnforcer) {
-	            throw "Cannot construct singleton";
-	        }
-	        return _this;
-	    }
-
-	    _createClass(TagsRepository, [{
-	        key: "getStableTags",
-	        value: function getStableTags(productName) {
-	            var _this2 = this;
-
-	            var deferred = _q2.default.defer();
-
-	            var request = _jquery2.default.get("/stable-tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
-	                var jsonData = JSON.parse(data);
-	                var tags = jsonData.map(function (tag) {
-	                    return new _tag2.default(tag);
-	                });
-
-	                deferred.resolve(tags);
-	            }).fail(function (error) {
-	                deferred.reject(_this2.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "getTags",
-	        value: function getTags(productName) {
-	            var _this3 = this;
-
-	            var deferred = _q2.default.defer();
-
-	            var request = _jquery2.default.get("/tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
-	                var jsonData = JSON.parse(data);
-	                var tags = jsonData.tags.map(function (tag) {
-	                    return new _tag2.default(tag);
-	                });
-	                var startingTagIndex = jsonData.currentVersion ? tags.findIndex(function (tag) {
-	                    return tag.name == jsonData.currentVersion;
-	                }) : -1;
-
-	                deferred.resolve({
-	                    tags: tags,
-	                    startingTagIndex: startingTagIndex
-	                });
-	            }).fail(function (error) {
-	                deferred.reject(_this3.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }], [{
-	        key: "instance",
-	        get: function get() {
-	            if (!this[singleton]) {
-	                this[singleton] = new TagsRepository(singletonEnforcer);
-	            }
-
-	            return this[singleton];
-	        }
-	    }]);
-
-	    return TagsRepository;
-	}(_baseRepository2.default);
-
-	var tagsRepository = exports.tagsRepository = TagsRepository.instance;
-
-/***/ },
-/* 173 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var Tag = function Tag(serverTag) {
-	    _classCallCheck(this, Tag);
-
-	    this.name = serverTag;
-	};
-
-	exports.default = Tag;
-
-/***/ },
-/* 174 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _baseComponent = __webpack_require__(160);
-
-	var _baseComponent2 = _interopRequireDefault(_baseComponent);
-
-	var _errorHandler = __webpack_require__(169);
-
-	var _errorHandler2 = _interopRequireDefault(_errorHandler);
-
-	var _globalEventEmitter = __webpack_require__(175);
-
-	var _infiniteLoading = __webpack_require__(177);
-
-	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
-
-	var _requestManager = __webpack_require__(170);
-
-	var _requestManager2 = _interopRequireDefault(_requestManager);
-
-	var _storiesRepository = __webpack_require__(171);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var TicketsList = function (_BaseComponent) {
-	    _inherits(TicketsList, _BaseComponent);
-
-	    function TicketsList(props) {
-	        _classCallCheck(this, TicketsList);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).call(this, props));
-
-	        _this.requestManager = new _requestManager2.default();
-	        _this.state = {
-	            createdFilterName: null,
-	            createdFilterUrl: null,
-	            isCreatingFilter: false,
-	            isLoadingStories: false,
-	            jiraTickets: [],
-	            selectedRelease: null
-	        };
-	        return _this;
-	    }
-
-	    _createClass(TicketsList, [{
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentDidMount", this).call(this);
-
-	            this._onSearchStories = this.onSearchStoriesClick.bind(this);
-	            this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
-
-	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
-	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
-	        }
-	    }, {
-	        key: "componentWillUnmount",
-	        value: function componentWillUnmount() {
-	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentWillUnmount", this).call(this);
-
-	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
-	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
-
-	            this.requestManager.abortPendingRequests();
-	        }
-	    }, {
-	        key: "handleCreateReleaseFilterClick",
-	        value: function handleCreateReleaseFilterClick() {
-	            var _this2 = this;
-
-	            if (!this.state.selectedRelease) {
-	                alert("Please select release first.");
-	                return;
-	            }
-
-	            this.setState({
-	                isCreatingFilter: true
-	            });
-
-	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
-	            _storiesRepository.storiesRepository.createReleaseFilter(this.state.selectedRelease.name).then(function (data) {
-	                if (!_this2.m_isMounted) return;
-
-	                _this2.setState({
-	                    createdFilterName: data.name,
-	                    createdFilterUrl: data.url
-	                });
-	            }).catch(function (error) {
-	                if (!_this2.m_isMounted) return;
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            }).finally(function () {
-	                if (!_this2.m_isMounted) return;
-
-	                _this2.setState({
-	                    isCreatingFilter: false
-	                });
-	            });
-	        }
-	    }, {
-	        key: "onSearchStoriesClick",
-	        value: function onSearchStoriesClick(selectedRelease) {
-	            var _this3 = this;
-
-	            this.setState({
-	                isLoadingStories: true,
-	                jiraTickets: [],
-	                selectedRelease: selectedRelease
-	            });
-
-	            if (!selectedRelease) return;
-
-	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
-	            _storiesRepository.storiesRepository.getStoriesForRelease(selectedRelease.name).then(function (data) {
-	                if (!_this3.m_isMounted) return;
-
-	                _this3.setState({
-	                    isLoadingStories: false,
-	                    jiraTickets: data
-	                });
-	            }).catch(function (error) {
-	                if (!_this3.m_isMounted) return;
-
-	                _this3.setState({
-	                    isLoadingStories: false
-	                });
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            });
-	        }
-	    }, {
-	        key: "onSelectedReleaseChanged",
-	        value: function onSelectedReleaseChanged(selectedRelease) {
-	            this.setState({
-	                jiraTickets: [],
-	                selectedRelease: selectedRelease
-	            });
-	        }
-	    }, {
-	        key: "render",
-	        value: function render() {
-	            var _this4 = this;
-
-	            return React.createElement(
-	                "div",
-	                { className: "row" },
-	                React.createElement(
-	                    "div",
-	                    { className: "col-md-12" },
-	                    React.createElement(
-	                        "h2",
-	                        null,
-	                        "Jira tickets"
-	                    ),
-	                    function () {
-	                        if (_this4.state.selectedRelease) {
-	                            if (_this4.state.createdFilterName) {
-	                                return React.createElement(
-	                                    "p",
-	                                    null,
-	                                    "Created JIRA filter: ",
-	                                    React.createElement(
-	                                        "a",
-	                                        { href: _this4.state.createdFilterUrl, target: "_blank", rel: "external" },
-	                                        _this4.state.createdFilterName
-	                                    )
-	                                );
-	                            } else {
-	                                return React.createElement(
-	                                    "div",
-	                                    { className: "row" },
-	                                    React.createElement(
-	                                        "div",
-	                                        { className: "col-md-1" },
-	                                        React.createElement(
-	                                            "div",
-	                                            { className: "btn-group", role: "group" },
-	                                            React.createElement(
-	                                                "button",
-	                                                { className: "btn btn-default", onClick: _this4.handleCreateReleaseFilterClick.bind(_this4) },
-	                                                "Create release filter"
-	                                            )
-	                                        )
-	                                    ),
-	                                    React.createElement(
-	                                        "div",
-	                                        { className: "col-md-1" },
-	                                        React.createElement(_infiniteLoading2.default, { isLoading: _this4.state.isCreatingFilter })
-	                                    )
-	                                );
-	                            }
-	                        }
-	                    }(),
-	                    React.createElement(
-	                        "table",
-	                        { className: "table" },
-	                        React.createElement(
-	                            "thead",
-	                            null,
-	                            React.createElement(
-	                                "tr",
-	                                null,
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "#"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Summary"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Epic"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Git tags"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Date"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Status"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Author"
-	                                )
-	                            )
-	                        ),
-	                        React.createElement(
-	                            "tbody",
-	                            null,
-	                            function () {
-	                                if (_this4.state.isLoadingStories) {
-	                                    return React.createElement(
-	                                        "tr",
-	                                        null,
-	                                        React.createElement(
-	                                            "td",
-	                                            { colSpan: "7" },
-	                                            React.createElement(_infiniteLoading2.default, null)
-	                                        )
-	                                    );
-	                                }
-
-	                                if (!_this4.state.jiraTickets || !_this4.state.jiraTickets.length) {
-	                                    return React.createElement(
-	                                        "tr",
-	                                        null,
-	                                        React.createElement(
-	                                            "td",
-	                                            { colSpan: "7" },
-	                                            React.createElement(
-	                                                "p",
-	                                                null,
-	                                                "No JIRA tickets found. Please change search criteria and hit \"Search\" button."
-	                                            )
-	                                        )
-	                                    );
-	                                }
-
-	                                return _this4.state.jiraTickets.map(function (ticket, ticketIndex) {
-	                                    return React.createElement(
-	                                        "tr",
-	                                        { key: ticketIndex },
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            ticketIndex + 1
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            React.createElement(
-	                                                "a",
-	                                                { href: ticket.url, target: "_blank", rel: "external" },
-	                                                ticket.ticketNumber,
-	                                                ": ",
-	                                                ticket.message
-	                                            )
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            function () {
-	                                                if (ticket.epic) {
-	                                                    return React.createElement(
-	                                                        "a",
-	                                                        { href: ticket.epic.url, target: "_blank", rel: "external" },
-	                                                        ticket.epic.ticketNumber,
-	                                                        ": ",
-	                                                        ticket.epic.message
-	                                                    );
-	                                                }
-	                                            }()
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            React.createElement(
-	                                                "ul",
-	                                                { className: "list-unstyled" },
-	                                                (ticket.gitTags || []).map(function (tag, tagIndex) {
-	                                                    return React.createElement(
-	                                                        "li",
-	                                                        { key: tagIndex },
-	                                                        tag
-	                                                    );
-	                                                })
-	                                            )
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            ticket.dateTime
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            function () {
-	                                                switch (ticket.status) {
-	                                                    case "Dev Ready":
-	                                                    case "Dev Complete":
-	                                                        return React.createElement(
-	                                                            "span",
-	                                                            { className: "label label-danger" },
-	                                                            ticket.status
-	                                                        );
-	                                                    case "In QA":
-	                                                        return React.createElement(
-	                                                            "span",
-	                                                            { className: "label label-warning" },
-	                                                            ticket.status
-	                                                        );
-	                                                    case "QA Complete":
-	                                                    case "Resolved":
-	                                                        return React.createElement(
-	                                                            "span",
-	                                                            { className: "label label-success" },
-	                                                            ticket.status
-	                                                        );
-	                                                    default:
-	                                                        return React.createElement(
-	                                                            "span",
-	                                                            { className: "label label-default" },
-	                                                            ticket.status
-	                                                        );
-	                                                }
-	                                            }()
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            ticket.author
-	                                        )
-	                                    );
-	                                });
-	                            }()
-	                        )
-	                    )
-	                )
-	            );
-	        }
-	    }]);
-
-	    return TicketsList;
-	}(_baseComponent2.default);
-
-	exports.default = TicketsList;
-
-/***/ },
-/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33264,7 +32510,7 @@
 	});
 	exports.globalEventEmitter = exports.GlobalEventEmitter = exports.Events = undefined;
 
-	var _events = __webpack_require__(176);
+	var _events = __webpack_require__(171);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -33277,6 +32523,7 @@
 
 	var Events = exports.Events = {
 	    SEARCH_TICKETS: "search-tickets",
+	    SEARCH_PROJECT_TICKETS: "search-project-tickets",
 	    SELECTED_RELEASE_CHANGED: "selected-release-changed"
 	};
 
@@ -33315,7 +32562,7 @@
 	var globalEventEmitter = exports.globalEventEmitter = GlobalEventEmitter.instance;
 
 /***/ },
-/* 176 */
+/* 171 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -33619,7 +32866,7 @@
 
 
 /***/ },
-/* 177 */
+/* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33680,6 +32927,787 @@
 	}(_baseComponent2.default);
 
 	exports.default = CurrentVersionsList;
+
+/***/ },
+/* 173 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var RequestManager = function () {
+	    function RequestManager() {
+	        _classCallCheck(this, RequestManager);
+
+	        this.isAborting = false;
+	        this.requests = [];
+	    }
+
+	    _createClass(RequestManager, [{
+	        key: "abortPendingRequests",
+	        value: function abortPendingRequests() {
+	            this.isAborting = true;
+
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = this.requests[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var request = _step.value;
+
+	                    request.abort();
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            this.requests = [];
+	        }
+	    }, {
+	        key: "onRequestFinished",
+	        value: function onRequestFinished(request) {
+	            if (this.isAborting) return;
+
+	            var index = this.requests.indexOf(request);
+	            if (index === -1) return;
+
+	            this.requests.splice(index, 1);
+	        }
+	    }, {
+	        key: "monitorRequest",
+	        value: function monitorRequest(request) {
+	            request.always(this.onRequestFinished.bind(this, request));
+	            this.requests.push(request);
+	        }
+	    }]);
+
+	    return RequestManager;
+	}();
+
+	exports.default = RequestManager;
+
+/***/ },
+/* 174 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.storiesRepository = exports.StoriesRepository = undefined;
+
+	var _jquery = __webpack_require__(163);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _q = __webpack_require__(164);
+
+	var _q2 = _interopRequireDefault(_q);
+
+	var _baseRepository = __webpack_require__(167);
+
+	var _baseRepository2 = _interopRequireDefault(_baseRepository);
+
+	var _productsRepository = __webpack_require__(162);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
+	var StoriesRepository = exports.StoriesRepository = function (_BaseRepository) {
+	    _inherits(StoriesRepository, _BaseRepository);
+
+	    function StoriesRepository(enforcer) {
+	        _classCallCheck(this, StoriesRepository);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StoriesRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton";
+	        }
+	        return _this;
+	    }
+
+	    _createClass(StoriesRepository, [{
+	        key: "createReleaseFilter",
+	        value: function createReleaseFilter(releaseName) {
+	            var _this2 = this;
+
+	            var deferred = _q2.default.defer();
+	            var products = ProductsRepository.instance.getProducts().map(function (p) {
+	                return p.name;
+	            }).join(",");
+
+	            var request = _jquery2.default.post("/create-release-filter?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (response) {
+	                deferred.reject(_this2.processRequestFailure(response));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "getStories",
+	        value: function getStories(serviceName, startTag, endTag) {
+	            var _this3 = this;
+
+	            var deferred = _q2.default.defer();
+	            var encodedStartTag = encodeURIComponent(startTag);
+	            var encodedEndTag = encodeURIComponent(endTag);
+
+	            var request = _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date(), function (data) {
+	                deferred.resolve(JSON.parse(data));
+	            }).fail(function (response) {
+	                deferred.reject(_this3.processRequestFailure(response));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "getStoriesForRelease",
+	        value: function getStoriesForRelease(releaseName) {
+	            var _this4 = this;
+
+	            var deferred = _q2.default.defer();
+	            var products = _productsRepository.productsRepository.getProducts().map(function (p) {
+	                return p.name;
+	            }).join(",");
+
+	            var request = _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + products + "&timestamp=" + +new Date(), function (data) {
+	                deferred.resolve(JSON.parse(data));
+	            }).fail(function (response) {
+	                deferred.reject(_this4.processRequestFailure(response));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new StoriesRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
+	        }
+	    }]);
+
+	    return StoriesRepository;
+	}(_baseRepository2.default);
+
+	var storiesRepository = exports.storiesRepository = StoriesRepository.instance;
+
+/***/ },
+/* 175 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.tagsRepository = exports.TagsRepository = undefined;
+
+	var _jquery = __webpack_require__(163);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _q = __webpack_require__(164);
+
+	var _q2 = _interopRequireDefault(_q);
+
+	var _tag = __webpack_require__(176);
+
+	var _tag2 = _interopRequireDefault(_tag);
+
+	var _baseRepository = __webpack_require__(167);
+
+	var _baseRepository2 = _interopRequireDefault(_baseRepository);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
+	var TagsRepository = exports.TagsRepository = function (_BaseRepository) {
+	    _inherits(TagsRepository, _BaseRepository);
+
+	    function TagsRepository(enforcer) {
+	        _classCallCheck(this, TagsRepository);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TagsRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton";
+	        }
+	        return _this;
+	    }
+
+	    _createClass(TagsRepository, [{
+	        key: "getStableTags",
+	        value: function getStableTags(productName) {
+	            var _this2 = this;
+
+	            var deferred = _q2.default.defer();
+
+	            var request = _jquery2.default.get("/stable-tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
+	                var jsonData = JSON.parse(data);
+	                var tags = jsonData.map(function (tag) {
+	                    return new _tag2.default(tag);
+	                });
+
+	                deferred.resolve(tags);
+	            }).fail(function (error) {
+	                deferred.reject(_this2.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "getTags",
+	        value: function getTags(productName) {
+	            var _this3 = this;
+
+	            var deferred = _q2.default.defer();
+
+	            var request = _jquery2.default.get("/tags?serviceName=" + productName + "&timestamp=" + +new Date(), function (data) {
+	                var jsonData = JSON.parse(data);
+	                var tags = jsonData.tags.map(function (tag) {
+	                    return new _tag2.default(tag);
+	                });
+	                var startingTagIndex = jsonData.currentVersion ? tags.findIndex(function (tag) {
+	                    return tag.name == jsonData.currentVersion;
+	                }) : -1;
+
+	                deferred.resolve({
+	                    tags: tags,
+	                    startingTagIndex: startingTagIndex
+	                });
+	            }).fail(function (error) {
+	                deferred.reject(_this3.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new TagsRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
+	        }
+	    }]);
+
+	    return TagsRepository;
+	}(_baseRepository2.default);
+
+	var tagsRepository = exports.tagsRepository = TagsRepository.instance;
+
+/***/ },
+/* 176 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Tag = function Tag(serverTag) {
+	    _classCallCheck(this, Tag);
+
+	    this.name = serverTag;
+	};
+
+	exports.default = Tag;
+
+/***/ },
+/* 177 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _jquery = __webpack_require__(163);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _baseComponent = __webpack_require__(160);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _errorHandler = __webpack_require__(169);
+
+	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+
+	var _globalEventEmitter = __webpack_require__(170);
+
+	var _infiniteLoading = __webpack_require__(172);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
+
+	var _requestManager = __webpack_require__(173);
+
+	var _requestManager2 = _interopRequireDefault(_requestManager);
+
+	var _storiesRepository = __webpack_require__(174);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var TicketsList = function (_BaseComponent) {
+	    _inherits(TicketsList, _BaseComponent);
+
+	    function TicketsList(props) {
+	        _classCallCheck(this, TicketsList);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).call(this, props));
+
+	        _this.requestManager = new _requestManager2.default();
+	        _this.state = {
+	            createdFilterName: null,
+	            createdFilterUrl: null,
+	            isCreatingFilter: false,
+	            isLoadingStories: false,
+	            jiraTickets: [],
+	            selectedRelease: null
+	        };
+	        return _this;
+	    }
+
+	    _createClass(TicketsList, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentDidMount", this).call(this);
+
+	            this._onSearchProjectStories = this.onSearchProjectStories.bind(this);
+	            this._onSearchStories = this.onSearchStoriesClick.bind(this);
+	            this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
+
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_PROJECT_TICKETS, this._onSearchProjectStories);
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentWillUnmount", this).call(this);
+
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_PROJECT_TICKETS, this._onSearchProjectStories);
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
+
+	            this.requestManager.abortPendingRequests();
+	        }
+	    }, {
+	        key: "handleCreateReleaseFilterClick",
+	        value: function handleCreateReleaseFilterClick() {
+	            var _this2 = this;
+
+	            if (!this.state.selectedRelease) {
+	                alert("Please select release first.");
+	                return;
+	            }
+
+	            this.setState({
+	                isCreatingFilter: true
+	            });
+
+	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
+	            _storiesRepository.storiesRepository.createReleaseFilter(this.state.selectedRelease.name).then(function (data) {
+	                if (!_this2.m_isMounted) return;
+
+	                _this2.setState({
+	                    createdFilterName: data.name,
+	                    createdFilterUrl: data.url
+	                });
+	            }).catch(function (error) {
+	                if (!_this2.m_isMounted) return;
+
+	                _errorHandler2.default.showErrorMessage(error);
+	            }).finally(function () {
+	                if (!_this2.m_isMounted) return;
+
+	                _this2.setState({
+	                    isCreatingFilter: false
+	                });
+	            });
+	        }
+	    }, {
+	        key: "onSearchProjectStories",
+	        value: function onSearchProjectStories(projectSettings) {
+	            var _this3 = this;
+
+	            var projectName = projectSettings.projectName;
+	            var startTag = projectSettings.startTag;
+	            var endTag = projectSettings.endTag;
+
+	            this.setState({
+	                isLoadingStories: true,
+	                jiraTickets: []
+	            });
+
+	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
+	            _storiesRepository.storiesRepository.getStories(projectName, startTag, endTag).then(function (data) {
+	                if (!_this3.m_isMounted) return;
+
+	                _this3.setState({
+	                    jiraTickets: data,
+	                    isLoadingStories: false
+	                });
+	            }).catch(function (error) {
+	                if (!_this3.m_isMounted) return;
+
+	                _this3.setState({
+	                    isLoadingStories: false
+	                });
+
+	                _errorHandler2.default.showErrorMessage(error);
+	            });
+	        }
+	    }, {
+	        key: "onSearchStoriesClick",
+	        value: function onSearchStoriesClick(selectedRelease) {
+	            var _this4 = this;
+
+	            this.setState({
+	                isLoadingStories: true,
+	                jiraTickets: [],
+	                selectedRelease: selectedRelease
+	            });
+
+	            if (!selectedRelease) return;
+
+	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
+	            _storiesRepository.storiesRepository.getStoriesForRelease(selectedRelease.name).then(function (data) {
+	                if (!_this4.m_isMounted) return;
+
+	                _this4.setState({
+	                    isLoadingStories: false,
+	                    jiraTickets: data
+	                });
+	            }).catch(function (error) {
+	                if (!_this4.m_isMounted) return;
+
+	                _this4.setState({
+	                    isLoadingStories: false
+	                });
+
+	                _errorHandler2.default.showErrorMessage(error);
+	            });
+	        }
+	    }, {
+	        key: "onSelectedReleaseChanged",
+	        value: function onSelectedReleaseChanged(selectedRelease) {
+	            this.setState({
+	                jiraTickets: [],
+	                selectedRelease: selectedRelease
+	            });
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            var _this5 = this;
+
+	            return React.createElement(
+	                "div",
+	                { className: "row" },
+	                React.createElement(
+	                    "div",
+	                    { className: "col-md-12" },
+	                    React.createElement(
+	                        "h2",
+	                        null,
+	                        "Jira tickets"
+	                    ),
+	                    function () {
+	                        if (_this5.state.selectedRelease) {
+	                            if (_this5.state.createdFilterName) {
+	                                return React.createElement(
+	                                    "p",
+	                                    null,
+	                                    "Created JIRA filter: ",
+	                                    React.createElement(
+	                                        "a",
+	                                        { href: _this5.state.createdFilterUrl, target: "_blank", rel: "external" },
+	                                        _this5.state.createdFilterName
+	                                    )
+	                                );
+	                            } else {
+	                                return React.createElement(
+	                                    "div",
+	                                    { className: "row" },
+	                                    React.createElement(
+	                                        "div",
+	                                        { className: "col-md-1" },
+	                                        React.createElement(
+	                                            "div",
+	                                            { className: "btn-group", role: "group" },
+	                                            React.createElement(
+	                                                "button",
+	                                                { className: "btn btn-default", onClick: _this5.handleCreateReleaseFilterClick.bind(_this5) },
+	                                                "Create release filter"
+	                                            )
+	                                        )
+	                                    ),
+	                                    React.createElement(
+	                                        "div",
+	                                        { className: "col-md-1" },
+	                                        React.createElement(_infiniteLoading2.default, { isLoading: _this5.state.isCreatingFilter })
+	                                    )
+	                                );
+	                            }
+	                        }
+	                    }(),
+	                    React.createElement(
+	                        "table",
+	                        { className: "table" },
+	                        React.createElement(
+	                            "thead",
+	                            null,
+	                            React.createElement(
+	                                "tr",
+	                                null,
+	                                React.createElement(
+	                                    "th",
+	                                    null,
+	                                    "#"
+	                                ),
+	                                React.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Summary"
+	                                ),
+	                                React.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Epic"
+	                                ),
+	                                React.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Git tags"
+	                                ),
+	                                React.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Date"
+	                                ),
+	                                React.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Status"
+	                                ),
+	                                React.createElement(
+	                                    "th",
+	                                    null,
+	                                    "Author"
+	                                )
+	                            )
+	                        ),
+	                        React.createElement(
+	                            "tbody",
+	                            null,
+	                            function () {
+	                                if (_this5.state.isLoadingStories) {
+	                                    return React.createElement(
+	                                        "tr",
+	                                        null,
+	                                        React.createElement(
+	                                            "td",
+	                                            { colSpan: "7" },
+	                                            React.createElement(_infiniteLoading2.default, null)
+	                                        )
+	                                    );
+	                                }
+
+	                                if (!_this5.state.jiraTickets || !_this5.state.jiraTickets.length) {
+	                                    return React.createElement(
+	                                        "tr",
+	                                        null,
+	                                        React.createElement(
+	                                            "td",
+	                                            { colSpan: "7" },
+	                                            React.createElement(
+	                                                "p",
+	                                                null,
+	                                                "No JIRA tickets found. Please change search criteria and hit \"Search\" button."
+	                                            )
+	                                        )
+	                                    );
+	                                }
+
+	                                return _this5.state.jiraTickets.map(function (ticket, ticketIndex) {
+	                                    return React.createElement(
+	                                        "tr",
+	                                        { key: ticketIndex },
+	                                        React.createElement(
+	                                            "td",
+	                                            null,
+	                                            ticketIndex + 1
+	                                        ),
+	                                        React.createElement(
+	                                            "td",
+	                                            null,
+	                                            React.createElement(
+	                                                "a",
+	                                                { href: ticket.url, target: "_blank", rel: "external" },
+	                                                ticket.ticketNumber,
+	                                                ": ",
+	                                                ticket.message
+	                                            )
+	                                        ),
+	                                        React.createElement(
+	                                            "td",
+	                                            null,
+	                                            function () {
+	                                                if (ticket.epic) {
+	                                                    return React.createElement(
+	                                                        "a",
+	                                                        { href: ticket.epic.url, target: "_blank", rel: "external" },
+	                                                        ticket.epic.ticketNumber,
+	                                                        ": ",
+	                                                        ticket.epic.message
+	                                                    );
+	                                                }
+	                                            }()
+	                                        ),
+	                                        React.createElement(
+	                                            "td",
+	                                            null,
+	                                            React.createElement(
+	                                                "ul",
+	                                                { className: "list-unstyled" },
+	                                                (ticket.gitTags || []).map(function (tag, tagIndex) {
+	                                                    return React.createElement(
+	                                                        "li",
+	                                                        { key: tagIndex },
+	                                                        tag
+	                                                    );
+	                                                })
+	                                            )
+	                                        ),
+	                                        React.createElement(
+	                                            "td",
+	                                            null,
+	                                            ticket.dateTime
+	                                        ),
+	                                        React.createElement(
+	                                            "td",
+	                                            null,
+	                                            function () {
+	                                                switch (ticket.status) {
+	                                                    case "Dev Ready":
+	                                                    case "Dev Complete":
+	                                                        return React.createElement(
+	                                                            "span",
+	                                                            { className: "label label-danger" },
+	                                                            ticket.status
+	                                                        );
+	                                                    case "In QA":
+	                                                        return React.createElement(
+	                                                            "span",
+	                                                            { className: "label label-warning" },
+	                                                            ticket.status
+	                                                        );
+	                                                    case "QA Complete":
+	                                                    case "Resolved":
+	                                                        return React.createElement(
+	                                                            "span",
+	                                                            { className: "label label-success" },
+	                                                            ticket.status
+	                                                        );
+	                                                    default:
+	                                                        return React.createElement(
+	                                                            "span",
+	                                                            { className: "label label-default" },
+	                                                            ticket.status
+	                                                        );
+	                                                }
+	                                            }()
+	                                        ),
+	                                        React.createElement(
+	                                            "td",
+	                                            null,
+	                                            ticket.author
+	                                        )
+	                                    );
+	                                });
+	                            }()
+	                        )
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return TicketsList;
+	}(_baseComponent2.default);
+
+	exports.default = TicketsList;
 
 /***/ },
 /* 178 */
@@ -33821,7 +33849,7 @@
 
 	var _currentVersionsList2 = _interopRequireDefault(_currentVersionsList);
 
-	var _ticketsList = __webpack_require__(174);
+	var _ticketsList = __webpack_require__(177);
 
 	var _ticketsList2 = _interopRequireDefault(_ticketsList);
 
@@ -33904,7 +33932,7 @@
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
-	var _requestManager = __webpack_require__(170);
+	var _requestManager = __webpack_require__(173);
 
 	var _requestManager2 = _interopRequireDefault(_requestManager);
 
@@ -33978,11 +34006,11 @@
 	                "div",
 	                null,
 	                React.createElement(
-	                    "h4",
+	                    "h2",
 	                    null,
 	                    "Current versions"
 	                ),
-	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingCurrentVersions, projects: this.state.currentVersions })
+	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingCurrentVersions, projects: this.state.currentVersions, style: { marginTop: "10.3em" } })
 	            );
 	        }
 	    }]);
@@ -34008,7 +34036,7 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _infiniteLoading = __webpack_require__(177);
+	var _infiniteLoading = __webpack_require__(172);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
@@ -34036,7 +34064,7 @@
 
 	            return React.createElement(
 	                "table",
-	                { className: "table" },
+	                { className: "table", style: this.props.style },
 	                React.createElement(
 	                    "thead",
 	                    null,
@@ -34180,9 +34208,9 @@
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _globalEventEmitter = __webpack_require__(175);
+	var _globalEventEmitter = __webpack_require__(170);
 
-	var _infiniteLoading = __webpack_require__(177);
+	var _infiniteLoading = __webpack_require__(172);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
@@ -34192,7 +34220,7 @@
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
-	var _requestManager = __webpack_require__(170);
+	var _requestManager = __webpack_require__(173);
 
 	var _requestManager2 = _interopRequireDefault(_requestManager);
 
@@ -34381,51 +34409,47 @@
 	                "div",
 	                null,
 	                React.createElement(
-	                    "h4",
+	                    "h2",
 	                    null,
 	                    "Upcoming versions"
 	                ),
 	                React.createElement(
 	                    "form",
-	                    { className: "form-horizontal", onSubmit: this.handleFormSubmit.bind(this) },
+	                    { onSubmit: this.handleFormSubmit.bind(this) },
 	                    React.createElement(
 	                        "div",
 	                        { className: "form-group" },
 	                        React.createElement(
 	                            "label",
-	                            { htmlFor: "release", className: "col-sm-2 control-label" },
+	                            { htmlFor: "release" },
 	                            "Release:"
 	                        ),
 	                        React.createElement(
 	                            "div",
-	                            { className: "col-sm-10" },
+	                            { className: "input-group" },
 	                            React.createElement(
-	                                "div",
-	                                { className: "input-group" },
+	                                "select",
+	                                { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
 	                                React.createElement(
-	                                    "select",
-	                                    { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
-	                                    React.createElement(
-	                                        "option",
-	                                        { value: "-1" },
-	                                        " "
-	                                    ),
-	                                    this.state.releases.map(function (release, index) {
-	                                        return React.createElement(
-	                                            "option",
-	                                            { key: index, value: index },
-	                                            release.name
-	                                        );
-	                                    })
+	                                    "option",
+	                                    { value: "-1" },
+	                                    " "
 	                                ),
+	                                this.state.releases.map(function (release, index) {
+	                                    return React.createElement(
+	                                        "option",
+	                                        { key: index, value: index },
+	                                        release.name
+	                                    );
+	                                })
+	                            ),
+	                            React.createElement(
+	                                "span",
+	                                { className: "input-group-btn" },
 	                                React.createElement(
-	                                    "span",
-	                                    { className: "input-group-btn" },
-	                                    React.createElement(
-	                                        "button",
-	                                        { className: "btn btn-default", onClick: this.handleRefreshClick.bind(this) },
-	                                        React.createElement("i", { className: "glyphicon glyphicon-refresh" })
-	                                    )
+	                                    "button",
+	                                    { className: "btn btn-default", onClick: this.handleRefreshClick.bind(this) },
+	                                    "Refresh"
 	                                )
 	                            )
 	                        )
@@ -34433,39 +34457,35 @@
 	                    React.createElement(
 	                        "div",
 	                        { className: "form-group" },
-	                        React.createElement(
-	                            "div",
-	                            { className: "col-sm-offset-2 col-sm-10" },
-	                            function () {
-	                                if (!_this4.state.isLoadingReleases && _this4.state.selectedRelease) {
-	                                    return React.createElement(
-	                                        "div",
-	                                        { className: "input-group" },
+	                        function () {
+	                            if (!_this4.state.isLoadingReleases && _this4.state.selectedRelease) {
+	                                return React.createElement(
+	                                    "div",
+	                                    { className: "input-group" },
+	                                    React.createElement(
+	                                        "span",
+	                                        { className: "input-group-btn" },
 	                                        React.createElement(
-	                                            "span",
-	                                            { className: "input-group-btn" },
-	                                            React.createElement(
-	                                                "button",
-	                                                { className: "btn btn-primary" },
-	                                                "Search"
-	                                            ),
-	                                            React.createElement(
-	                                                "button",
-	                                                { className: "btn btn-default", onClick: _this4.copyCommandLineScript.bind(_this4), type: "button" },
-	                                                "Copy 'sm' start script"
-	                                            )
+	                                            "button",
+	                                            { className: "btn btn-primary" },
+	                                            "Search"
 	                                        ),
-	                                        React.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true", value: _this4.state.commandLineScript, type: "text" })
-	                                    );
-	                                } else {
-	                                    return React.createElement(
-	                                        "button",
-	                                        { className: "btn btn-primary" },
-	                                        "Search"
-	                                    );
-	                                }
-	                            }()
-	                        )
+	                                        React.createElement(
+	                                            "button",
+	                                            { className: "btn btn-default", onClick: _this4.copyCommandLineScript.bind(_this4), type: "button" },
+	                                            "Copy 'sm' start script"
+	                                        )
+	                                    ),
+	                                    React.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true", value: _this4.state.commandLineScript, type: "text" })
+	                                );
+	                            } else {
+	                                return React.createElement(
+	                                    "button",
+	                                    { className: "btn btn-primary" },
+	                                    "Search"
+	                                );
+	                            }
+	                        }()
 	                    )
 	                ),
 	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingReleases,

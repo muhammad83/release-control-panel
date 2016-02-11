@@ -1,6 +1,8 @@
 import $ from "jquery";
 import BaseComponent from "./base-component";
 import ErrorHandler from "../handlers/error-handler";
+import {globalEventEmitter, Events} from "../utils/global-event-emitter";
+import InfiniteLoading from "./infinite-loading.jsx";
 import RequestManager from "../utils/request-manager";
 import {storiesRepository} from "../repositories/stories-repository";
 import {tagsRepository} from "../repositories/tags-repository";
@@ -17,8 +19,8 @@ export default class ProductDetails extends BaseComponent
         {
             endingTags: [],
             endingTagIndex: -1,
-            jiraTickets: [],
-            searchingInProgress: false,
+            isLoadingTags: false,
+            isLoadingStableTags: false,
             showStableVersions: false,
             startingTagIndex: -1,
             tags: []
@@ -66,7 +68,6 @@ export default class ProductDetails extends BaseComponent
         {
             endingTags: [],
             endingTagIndex: -1,
-            jiraTickets: [],
             showStableVersions: event.target.checked
         });
 
@@ -87,7 +88,10 @@ export default class ProductDetails extends BaseComponent
     {
         if (showStableVersions)
         {
-            this.setState({ searchingInProgress: true });
+            this.setState(
+            {
+                isLoadingStableTags: true
+            });
 
             tagsRepository.setRequestManager(this.requestManager);
             tagsRepository.getStableTags(this.props.productName)
@@ -99,8 +103,7 @@ export default class ProductDetails extends BaseComponent
                     this.setState(
                     {
                         endingTagIndex: -1,
-                        endingTags: data,
-                        searchingInProgress: false
+                        endingTags: data
                     });
                 })
                 .catch(error =>
@@ -108,12 +111,17 @@ export default class ProductDetails extends BaseComponent
                     if (!this.m_isMounted)
                         return;
 
+                    ErrorHandler.showErrorMessage(error);
+                })
+                .finally(() =>
+                {
+                    if (!this.m_isMounted)
+                        return;
+
                     this.setState(
                     {
-                        searchingInProgress: false
+                        isLoadingStableTags: false
                     });
-
-                    ErrorHandler.showErrorMessage(error);
                 });
         }
         else
@@ -130,7 +138,10 @@ export default class ProductDetails extends BaseComponent
 
     loadTagsList(props)
     {
-        this.setState({ searchingInProgress: true });
+        this.setState(
+        {
+            isLoadingTags: true
+        });
 
         tagsRepository.setRequestManager(this.requestManager);
         tagsRepository.getTags(props.productName)
@@ -143,8 +154,6 @@ export default class ProductDetails extends BaseComponent
                 {
                     endingTagIndex: -1,
                     endingTags: [],
-                    jiraTickets: [],
-                    searchingInProgress: false,
                     startingTagIndex: data.startingTagIndex,
                     tags: data.tags
                 });
@@ -162,12 +171,17 @@ export default class ProductDetails extends BaseComponent
                 if (!this.m_isMounted)
                     return;
 
+                ErrorHandler.showErrorMessage(error);
+            })
+            .finally(() =>
+            {
+                if (!this.m_isMounted)
+                    return;
+
                 this.setState(
                 {
-                    searchingInProgress: false
+                    isLoadingTags: false
                 });
-
-                ErrorHandler.showErrorMessage(error);
             });
     }
 
@@ -180,40 +194,16 @@ export default class ProductDetails extends BaseComponent
             return;
         }
 
-        this.setState(
-        {
-            searchingInProgress: true
-        });
-
-        let serviceName = this.props.productName;
+        let projectName = this.props.productName;
         let startTag = this.state.tags[this.state.startingTagIndex].name;
         let endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
-        storiesRepository.setRequestManager(this.requestManager);
-        storiesRepository.getStories(serviceName, startTag, endTag)
-            .then(data =>
-            {
-                if (!this.m_isMounted)
-                    return;
-
-                this.setState(
-                {
-                    jiraTickets: data,
-                    searchingInProgress: false
-                });
-            })
-            .catch(error =>
-            {
-                if (!this.m_isMounted)
-                    return;
-
-                this.setState(
-                {
-                    searchingInProgress: false
-                });
-
-                ErrorHandler.showErrorMessage(error);
-            });
+        globalEventEmitter.emit(Events.SEARCH_PROJECT_TICKETS,
+        {
+            projectName: projectName,
+            startTag: startTag,
+            endTag: endTag
+        });
     }
 
     render()
@@ -241,6 +231,7 @@ export default class ProductDetails extends BaseComponent
                                             })
                                         }
                                     </select>
+                                    <InfiniteLoading isLoading={this.state.isLoadingTags} />
                                 </div>
                             </div>
                             <div className="form-group">
@@ -264,6 +255,7 @@ export default class ProductDetails extends BaseComponent
                                             })
                                         }
                                     </select>
+                                    <InfiniteLoading isLoading={this.state.isLoadingStableTags} />
                                 </div>
                             </div>
                             <div className="form-group">
@@ -274,7 +266,7 @@ export default class ProductDetails extends BaseComponent
                         </form>
                     </div>
                 </div>
-                <TicketsList jiraTickets={this.state.jiraTickets} isSearching={this.state.searchingInProgress} />
+                <TicketsList />
             </div>
         );
     }
