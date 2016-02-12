@@ -1,8 +1,11 @@
 "use strict";
 
+const createReleaseFilter = require("../actions/create-release-filter");
+const getProdReleaseNumber = require("../actions/get-prod-release-number");
+const getStableApplications = require("../actions/get-stable-applications");
+const getStories = require("../actions/get-stories");
+const getTags = require("../actions/get-tags");
 const q = require("q");
-const storiesRepository = require("../repositories/stories-repository");
-const tagsRepository = require("../repositories/tags-repository");
 
 class Stories
 {
@@ -14,7 +17,7 @@ class Stories
         Stories.getTagsToFindForVersion(projects, version)
             .then(projectTags =>
             {
-                return storiesRepository.createReleaseFilter(version, projectTags);
+                return createReleaseFilter(version, projectTags);
             })
             .then(data =>
             {
@@ -32,7 +35,7 @@ class Stories
         let endTag = request.query.endTag;
         let startTag = request.query.startTag;
 
-        tagsRepository.getTags(serviceName)
+        getTags(serviceName)
             .then(tags =>
             {
                 let startTagIndex = tags.indexOf(startTag);
@@ -41,7 +44,7 @@ class Stories
 
                 tagsToLookUpInJira = tagsToLookUpInJira.map(tag => tag.replace("release/", ""));
 
-                return storiesRepository.getStories([{ name: serviceName, tags: tagsToLookUpInJira }]);
+                return getStories([{ name: serviceName, tags: tagsToLookUpInJira }]);
             })
             .then(data =>
             {
@@ -61,7 +64,7 @@ class Stories
         Stories.getTagsToFindForVersion(projects, version)
             .then(projectTags =>
             {
-                return storiesRepository.getStories(projectTags);
+                return getStories(projectTags);
             })
             .then(data =>
             {
@@ -87,7 +90,7 @@ class Stories
         let versions;
         let projectProdReleaseNumbers;
 
-        return tagsRepository.getStableApplications(version)
+        return getStableApplications(version)
             .then(projectsVersions =>
             {
                 versions = projects.map(project =>
@@ -95,14 +98,14 @@ class Stories
                     return "release/" + projectsVersions.find(pv => pv.name == project).version;
                 });
 
-                let promises = projects.map(project => tagsRepository.getProdReleaseNumber(project));
+                let promises = projects.map(project => getProdReleaseNumber(project));
                 return q.all(promises);
             })
             .then(prodVersions =>
             {
                 projectProdReleaseNumbers = prodVersions;
 
-                let promises = projects.map(project => tagsRepository.getTags(project));
+                let promises = projects.map(project => getTags(project));
                 return q.all(promises);
             })
             .then(allTags =>

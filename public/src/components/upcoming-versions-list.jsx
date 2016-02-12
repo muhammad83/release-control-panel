@@ -4,7 +4,7 @@ import copyContent from "../utils/copy-content";
 import ErrorHandler from "../handlers/error-handler";
 import {globalEventEmitter, Events} from "../utils/global-event-emitter";
 import InfiniteLoading from "./infinite-loading.jsx";
-import {productsRepository} from "../repositories/products-repository";
+import {projectsRepository} from "../repositories/projects-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
 import RequestManager from "../utils/request-manager";
 
@@ -138,8 +138,8 @@ export default class UpcomingVersionsList extends BaseComponent
             isLoadingReleases: true
         });
 
-        productsRepository.setRequestManager(this.requestManager);
-        productsRepository.getUpcomingReleases()
+        projectsRepository.setRequestManager(this.requestManager);
+        projectsRepository.getUpcomingReleases()
             .then(releases =>
             {
                 if (!this.m_isMounted)

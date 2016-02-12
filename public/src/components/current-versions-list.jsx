@@ -1,6 +1,6 @@
 import BaseComponent from "./base-component";
 import ErrorHandler from "../handlers/error-handler";
-import {productsRepository} from "../repositories/products-repository";
+import {projectsRepository} from "../repositories/projects-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
 import RequestManager from "../utils/request-manager";
 
@@ -37,8 +37,8 @@ export default class CurrentVersionsList extends BaseComponent
             isLoadingCurrentVersions: true
         });
 
-        productsRepository.setRequestManager(this.requestManager);
-        productsRepository.getCurrentVersions()
+        projectsRepository.setRequestManager(this.requestManager);
+        projectsRepository.getCurrentVersions()
             .then(versions =>
             {
                 if (!this.m_isMounted)

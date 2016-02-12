@@ -1,13 +1,13 @@
 import BaseComponent from "./base-component";
-import {productsRepository} from "../repositories/products-repository";
+import {projectsRepository} from "../repositories/projects-repository";
 
-export default class ProductsList extends BaseComponent
+export default class ProjectsList extends BaseComponent
 {
     constructor(props) {
         super(props);
 
         this.state = {
-            products: productsRepository.getProducts()
+            projects: projectsRepository.getProjects()
         };
     }
 
@@ -28,13 +28,13 @@ export default class ProductsList extends BaseComponent
                             </thead>
                             <tbody>
                                 {
-                                    this.state.products.map(function (product)
+                                    this.state.projects.map(function (project)
                                     {
-                                        return <tr key={product.key}>
+                                        return <tr key={project.key}>
                                             <td>1</td>
-                                            <td>{product.name}</td>
+                                            <td>{project.name}</td>
                                             <td>
-                                                <a href={`#/product/${product.name}`} className="btn btn-default">Select</a>
+                                                <a href={`#/project/${project.name}`} className="btn btn-default">Select</a>
                                             </td>
                                         </tr>;
                                     })

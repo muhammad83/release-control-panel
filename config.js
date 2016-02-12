@@ -1,14 +1,29 @@
-var config = {
-    isValid: true,
+var config =
+{
+    ciBuildUserName: "",
+    ciBuildApiToken: "",
+    ciQaLeftUserName: "",
+    ciQaLeftApiToken: "",
+    ciQaRightUserName: "",
+    ciQaRightApiToken: "",
     jiraUserName: "",
     jiraPassword: "",
+
+    isValid: true,
     jiraUrl: "https://jira.tools.tax.service.gov.uk",
     prodLeftUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
     prodRightUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
+    ciBuildUrl: "https://ci-build.tax.service.gov.uk",
+    ciQaLeftUrl: "https://deploy-qa-left.tax.service.gov.uk",
+    ciQaRightUrl: "https://deploy-qa-right.tax.service.gov.uk",
     nexus: "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/maven-metadata.xml",
-    ciBuildUserName: "",
-    ciBuildApiToken: "",
-    ciBuildUrl: "https://ci-build.tax.service.gov.uk"
+    projects:
+    [
+        { name: "cato-filing", location: "right" },
+        { name: "cato-frontend", location: "left" },
+        { name: "cato-submit", location: "left" },
+        { name: "files", location: "right" }
+    ]
 };
 
 verifyNonEmpty("jiraUserName", "JIRA username not set.");

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import q from "q";
 import BaseRepository from "./base-repository";
-import {productsRepository} from "./products-repository";
+import {projectsRepository} from "./projects-repository";
 
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
@@ -31,9 +31,9 @@ export class StoriesRepository extends BaseRepository
     createReleaseFilter(releaseName)
     {
         let deferred = q.defer();
-        let products = ProductsRepository.instance.getProducts().map(function (p) { return p.name; }).join(",");
+        let projects = projectsRepository.getProjects().map(function (p) { return p.name; }).join(",");
 
-        let request = $.post(`/create-release-filter?version=${releaseName}&projects=${products}&timestamp=${+new Date()}`, data =>
+        let request = $.post(`/create-release-filter?version=${releaseName}&projects=${projects}&timestamp=${+new Date()}`, data =>
         {
             deferred.resolve(data);
         })
@@ -70,9 +70,9 @@ export class StoriesRepository extends BaseRepository
     getStoriesForRelease(releaseName)
     {
         let deferred = q.defer();
-        let products = productsRepository.getProducts().map(function (p) { return p.name; }).join(",");
+        let projects = projectsRepository.getProjects().map(function (p) { return p.name; }).join(",");
 
-        let request = $.get(`/stories-for-projects?version=${releaseName}&projects=${products}&timestamp=${+new Date()}`, data =>
+        let request = $.get(`/stories-for-projects?version=${releaseName}&projects=${projects}&timestamp=${+new Date()}`, data =>
         {
             deferred.resolve(JSON.parse(data));
         })
