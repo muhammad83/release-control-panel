@@ -33,9 +33,8 @@ export class ProjectsRepository extends BaseRepository
     getCurrentVersions()
     {
         let deferred = q.defer();
-        let projectNames = this.getProjects().map((project) => project.name).join(",");
 
-        let request = $.get(`/current-versions?projects=${projectNames}`, (data) =>
+        let request = $.get(`/current-versions`, (data) =>
         {
             deferred.resolve(JSON.parse(data));
         }).fail(error =>

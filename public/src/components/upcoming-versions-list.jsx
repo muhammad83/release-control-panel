@@ -8,15 +8,19 @@ import {projectsRepository} from "../repositories/projects-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
 import RequestManager from "../utils/request-manager";
 
+const BUILD_REFRESH_INTERVAL = 1000 * 60;
+
 export default class UpcomingVersionsList extends BaseComponent
 {
     constructor(props)
     {
         super(props);
 
+        this.buildMonitorInterval = null;
         this.requestManager = new RequestManager();
         this.state =
         {
+            buildStatuses: {},
             commandLineScript: "",
             extraColumns:
             [
@@ -41,10 +45,17 @@ export default class UpcomingVersionsList extends BaseComponent
 
         this.loadAvailableReleases();
         this.loadSuccessfulBuilds();
+        this.startBuildsMonitor();
     }
 
     componentWillUnmount()
     {
+        if (this.buildMonitorInterval)
+        {
+            clearInterval(this.buildMonitorInterval);
+            this.buildMonitorInterval = null;
+        }
+
         super.componentWillUnmount();
 
         this.requestManager.abortPendingRequests();
@@ -131,6 +142,15 @@ export default class UpcomingVersionsList extends BaseComponent
         buildsRepository.startBuild(project.name, project.version);
     }
 
+    isBuildInProgress(project)
+    {
+        let buildStatus = this.state.buildStatuses[project.name];
+        if (!buildStatus)
+            return false;
+
+        return buildStatus.buildVersion === project.version && buildStatus.isBuilding;
+    }
+
     loadAvailableReleases()
     {
         this.setState(
@@ -162,6 +182,18 @@ export default class UpcomingVersionsList extends BaseComponent
                 });
 
                 ErrorHandler.showErrorMessage(error);
+            });
+    }
+
+    loadBuildStatuses()
+    {
+        buildsRepository.getBuildStatuses()
+            .then(buildStatuses =>
+            {
+                this.setState(
+                {
+                    buildStatuses: buildStatuses
+                });
             });
     }
 
@@ -198,7 +230,13 @@ export default class UpcomingVersionsList extends BaseComponent
                 ErrorHandler.showErrorMessage(error);
             });
     }
-    
+
+    startBuildsMonitor()
+    {
+        this.loadBuildStatuses();
+        this.buildMonitorInterval = setInterval(this.loadBuildStatuses.bind(this), BUILD_REFRESH_INTERVAL);
+    }
+
     render()
     {
         return (
@@ -261,7 +299,7 @@ export default class UpcomingVersionsList extends BaseComponent
 
     renderBuildNumberCell(project)
     {
-        if (project.isBuilding || this.state.isLoadingBuilds)
+        if (project.isBuilding || this.state.isLoadingBuilds || this.isBuildInProgress(project))
         {
             return <InfiniteLoading />;
         }

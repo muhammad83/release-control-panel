@@ -1,12 +1,12 @@
 "use strict";
 
-const config = require("../config");
+const getProjectNames = require("../helpers/get-project-names");
 
 class Projects
 {
     static getProjectNames(request, response)
     {
-        response.send(JSON.stringify(config.projects.map(project => project.name)));
+        response.send(JSON.stringify(getProjectNames()));
     }
 }
 

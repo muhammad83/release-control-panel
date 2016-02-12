@@ -2,6 +2,7 @@
 
 const getAllStableVersions = require("../actions/get-all-stable-versions");
 const getProdReleaseNumber = require("../actions/get-prod-release-number");
+const getProjectNames = require("../helpers/get-project-names");
 const getStableApplications = require("../actions/get-stable-applications");
 const getStableTags = require("../actions/get-stable-tags");
 const getTags = require("../actions/get-tags");
@@ -11,7 +12,7 @@ class Tags
 {
     static getCurrentVersions(request, response)
     {
-        let projects = (request.query.projects || "").split(",");
+        let projects = getProjectNames();
         let promises = projects.map(project => getProdReleaseNumber(project));
 
         q.all(promises)

@@ -20099,11 +20099,8 @@
 	            var _this2 = this;
 
 	            var deferred = _q2.default.defer();
-	            var projectNames = this.getProjects().map(function (project) {
-	                return project.name;
-	            }).join(",");
 
-	            var request = _jquery2.default.get("/current-versions?projects=" + projectNames, function (data) {
+	            var request = _jquery2.default.get("/current-versions", function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (error) {
 	                deferred.reject(_this2.processRequestFailure(error));
@@ -34355,6 +34352,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var BUILD_REFRESH_INTERVAL = 1000 * 60;
+
 	var UpcomingVersionsList = function (_BaseComponent) {
 	    _inherits(UpcomingVersionsList, _BaseComponent);
 
@@ -34363,8 +34362,10 @@
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(UpcomingVersionsList).call(this, props));
 
+	        _this.buildMonitorInterval = null;
 	        _this.requestManager = new _requestManager2.default();
 	        _this.state = {
+	            buildStatuses: {},
 	            commandLineScript: "",
 	            extraColumns: [{
 	                heading: "Build number",
@@ -34388,10 +34389,16 @@
 
 	            this.loadAvailableReleases();
 	            this.loadSuccessfulBuilds();
+	            this.startBuildsMonitor();
 	        }
 	    }, {
 	        key: "componentWillUnmount",
 	        value: function componentWillUnmount() {
+	            if (this.buildMonitorInterval) {
+	                clearInterval(this.buildMonitorInterval);
+	                this.buildMonitorInterval = null;
+	            }
+
 	            _get(Object.getPrototypeOf(UpcomingVersionsList.prototype), "componentWillUnmount", this).call(this);
 
 	            this.requestManager.abortPendingRequests();
@@ -34470,6 +34477,14 @@
 	            _buildsRepository.buildsRepository.startBuild(project.name, project.version);
 	        }
 	    }, {
+	        key: "isBuildInProgress",
+	        value: function isBuildInProgress(project) {
+	            var buildStatus = this.state.buildStatuses[project.name];
+	            if (!buildStatus) return false;
+
+	            return buildStatus.buildVersion === project.version && buildStatus.isBuilding;
+	        }
+	    }, {
 	        key: "loadAvailableReleases",
 	        value: function loadAvailableReleases() {
 	            var _this2 = this;
@@ -34497,9 +34512,20 @@
 	            });
 	        }
 	    }, {
+	        key: "loadBuildStatuses",
+	        value: function loadBuildStatuses() {
+	            var _this3 = this;
+
+	            _buildsRepository.buildsRepository.getBuildStatuses().then(function (buildStatuses) {
+	                _this3.setState({
+	                    buildStatuses: buildStatuses
+	                });
+	            });
+	        }
+	    }, {
 	        key: "loadSuccessfulBuilds",
 	        value: function loadSuccessfulBuilds() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            this.setState({
 	                isLoadingBuilds: true
@@ -34507,16 +34533,16 @@
 
 	            _buildsRepository.buildsRepository.setRequestManager(this.requestManager);
 	            _buildsRepository.buildsRepository.getSuccessfulBuildsForProjects().then(function (builds) {
-	                if (!_this3.m_isMounted) return;
+	                if (!_this4.m_isMounted) return;
 
-	                _this3.setState({
+	                _this4.setState({
 	                    isLoadingBuilds: false,
 	                    successfulBuilds: builds
 	                });
 	            }).catch(function (error) {
-	                if (!_this3.m_isMounted) return;
+	                if (!_this4.m_isMounted) return;
 
-	                _this3.setState({
+	                _this4.setState({
 	                    isLoadingBuilds: false
 	                });
 
@@ -34524,9 +34550,15 @@
 	            });
 	        }
 	    }, {
+	        key: "startBuildsMonitor",
+	        value: function startBuildsMonitor() {
+	            this.loadBuildStatuses();
+	            this.buildMonitorInterval = setInterval(this.loadBuildStatuses.bind(this), BUILD_REFRESH_INTERVAL);
+	        }
+	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this4 = this;
+	            var _this5 = this;
 
 	            return React.createElement(
 	                "div",
@@ -34580,7 +34612,7 @@
 	                        "div",
 	                        { className: "form-group" },
 	                        function () {
-	                            if (!_this4.state.isLoadingReleases && _this4.state.selectedRelease) {
+	                            if (!_this5.state.isLoadingReleases && _this5.state.selectedRelease) {
 	                                return React.createElement(
 	                                    "div",
 	                                    { className: "input-group" },
@@ -34594,11 +34626,11 @@
 	                                        ),
 	                                        React.createElement(
 	                                            "button",
-	                                            { className: "btn btn-default", onClick: _this4.copyCommandLineScript.bind(_this4), type: "button" },
+	                                            { className: "btn btn-default", onClick: _this5.copyCommandLineScript.bind(_this5), type: "button" },
 	                                            "Copy 'sm' start script"
 	                                        )
 	                                    ),
-	                                    React.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true", value: _this4.state.commandLineScript, type: "text" })
+	                                    React.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true", value: _this5.state.commandLineScript, type: "text" })
 	                                );
 	                            } else {
 	                                return React.createElement(
@@ -34623,7 +34655,7 @@
 	    }, {
 	        key: "renderBuildNumberCell",
 	        value: function renderBuildNumberCell(project) {
-	            if (project.isBuilding || this.state.isLoadingBuilds) {
+	            if (project.isBuilding || this.state.isLoadingBuilds || this.isBuildInProgress(project)) {
 	                return React.createElement(_infiniteLoading2.default, null);
 	            }
 
@@ -34681,8 +34713,6 @@
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
-	var _projectsRepository = __webpack_require__(161);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -34709,16 +34739,13 @@
 	    }
 
 	    _createClass(BuildsRepository, [{
-	        key: "getSuccessfulBuildsForProjects",
-	        value: function getSuccessfulBuildsForProjects() {
+	        key: "getBuildStatuses",
+	        value: function getBuildStatuses() {
 	            var _this2 = this;
 
 	            var deferred = _q2.default.defer();
-	            var projectNames = _projectsRepository.projectsRepository.getProjects().map(function (project) {
-	                return project.name;
-	            }).join(",");
 
-	            var request = _jquery2.default.get("/successful-builds-for-projects?projects=" + projectNames, function (data) {
+	            var request = _jquery2.default.get("/build-statuses", function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (error) {
 	                deferred.reject(_this2.processRequestFailure(error));
@@ -34729,9 +34756,26 @@
 	            return deferred.promise;
 	        }
 	    }, {
+	        key: "getSuccessfulBuildsForProjects",
+	        value: function getSuccessfulBuildsForProjects() {
+	            var _this3 = this;
+
+	            var deferred = _q2.default.defer();
+
+	            var request = _jquery2.default.get("/successful-builds-for-projects", function (data) {
+	                deferred.resolve(JSON.parse(data));
+	            }).fail(function (error) {
+	                deferred.reject(_this3.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }, {
 	        key: "startBuild",
 	        value: function startBuild(projectName, version) {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            var deferred = _q2.default.defer();
 	            var requestData = {
@@ -34742,7 +34786,7 @@
 	            var request = _jquery2.default.post("/start-build", requestData, function (data) {
 	                deferred.resolve(JSON.parse(data));
 	            }).fail(function (error) {
-	                deferred.reject(_this3.processRequestFailure(error));
+	                deferred.reject(_this4.processRequestFailure(error));
 	            });
 
 	            this.safeMonitorRequest(request);
