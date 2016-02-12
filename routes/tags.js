@@ -1,14 +1,18 @@
 "use strict";
 
+const getAllStableVersions = require("../actions/get-all-stable-versions");
+const getProdReleaseNumber = require("../actions/get-prod-release-number");
+const getStableApplications = require("../actions/get-stable-applications");
+const getStableTags = require("../actions/get-stable-tags");
+const getTags = require("../actions/get-tags");
 const q = require("q");
-const tagsRepository = require("../repositories/tags-repository");
 
 class Tags
 {
     static getCurrentVersions(request, response)
     {
         let projects = (request.query.projects || "").split(",");
-        let promises = projects.map(project => tagsRepository.getProdReleaseNumber(project));
+        let promises = projects.map(project => getProdReleaseNumber(project));
 
         q.all(promises)
             .then(versions =>
@@ -32,7 +36,7 @@ class Tags
     static getStableTags(request, response)
     {
         let serviceName = request.query.serviceName;
-        tagsRepository.getStableTags(serviceName)
+        getStableTags(serviceName)
             .then(data =>
             {
                 response.send(JSON.stringify(data));
@@ -47,12 +51,12 @@ class Tags
     {
         let releaseVersions;
 
-        tagsRepository.getAllStableVersions()
+        getAllStableVersions()
             .then(versions =>
             {
                 releaseVersions = versions;
 
-                let promises = versions.map(version => tagsRepository.getStableApplications(version));
+                let promises = versions.map(version => getStableApplications(version));
                 return q.all(promises);
             })
             .then(applicationVersions =>
@@ -78,8 +82,8 @@ class Tags
         let serviceName = request.query.serviceName;
 
         let promises = [
-            tagsRepository.getTags(serviceName),
-            tagsRepository.getProdReleaseNumber(serviceName)
+            getTags(serviceName),
+            getProdReleaseNumber(serviceName)
         ];
 
         q.all(promises)

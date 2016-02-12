@@ -1,6 +1,7 @@
 "use strict";
 
-const buildsRepository = require("../repositories/builds-repository");
+const getSuccessfulBuildsForProjects = require("../actions/get-successful-builds-for-projects");
+const startBuild = require("../actions/start-build");
 
 class Builds
 {
@@ -8,7 +9,7 @@ class Builds
     {
         let projects = (request.query.projects || "").split(",");
 
-        buildsRepository.getSuccessfulBuildsForProjects(projects)
+        getSuccessfulBuildsForProjects(projects)
             .then(projectsBuilds =>
             {
                 response.send(JSON.stringify(projectsBuilds));
@@ -33,7 +34,7 @@ class Builds
         let project = request.body.project;
         let version = request.body.version;
 
-        buildsRepository.startBuild(project, version)
+        startBuild(project, version)
             .then(() =>
             {
                 response.status(201).send(null);
