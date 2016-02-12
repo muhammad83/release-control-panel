@@ -3,9 +3,7 @@
 const bodyParser = require('body-parser');
 const express = require("express");
 const morgan = require("morgan");
-const config = require("./config"
-
-);
+const config = require("./config");
 
 if (!config.isValid)
 {

@@ -1,5 +1,5 @@
 import BaseComponent from "./base-component";
-import {productsRepository} from "../repositories/products-repository";
+import {projectsRepository} from "../repositories/projects-repository";
 
 export default class Navigation extends BaseComponent
 {
@@ -8,7 +8,7 @@ export default class Navigation extends BaseComponent
         super(props);
 
         this.state = {
-            products: productsRepository.getProducts()
+            projects: projectsRepository.getProjects()
         };
     }
 
@@ -29,12 +29,12 @@ export default class Navigation extends BaseComponent
                     <ul className="nav navbar-nav">
                         <li><a href="#/">Home</a></li>
                         <li className="dropdown">
-                            <a href="" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Products <span className="caret"></span></a>
+                            <a href="" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Projects <span className="caret"></span></a>
                             <ul className="dropdown-menu">
                                 {
-                                    this.state.products.map(function (product, productIndex)
+                                    this.state.projects.map(function (project, projectIndex)
                                     {
-                                        return <li key={productIndex}><a href={`#/product/${product.name}`}>{product.name}</a></li>
+                                        return <li key={projectIndex}><a href={`#/project/${project.name}`}>{project.name}</a></li>
                                     })
                                 }
                             </ul>

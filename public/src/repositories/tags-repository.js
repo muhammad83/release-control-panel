@@ -28,11 +28,11 @@ export class TagsRepository extends BaseRepository
         return this[singleton];
     }
 
-    getStableTags(productName)
+    getStableTags(projectName)
     {
         let deferred = q.defer();
 
-        let request = $.get(`/stable-tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
+        let request = $.get(`/stable-tags?serviceName=${projectName}&timestamp=${+new Date()}`, (data) =>
         {
             let jsonData = JSON.parse(data);
             let tags = jsonData.map((tag) => new Tag(tag));
@@ -48,11 +48,11 @@ export class TagsRepository extends BaseRepository
         return deferred.promise;
     }
 
-    getTags(productName)
+    getTags(projectName)
     {
         let deferred = q.defer();
 
-        let request = $.get(`/tags?serviceName=${productName}&timestamp=${+new Date()}`, (data) =>
+        let request = $.get(`/tags?serviceName=${projectName}&timestamp=${+new Date()}`, (data) =>
         {
             let jsonData = JSON.parse(data);
             let tags = jsonData.tags.map((tag) => new Tag(tag));

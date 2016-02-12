@@ -1,7 +1,7 @@
 import $ from "jquery";
 import q from "q";
 import BaseRepository from "./base-repository"
-import {productsRepository} from "./products-repository";
+import {projectsRepository} from "./projects-repository";
 
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
@@ -31,9 +31,9 @@ export class BuildsRepository extends BaseRepository
     getSuccessfulBuildsForProjects()
     {
         let deferred = q.defer();
-        let productNames = productsRepository.getProducts().map((product) => product.name).join(",");
+        let projectNames = projectsRepository.getProjects().map((project) => project.name).join(",");
 
-        let request = $.get(`/successful-builds-for-projects?projects=${productNames}`, data =>
+        let request = $.get(`/successful-builds-for-projects?projects=${projectNames}`, data =>
         {
             deferred.resolve(JSON.parse(data));
         })

@@ -1,12 +1,12 @@
 import $ from "jquery";
 import q from "q";
-import Product from "../models/product";
+import Project from "../models/project";
 import BaseRepository from "./base-repository";
 
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
 
-export class ProductsRepository extends BaseRepository
+export class ProjectsRepository extends BaseRepository
 {
     constructor(enforcer)
     {
@@ -16,13 +16,15 @@ export class ProductsRepository extends BaseRepository
         {
             throw "Cannot construct singleton";
         }
+
+        this.projects = [];
     }
 
     static get instance()
     {
         if (!this[singleton])
         {
-            this[singleton] = new ProductsRepository(singletonEnforcer);
+            this[singleton] = new ProjectsRepository(singletonEnforcer);
         }
 
         return this[singleton];
@@ -31,9 +33,9 @@ export class ProductsRepository extends BaseRepository
     getCurrentVersions()
     {
         let deferred = q.defer();
-        let productNames = this.getProducts().map((product) => product.name).join(",");
+        let projectNames = this.getProjects().map((project) => project.name).join(",");
 
-        let request = $.get(`/current-versions?projects=${productNames}`, (data) =>
+        let request = $.get(`/current-versions?projects=${projectNames}`, (data) =>
         {
             deferred.resolve(JSON.parse(data));
         }).fail(error =>
@@ -46,27 +48,22 @@ export class ProductsRepository extends BaseRepository
         return deferred.promise;
     }
 
-    getProducts()
+    getProjects()
     {
-        return [
-            new Product("cato-filing"),
-            new Product("cato-frontend"),
-            new Product("cato-submit"),
-            new Product("files")
-        ];
+        return this.projects;
     }
 
     getUpcomingReleases()
     {
         let deferred = q.defer();
-        let products = this.getProducts().map((p) => p.name);
+        let projects = this.getProjects().map((p) => p.name);
 
         let request = $.get(`/releases?timestamp=${+new Date()}`, (data) =>
         {
             let jsonData = JSON.parse(data);
             let filteredRelases = jsonData.map(r =>
             {
-                r.applications = r.applications.filter(a => products.indexOf(a.name) !== -1);
+                r.applications = r.applications.filter(a => projects.indexOf(a.name) !== -1);
                 return r;
             });
             deferred.resolve(filteredRelases);
@@ -79,6 +76,28 @@ export class ProductsRepository extends BaseRepository
 
         return deferred.promise;
     }
+
+    loadProjects()
+    {
+        let deferred = q.defer();
+
+        let request = $.get("/projectNames", data =>
+        {
+            let projectNames = JSON.parse(data);
+
+            this.projects = projectNames.map(projectName => new Project(projectName));
+
+            deferred.resolve(this.projects);
+        })
+        .fail(error =>
+        {
+            deferred.reject(this.processRequestFailure(error));
+        });
+
+        this.safeMonitorRequest(request);
+
+        return deferred.promise;
+    }
 }
 
-export const productsRepository = ProductsRepository.instance;
+export const projectsRepository = ProjectsRepository.instance;

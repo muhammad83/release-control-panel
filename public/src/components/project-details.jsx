@@ -8,7 +8,7 @@ import {storiesRepository} from "../repositories/stories-repository";
 import {tagsRepository} from "../repositories/tags-repository";
 import TicketsList from "./tickets-list.jsx";
 
-export default class ProductDetails extends BaseComponent
+export default class ProjectDetails extends BaseComponent
 {
     constructor(params)
     {
@@ -94,7 +94,7 @@ export default class ProductDetails extends BaseComponent
             });
 
             tagsRepository.setRequestManager(this.requestManager);
-            tagsRepository.getStableTags(this.props.productName)
+            tagsRepository.getStableTags(this.props.projectName)
                 .then(data =>
                 {
                     if (!this.m_isMounted)
@@ -144,7 +144,7 @@ export default class ProductDetails extends BaseComponent
         });
 
         tagsRepository.setRequestManager(this.requestManager);
-        tagsRepository.getTags(props.productName)
+        tagsRepository.getTags(props.projectName)
             .then(data =>
             {
                 if (!this.m_isMounted)
@@ -194,7 +194,7 @@ export default class ProductDetails extends BaseComponent
             return;
         }
 
-        let projectName = this.props.productName;
+        let projectName = this.props.projectName;
         let startTag = this.state.tags[this.state.startingTagIndex].name;
         let endTag = this.state.endingTags[this.state.endingTagIndex].name;
 
@@ -214,9 +214,9 @@ export default class ProductDetails extends BaseComponent
                     <div className="col-md-12">
                         <form className="form-horizontal" onSubmit={this.searchJiraTikets.bind(this)}>
                             <div className="form-group">
-                                <label htmlFor="productName" className="col-sm-2 control-label">Product name:</label>
+                                <label htmlFor="projectName" className="col-sm-2 control-label">Project name:</label>
                                 <div className="col-sm-10">
-                                    <input className="form-control" id="productName" value={this.props.productName} disabled="disabled" />
+                                    <input className="form-control" id="projectName" value={this.props.projectName} disabled="disabled" />
                                 </div>
                             </div>
                             <div className="form-group">

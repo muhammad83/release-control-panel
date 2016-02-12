@@ -1,7 +1,7 @@
 import BaseComponent from "./base-component"
 import Navigation from "./navigation.jsx";
-import ProductDetails from "./product-details.jsx";
-import ProductsList from "./products-list.jsx"
+import ProjectDetails from "./project-details.jsx";
+import ProjectsList from "./projects-list.jsx"
 import Releases from "./releases.jsx";
 
 export default class App extends BaseComponent
@@ -31,11 +31,11 @@ export default class App extends BaseComponent
         let Child;
         var childProps = {};
 
-        if (/\/product\/(.*)/.test(this.state.route))
+        if (/\/project\/(.*)/.test(this.state.route))
         {
-            Child = ProductDetails;
+            Child = ProjectDetails;
             childProps = {
-                productName: /\/product\/(.*)/.exec(this.state.route)[1]
+                projectName: /\/project\/(.*)/.exec(this.state.route)[1]
             };
         }
         else if (this.state.route == "/releases")
@@ -44,7 +44,7 @@ export default class App extends BaseComponent
         }
         else
         {
-            Child = ProductsList;
+            Child = ProjectsList;
         }
 
         return (
