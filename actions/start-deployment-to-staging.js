@@ -4,16 +4,16 @@ const config = require("../config");
 const q = require("q");
 const request = require("request");
 
-module.exports = function startBuild(projectName, version)
+module.exports = function startDeploymentToStaging(projectName, version)
 {
     let deferred = q.defer();
     let requestOptions = {
         method: "POST",
-        url: `${config.ciBuildUrl}/job/${projectName}/buildWithParameters`,
+        url: `${config.ciStagingUrl}/buildWithParameters`,
         auth:
         {
-            user: config.ciBuildUserName,
-            pass: config.ciBuildApiToken
+            user: config.ciStagingUserName,
+            pass: config.ciStagingApiToken
         },
         headers:
         {
@@ -21,8 +21,9 @@ module.exports = function startBuild(projectName, version)
         },
         qs:
         {
+            APP: projectName,
             delay: "50sec",
-            TAG: version
+            VERSION: version
         }
     };
     let responseHandler = (error, response, data) =>
@@ -32,7 +33,7 @@ module.exports = function startBuild(projectName, version)
             deferred.reject(
             {
                 data: error,
-                message: "Unknown error when starting project build.",
+                message: "Unknown error when starting project deployment.",
                 status: 500
             });
             return;
@@ -45,10 +46,10 @@ module.exports = function startBuild(projectName, version)
             switch (response.statusCode)
             {
                 case 401:
-                    message = "Incorrect CI-BUILD username or password. Please change it in configuration to correct value.";
+                    message = "Incorrect username or password. Please change it in configuration to correct value.";
                     break;
                 case 403:
-                    message = "CI-BUILD rejected your login request. Please try logging in in the browser first - captcha might be blocking your login requests.";
+                    message = "Jenkins rejected your login request. Please try logging in in the browser first - captcha might be blocking your login requests.";
                     break;
             }
 

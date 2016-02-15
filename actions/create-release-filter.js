@@ -17,12 +17,12 @@ module.exports = function createReleaseFilter(releaseName, projectsAndTags)
             pass: config.jiraPassword
         },
         body: JSON.stringify(
-            {
-                description: `List of tasks included in '${releaseName}' release.`,
-                favourite: true,
-                name: releaseName,
-                jql: prepareJQLForTags(projectsAndTags, [])
-            }),
+        {
+            description: `List of tasks included in '${releaseName}' release.`,
+            favourite: true,
+            name: releaseName,
+            jql: prepareJQLForTags(projectsAndTags, [])
+        }),
         headers:
         {
             "Content-Type": "application/json"

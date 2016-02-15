@@ -6,6 +6,8 @@ var config =
     ciQaLeftApiToken: "",
     ciQaRightUserName: "",
     ciQaRightApiToken: "",
+    ciStagingUserName: "",
+    ciStagingApiToken: "",
     jiraUserName: "",
     jiraPassword: "",
 
@@ -14,8 +16,9 @@ var config =
     prodLeftUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
     prodRightUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
     ciBuildUrl: "https://ci-build.tax.service.gov.uk",
-    ciQaLeftUrl: "https://deploy-qa-left.tax.service.gov.uk",
-    ciQaRightUrl: "https://deploy-qa-right.tax.service.gov.uk",
+    ciQaLeftUrl: "https://deploy-qa-left.tax.service.gov.uk/job/deploy-microservice",
+    ciQaRightUrl: "https://deploy-qa-right.tax.service.gov.uk/job/deploy-microservice",
+    ciStagingUrl: "https://deploy-staging.tax.service.gov.uk/job/deploy-microservice-multiactive",
     nexus: "https://nexus-dev.tax.service.gov.uk/service/local/repositories/hmrc-snapshots/content/uk/gov/hmrc/cato/maven-metadata.xml",
     projects:
     [

@@ -4,12 +4,12 @@ const config = require("../config");
 const q = require("q");
 const request = require("request");
 
-module.exports = function startBuild(projectName, version)
+function getBuildStatus(projectName)
 {
     let deferred = q.defer();
     let requestOptions = {
-        method: "POST",
-        url: `${config.ciBuildUrl}/job/${projectName}/buildWithParameters`,
+        method: "GET",
+        url: `${config.ciBuildUrl}/job/${projectName}/lastBuild/api/json`,
         auth:
         {
             user: config.ciBuildUserName,
@@ -18,11 +18,6 @@ module.exports = function startBuild(projectName, version)
         headers:
         {
             "Content-Type": "application/json"
-        },
-        qs:
-        {
-            delay: "50sec",
-            TAG: version
         }
     };
     let responseHandler = (error, response, data) =>
@@ -61,10 +56,48 @@ module.exports = function startBuild(projectName, version)
             return;
         }
 
-        deferred.resolve();
+        let buildStatus = JSON.parse(data);
+        let buildsByBranchName = buildStatus.actions.find(action => action.buildsByBranchName).buildsByBranchName;
+
+        let currentBuildNumber = buildStatus.number;
+        let currentBuildVersion = null;
+
+        for (let buildBranch in buildsByBranchName)
+        {
+            if (!buildsByBranchName.hasOwnProperty(buildBranch))
+                continue;
+
+            let build = buildsByBranchName[buildBranch];
+            if (build.buildNumber !== currentBuildNumber)
+                continue;
+
+            currentBuildVersion = buildBranch.substring(buildBranch.lastIndexOf("/") + 1);
+        }
+
+        deferred.resolve(
+        {
+            number: buildStatus.number,
+            version: currentBuildVersion,
+            isBuilding: !!buildStatus.building
+        });
     };
 
     request(requestOptions, responseHandler);
 
     return deferred.promise;
+}
+
+module.exports = function getBuildStatuses(projectNames)
+{
+    let promises = projectNames.map(projectName => getBuildStatus(projectName));
+
+    return q.all(promises).then(statuses =>
+    {
+        let result = {};
+        projectNames.forEach((projectName, index) =>
+        {
+            result[projectName] = statuses[index];
+        });
+        return result;
+    });
 };

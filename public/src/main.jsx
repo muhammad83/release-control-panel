@@ -1,7 +1,7 @@
 import App from "./components/app.jsx";
-import {projectsRepository} from "./repositories/projects-repository";
 import React from "react";
 import { render, findDOMNode } from "react-dom";
+import {configRepository} from "./repositories/config-repository";
 
 export default class Main extends React.Component
 {
@@ -11,39 +11,39 @@ export default class Main extends React.Component
 
         this.state =
         {
-            isLoadingProjects: true,
-            loadingProjectsFailed: false
+            isLoadingConfig: true,
+            loadingConfigFailed: false
         };
     }
 
     componentDidMount()
     {
-        this.loadProjects();
+        this.loadConfig();
     }
 
-    loadProjects()
+    loadConfig()
     {
-        projectsRepository.loadProjects()
+        configRepository.loadConfig()
             .then(() =>
             {
                 this.setState(
                 {
-                    isLoadingProjects: false
+                    isLoadingConfig: false
                 });
             })
             .catch(() =>
             {
                 this.setState(
                 {
-                    isLoadingProjects: false,
-                    loadingProjectsFailed: true
+                    isLoadingConfig: false,
+                    loadingConfigFailed: true
                 });
             });
     }
 
     render()
     {
-        if (this.state.isLoadingProjects)
+        if (this.state.isLoadingConfig)
         {
             return (
                 <div className="container-fluid">
@@ -65,7 +65,7 @@ export default class Main extends React.Component
             );
         }
 
-        if (this.state.loadingProjectsFailed)
+        if (this.state.loadingConfigFailed)
         {
             return (
                 <div>

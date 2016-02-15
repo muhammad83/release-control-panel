@@ -1,7 +1,8 @@
 import $ from "jquery";
 import q from "q";
-import BaseRepository from "./base-repository"
-import {projectsRepository} from "./projects-repository";
+import BaseRepository from "./base-repository";
+import { configRepository } from "./config-repository";
+import { projectsRepository } from "./projects-repository";
 
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
@@ -28,19 +29,52 @@ export class BuildsRepository extends BaseRepository
         return this[singleton];
     }
 
+    getCiBuildJobUrl(projectName, jobNumber)
+    {
+        return `${this.getCiBuildProjectUrl(projectName)}${jobNumber}/`;
+    }
+
+    getCiBuildProjectUrl(projectName)
+    {
+        return `${configRepository.ciBuildUrl}/job/${projectName}/`;
+    }
+
+    getBuildStatuses()
+    {
+        let deferred = q.defer();
+
+        let request = $.get("/build-statuses")
+            .done(data =>
+            {
+                let projects = projectsRepository.getProjects();
+                for (let project of projects)
+                {
+                    project.updateBuildStatus(data[projects.name]);
+                }
+            })
+            .fail(error =>
+            {
+                deferred.reject(this.processRequestFailure(error));
+            });
+
+        this.safeMonitorRequest(request);
+
+        return deferred.promise;
+    }
+
     getSuccessfulBuildsForProjects()
     {
         let deferred = q.defer();
-        let projectNames = projectsRepository.getProjects().map((project) => project.name).join(",");
 
-        let request = $.get(`/successful-builds-for-projects?projects=${projectNames}`, data =>
-        {
-            deferred.resolve(JSON.parse(data));
-        })
-        .fail(error =>
-        {
-            deferred.reject(this.processRequestFailure(error));
-        });
+        let request = $.get(`/successful-builds-for-projects`)
+            .done(data =>
+            {
+                deferred.resolve(data);
+            })
+            .fail(error =>
+            {
+                deferred.reject(this.processRequestFailure(error));
+            });
 
         this.safeMonitorRequest(request);
 
@@ -56,14 +90,15 @@ export class BuildsRepository extends BaseRepository
             version: version
         };
 
-        let request = $.post(`/start-build`, requestData, data =>
-        {
-            deferred.resolve(JSON.parse(data));
-        })
-        .fail(error =>
-        {
-            deferred.reject(this.processRequestFailure(error));
-        });
+        let request = $.post(`/start-build`, requestData)
+            .done(data =>
+            {
+                deferred.resolve(data);
+            })
+            .fail(error =>
+            {
+                deferred.reject(this.processRequestFailure(error));
+            });
 
         this.safeMonitorRequest(request);
 

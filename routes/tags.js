@@ -2,6 +2,7 @@
 
 const getAllStableVersions = require("../actions/get-all-stable-versions");
 const getProdReleaseNumber = require("../actions/get-prod-release-number");
+const getProjectNames = require("../helpers/get-project-names");
 const getStableApplications = require("../actions/get-stable-applications");
 const getStableTags = require("../actions/get-stable-tags");
 const getTags = require("../actions/get-tags");
@@ -11,7 +12,7 @@ class Tags
 {
     static getCurrentVersions(request, response)
     {
-        let projects = (request.query.projects || "").split(",");
+        let projects = getProjectNames();
         let promises = projects.map(project => getProdReleaseNumber(project));
 
         q.all(promises)
@@ -25,11 +26,11 @@ class Tags
                     };
                 });
 
-                response.send(JSON.stringify(data));
+                response.send(data);
             })
             .catch(ex =>
             {
-                response.status(500).send(JSON.stringify(ex || "Unknown error."));
+                response.status(500).send(ex || "Unknown error.");
             });
     }
 
@@ -39,11 +40,11 @@ class Tags
         getStableTags(serviceName)
             .then(data =>
             {
-                response.send(JSON.stringify(data));
+                response.send(data);
             })
             .catch(ex =>
             {
-                response.status(500).send(JSON.stringify(ex || "Unknown error."));
+                response.status(500).send(ex || "Unknown error.");
             });
     }
 
@@ -69,11 +70,11 @@ class Tags
                     };
                 });
 
-                response.send(JSON.stringify(data));
+                response.send(data);
             })
             .catch(ex =>
             {
-                response.status(500).send(JSON.stringify(ex || "Unknown error."));
+                response.status(500).send(ex || "Unknown error.");
             });
     }
 
@@ -89,14 +90,15 @@ class Tags
         q.all(promises)
             .then(data =>
             {
-                response.send(JSON.stringify({
+                response.send(
+                {
                     tags: data[0],
                     currentVersion: data[1]
-                }));
+                });
             })
             .catch(error =>
             {
-                response.status(500).send(JSON.stringify(error || "Unknown error."));
+                response.status(500).send(error || "Unknown error.");
             });
     }
 }

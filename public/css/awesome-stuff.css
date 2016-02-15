@@ -1,3 +1,20 @@
+.alert-container
+{
+    margin-left: -225px;
+    position: fixed;
+    top: 0;
+    transition: 0.5s ease-in-out transform;
+    transform: translate(0, -100%);
+    left: 50%;
+    width: 450px;
+    z-index: 100;
+}
+
+.alert-container.is-shown
+{
+    transform: translate(0, 10%);
+}
+
 h2
 {
     font-size: normal;
@@ -24,6 +41,13 @@ h2
     text-shadow: none;
 }
 
+.infinite-spin
+{
+    -webkit-animation: 1s linear 0s infinite spin;
+    -o-animation: 1s linear 0s infinite spin;
+    animation: 1s linear 0s infinite spin;
+}
+
 .input-group .form-control
 {
     border: none;
@@ -43,4 +67,40 @@ h2
 .navbar-brand
 {
     text-transform: uppercase;
+}
+
+@-webkit-keyframes spin
+{
+    from
+    {
+        transform: rotate(0deg);
+    }
+    to
+    {
+        transform: rotate(360deg);
+    }
+}
+
+@-o-keyframes spin
+{
+    from
+    {
+        transform: rotate(0deg);
+    }
+    to
+    {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spin
+{
+    from
+    {
+        transform: rotate(0deg);
+    }
+    to
+    {
+        transform: rotate(360deg);
+    }
 }
