@@ -1,6 +1,6 @@
 import BaseComponent from "./base-component";
 
-export default class CurrentVersionsList extends BaseComponent
+export default class InfiniteLoading extends BaseComponent
 {
     render()
     {

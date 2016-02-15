@@ -25,7 +25,7 @@ class Stories
             })
             .catch(error =>
             {
-                response.status(500).send(JSON.stringify(error || "Unknown error."));
+                response.status(500).send(error || "Unknown error.");
             });
     }
 
@@ -48,11 +48,11 @@ class Stories
             })
             .then(data =>
             {
-                response.send(JSON.stringify(data));
+                response.send(data);
             })
             .catch(error =>
             {
-                response.status(500).send(JSON.stringify(error || "Unknown error."));
+                response.status(500).send(error || "Unknown error.");
             });
     }
 
@@ -68,7 +68,7 @@ class Stories
             })
             .then(data =>
             {
-                response.send(JSON.stringify(data));
+                response.send(data);
             })
             .catch(ex =>
             {
@@ -81,7 +81,7 @@ class Stories
                     data: data
                 };
 
-                response.status(status).send(JSON.stringify(responseData));
+                response.status(status).send(responseData);
             });
     }
 

@@ -1,5 +1,6 @@
 import BaseComponent from "./base-component"
 import Navigation from "./navigation.jsx";
+import Notifications from "./notifications.jsx";
 import ProjectDetails from "./project-details.jsx";
 import ProjectsList from "./projects-list.jsx"
 import Releases from "./releases.jsx";
@@ -49,6 +50,7 @@ export default class App extends BaseComponent
 
         return (
             <div>
+                <Notifications />
                 <Navigation />
                 <Child {...childProps} />
             </div>

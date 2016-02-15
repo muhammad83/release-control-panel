@@ -26,11 +26,11 @@ class Tags
                     };
                 });
 
-                response.send(JSON.stringify(data));
+                response.send(data);
             })
             .catch(ex =>
             {
-                response.status(500).send(JSON.stringify(ex || "Unknown error."));
+                response.status(500).send(ex || "Unknown error.");
             });
     }
 
@@ -40,11 +40,11 @@ class Tags
         getStableTags(serviceName)
             .then(data =>
             {
-                response.send(JSON.stringify(data));
+                response.send(data);
             })
             .catch(ex =>
             {
-                response.status(500).send(JSON.stringify(ex || "Unknown error."));
+                response.status(500).send(ex || "Unknown error.");
             });
     }
 
@@ -70,11 +70,11 @@ class Tags
                     };
                 });
 
-                response.send(JSON.stringify(data));
+                response.send(data);
             })
             .catch(ex =>
             {
-                response.status(500).send(JSON.stringify(ex || "Unknown error."));
+                response.status(500).send(ex || "Unknown error.");
             });
     }
 
@@ -90,14 +90,15 @@ class Tags
         q.all(promises)
             .then(data =>
             {
-                response.send(JSON.stringify({
+                response.send(
+                {
                     tags: data[0],
                     currentVersion: data[1]
-                }));
+                });
             })
             .catch(error =>
             {
-                response.status(500).send(JSON.stringify(error || "Unknown error."));
+                response.status(500).send(error || "Unknown error.");
             });
     }
 }

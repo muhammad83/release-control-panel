@@ -7,7 +7,8 @@ export const Events =
 {
     SEARCH_TICKETS: "search-tickets",
     SEARCH_PROJECT_TICKETS: "search-project-tickets",
-    SELECTED_RELEASE_CHANGED: "selected-release-changed"
+    SELECTED_RELEASE_CHANGED: "selected-release-changed",
+    SHOW_NOTIFICATION: "show-notification"
 };
 
 /**

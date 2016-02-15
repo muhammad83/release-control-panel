@@ -1,7 +1,8 @@
 "use strict";
 
 const buildsController = require("./builds");
-const projectsController = require("./projects");
+const deploymentController = require("./deployment");
+const configController = require("./config");
 const storiesController = require("./stories");
 const tagsController = require("./tags");
 
@@ -10,7 +11,9 @@ module.exports = (app) =>
     app.get("/build-statuses", buildsController.getBuildStatuses);
     app.post("/create-release-filter", storiesController.createReleaseFilter);
     app.get("/current-versions", tagsController.getCurrentVersions);
-    app.get("/projectNames", projectsController.getProjectNames);
+    app.post("/deploy-to-qa", deploymentController.deployToQA);
+    app.post("/deploy-to-staging", deploymentController.deployToStaging);
+    app.get("/config", configController.getConfig);
     app.get("/releases", tagsController.getReleases);
     app.get("/stable-tags", tagsController.getStableTags);
     app.post("/start-build", buildsController.startBuild);

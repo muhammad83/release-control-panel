@@ -1,13 +1,11 @@
 import $ from "jquery";
 import q from "q";
-import Project from "../models/project";
-import BaseRepository from "./base-repository";
-import {configRepository} from "./config-repository";
+import BaseRepository from "./base-repository"
 
 let singleton = Symbol();
 let singletonEnforcer = Symbol();
 
-export class ProjectsRepository extends BaseRepository
+export class DeploymentRepository extends BaseRepository
 {
     constructor(enforcer)
     {
@@ -15,7 +13,7 @@ export class ProjectsRepository extends BaseRepository
 
         if (enforcer !== singletonEnforcer)
         {
-            throw "Cannot construct singleton";
+            throw "Cannot construct singleton!";
         }
     }
 
@@ -23,17 +21,22 @@ export class ProjectsRepository extends BaseRepository
     {
         if (!this[singleton])
         {
-            this[singleton] = new ProjectsRepository(singletonEnforcer);
+            this[singleton] = new DeploymentRepository(singletonEnforcer);
         }
 
         return this[singleton];
     }
 
-    getCurrentVersions()
+    deployToQA(projectName, version)
     {
         let deferred = q.defer();
+        let requestData =
+        {
+            projectName: projectName,
+            version: version
+        };
 
-        let request = $.get(`/current-versions`)
+        let request = $.post("/deploy-to-qa", requestData)
             .done(data =>
             {
                 deferred.resolve(data);
@@ -48,25 +51,19 @@ export class ProjectsRepository extends BaseRepository
         return deferred.promise;
     }
 
-    getProjects()
-    {
-        return configRepository.getProjects();
-    }
-
-    getUpcomingReleases()
+    deployToStaging(projectName, version)
     {
         let deferred = q.defer();
-        let projects = this.getProjects().map((p) => p.name);
+        let requestData =
+        {
+            projectName: projectName,
+            version: version
+        };
 
-        let request = $.get(`/releases?timestamp=${+new Date()}`)
+        let request = $.post("/deploy-to-staging", requestData)
             .done(data =>
             {
-                let filteredRelases = data.map(r =>
-                {
-                    r.applications = r.applications.filter(a => projects.indexOf(a.name) !== -1);
-                    return r;
-                });
-                deferred.resolve(filteredRelases);
+                deferred.resolve(data);
             })
             .fail(error =>
             {
@@ -79,4 +76,4 @@ export class ProjectsRepository extends BaseRepository
     }
 }
 
-export const projectsRepository = ProjectsRepository.instance;
+export const deploymentRepository = DeploymentRepository.instance;

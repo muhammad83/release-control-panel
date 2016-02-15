@@ -32,16 +32,15 @@ export class TagsRepository extends BaseRepository
     {
         let deferred = q.defer();
 
-        let request = $.get(`/stable-tags?serviceName=${projectName}&timestamp=${+new Date()}`, (data) =>
-        {
-            let jsonData = JSON.parse(data);
-            let tags = jsonData.map((tag) => new Tag(tag));
-
-            deferred.resolve(tags);
-        }).fail(error =>
-        {
-            deferred.reject(this.processRequestFailure(error));
-        });
+        let request = $.get(`/stable-tags?serviceName=${projectName}&timestamp=${+new Date()}`)
+            .done(data =>
+            {
+                deferred.resolve(data.map((tag) => new Tag(tag)));
+            })
+            .fail(error =>
+            {
+                deferred.reject(this.processRequestFailure(error));
+            });
 
         this.safeMonitorRequest(request);
 
@@ -52,21 +51,22 @@ export class TagsRepository extends BaseRepository
     {
         let deferred = q.defer();
 
-        let request = $.get(`/tags?serviceName=${projectName}&timestamp=${+new Date()}`, (data) =>
-        {
-            let jsonData = JSON.parse(data);
-            let tags = jsonData.tags.map((tag) => new Tag(tag));
-            let startingTagIndex = jsonData.currentVersion ? tags.findIndex((tag) => { return tag.name == jsonData.currentVersion}) : -1;
-
-            deferred.resolve(
+        let request = $.get(`/tags?serviceName=${projectName}&timestamp=${+new Date()}`)
+            .done(data =>
             {
-                tags: tags,
-                startingTagIndex: startingTagIndex
+                let tags = data.tags.map((tag) => new Tag(tag));
+                let startingTagIndex = data.currentVersion ? tags.findIndex((tag) => { return tag.name == data.currentVersion}) : -1;
+
+                deferred.resolve(
+                {
+                    tags: tags,
+                    startingTagIndex: startingTagIndex
+                });
+            })
+            .fail(error =>
+            {
+                deferred.reject(this.processRequestFailure(error));
             });
-        }).fail(error =>
-        {
-            deferred.reject(this.processRequestFailure(error));
-        });
 
         this.safeMonitorRequest(request);
 

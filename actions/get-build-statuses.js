@@ -76,7 +76,8 @@ function getBuildStatus(projectName)
 
         deferred.resolve(
         {
-            buildVersion: currentBuildVersion,
+            number: buildStatus.number,
+            version: currentBuildVersion,
             isBuilding: !!buildStatus.building
         });
     };

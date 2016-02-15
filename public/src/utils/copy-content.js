@@ -22,6 +22,7 @@ export default function copyContent(selector)
     let commandLineScript = document.querySelector(selector);
     let range = document.createRange();
     let selection = window.getSelection();
+    let result = true;
 
     clearSelection();
 
@@ -35,7 +36,10 @@ export default function copyContent(selector)
     catch (ex)
     {
         console.error("Sorry bro, your browser does not support 'copy' command. Move on and get something which actually works!");
+        result = false;
     }
 
     clearSelection();
+
+    return result;
 }

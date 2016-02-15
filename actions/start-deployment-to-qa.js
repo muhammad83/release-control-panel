@@ -4,16 +4,31 @@ const config = require("../config");
 const q = require("q");
 const request = require("request");
 
-module.exports = function startBuild(projectName, version)
+module.exports = function startDeploymentToQa(location, projectName, version)
 {
+    let environment, userName, apiKey;
+
+    if (location == "left")
+    {
+        environment = config.ciQaLeftUrl;
+        userName = config.ciQaLeftUserName;
+        apiKey = config.ciQaLeftApiToken;
+    }
+    else
+    {
+        environment = config.ciQaRightUrl;
+        userName = config.ciQaRightUserName;
+        apiKey = config.ciQaRightApiToken;
+    }
+
     let deferred = q.defer();
     let requestOptions = {
         method: "POST",
-        url: `${config.ciBuildUrl}/job/${projectName}/buildWithParameters`,
+        url: `${environment}/buildWithParameters`,
         auth:
         {
-            user: config.ciBuildUserName,
-            pass: config.ciBuildApiToken
+            user: userName,
+            pass: apiKey
         },
         headers:
         {
@@ -21,8 +36,9 @@ module.exports = function startBuild(projectName, version)
         },
         qs:
         {
-            delay: "50sec",
-            TAG: version
+            APP: projectName,
+            APP_BUILD_NUMBER: version,
+            delay: "50sec"
         }
     };
     let responseHandler = (error, response, data) =>
@@ -32,7 +48,7 @@ module.exports = function startBuild(projectName, version)
             deferred.reject(
             {
                 data: error,
-                message: "Unknown error when starting project build.",
+                message: "Unknown error when starting project deployment.",
                 status: 500
             });
             return;
@@ -45,10 +61,10 @@ module.exports = function startBuild(projectName, version)
             switch (response.statusCode)
             {
                 case 401:
-                    message = "Incorrect CI-BUILD username or password. Please change it in configuration to correct value.";
+                    message = "Incorrect username or password. Please change it in configuration to correct value.";
                     break;
                 case 403:
-                    message = "CI-BUILD rejected your login request. Please try logging in in the browser first - captcha might be blocking your login requests.";
+                    message = "Jenkins rejected your login request. Please try logging in in the browser first - captcha might be blocking your login requests.";
                     break;
             }
 

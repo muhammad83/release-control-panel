@@ -13,7 +13,7 @@ class Builds
         getBuildStatuses(projectNames)
             .then(status =>
             {
-                response.send(JSON.stringify(status));
+                response.send(status);
             })
             .catch(ex =>
             {
@@ -26,7 +26,7 @@ class Builds
                     data: data
                 };
 
-                response.status(status).send(JSON.stringify(responseData));
+                response.status(status).send(responseData);
             });
     }
 
@@ -37,7 +37,7 @@ class Builds
         getSuccessfulBuildsForProjects(projects)
             .then(projectsBuilds =>
             {
-                response.send(JSON.stringify(projectsBuilds));
+                response.send(projectsBuilds);
             })
             .catch(ex =>
             {
@@ -50,7 +50,7 @@ class Builds
                     data: data
                 };
 
-                response.status(status).send(JSON.stringify(responseData));
+                response.status(status).send(responseData);
             });
     }
 

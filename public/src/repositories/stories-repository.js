@@ -33,14 +33,15 @@ export class StoriesRepository extends BaseRepository
         let deferred = q.defer();
         let projects = projectsRepository.getProjects().map(function (p) { return p.name; }).join(",");
 
-        let request = $.post(`/create-release-filter?version=${releaseName}&projects=${projects}&timestamp=${+new Date()}`, data =>
-        {
-            deferred.resolve(data);
-        })
-        .fail(response =>
-        {
-            deferred.reject(this.processRequestFailure(response));
-        });
+        let request = $.post(`/create-release-filter?version=${releaseName}&projects=${projects}&timestamp=${+new Date()}`)
+            .done(data =>
+            {
+                deferred.resolve(data);
+            })
+            .fail(response =>
+            {
+                deferred.reject(this.processRequestFailure(response));
+            });
 
         this.safeMonitorRequest(request);
 
@@ -53,14 +54,15 @@ export class StoriesRepository extends BaseRepository
         let encodedStartTag = encodeURIComponent(startTag);
         let encodedEndTag = encodeURIComponent(endTag);
 
-        let request = $.get(`/stories?serviceName=${serviceName}&startTag=${encodedStartTag}&endTag=${encodedEndTag}&timestamp=${+new Date()}`, data =>
-        {
-            deferred.resolve(JSON.parse(data));
-        })
-        .fail(response =>
-        {
-            deferred.reject(this.processRequestFailure(response));
-        });
+        let request = $.get(`/stories?serviceName=${serviceName}&startTag=${encodedStartTag}&endTag=${encodedEndTag}&timestamp=${+new Date()}`)
+            .done(data =>
+            {
+                deferred.resolve(data);
+            })
+            .fail(response =>
+            {
+                deferred.reject(this.processRequestFailure(response));
+            });
 
         this.safeMonitorRequest(request);
 
@@ -72,14 +74,15 @@ export class StoriesRepository extends BaseRepository
         let deferred = q.defer();
         let projects = projectsRepository.getProjects().map(function (p) { return p.name; }).join(",");
 
-        let request = $.get(`/stories-for-projects?version=${releaseName}&projects=${projects}&timestamp=${+new Date()}`, data =>
-        {
-            deferred.resolve(JSON.parse(data));
-        })
-        .fail(response =>
-        {
-            deferred.reject(this.processRequestFailure(response));
-        });
+        let request = $.get(`/stories-for-projects?version=${releaseName}&projects=${projects}&timestamp=${+new Date()}`)
+            .done(data =>
+            {
+                deferred.resolve(data);
+            })
+            .fail(response =>
+            {
+                deferred.reject(this.processRequestFailure(response));
+            });
 
         this.safeMonitorRequest(request);
 

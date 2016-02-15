@@ -1,12 +1,14 @@
 import BaseComponent from "./base-component";
 import {buildsRepository} from "../repositories/builds-repository";
 import copyContent from "../utils/copy-content";
+import {deploymentRepository} from "../repositories/deployment-repository";
 import ErrorHandler from "../handlers/error-handler";
 import {globalEventEmitter, Events} from "../utils/global-event-emitter";
 import InfiniteLoading from "./infinite-loading.jsx";
 import {projectsRepository} from "../repositories/projects-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
 import RequestManager from "../utils/request-manager";
+import SmallSpinner from "./small-spinner.jsx";
 
 const BUILD_REFRESH_INTERVAL = 1000 * 60;
 
@@ -20,7 +22,6 @@ export default class UpcomingVersionsList extends BaseComponent
         this.requestManager = new RequestManager();
         this.state =
         {
-            buildStatuses: {},
             commandLineScript: "",
             extraColumns:
             [
@@ -28,6 +29,11 @@ export default class UpcomingVersionsList extends BaseComponent
                     heading: "Build number",
                     type: "template",
                     template: this.renderBuildNumberCell.bind(this)
+                },
+                {
+                    heading: "Actions",
+                    type: "template",
+                    template: this.renderActionsCell.bind(this)
                 }
             ],
             isLoadingBuilds: false,
@@ -60,10 +66,28 @@ export default class UpcomingVersionsList extends BaseComponent
 
         this.requestManager.abortPendingRequests();
     }
+
+    getCiBuildJobUrl(project)
+    {
+        let projectModel = projectsRepository.getProjects().find(p => p.name == project.name);
+        return buildsRepository.getCiBuildJobUrl(projectModel.name, projectModel.buildNumber);
+    }
+
+    getCiBuildProjectUrl(project)
+    {
+        return buildsRepository.getCiBuildProjectUrl(project.name);
+    }
     
     copyCommandLineScript()
     {
-        copyContent("#commandLineScript");
+        if (copyContent("#commandLineScript"))
+        {
+            globalEventEmitter.emit(Events.SHOW_NOTIFICATION, "success", "Copied.");
+        }
+        else
+        {
+            globalEventEmitter.emit(Events.SHOW_NOTIFICATION, "danger", "Could not copy the script. Check browser console for more info.");
+        }
     }
 
     getCommandLineScript(selectedRelease)
@@ -87,7 +111,37 @@ export default class UpcomingVersionsList extends BaseComponent
         
         return this.state.selectedRelease.applications || [];
     }
-    
+
+    handleDeployToQA(project, event)
+    {
+        event.preventDefault();
+
+        deploymentRepository.deployToQA(project.name, project.version)
+            .then(() =>
+            {
+                globalEventEmitter.emit(Events.SHOW_NOTIFICATION, "success", "Deployment to QA started.");
+            })
+            .catch(error =>
+            {
+                ErrorHandler.showErrorMessage(error);
+            });
+    }
+
+    handleDeployToStaging(project, event)
+    {
+        event.preventDefault();
+
+        deploymentRepository.deployToStaging(project.name, project.version)
+            .then(() =>
+            {
+                globalEventEmitter.emit(Events.SHOW_NOTIFICATION, "success", "Deployment to staging started.");
+            })
+            .catch(error =>
+            {
+                ErrorHandler.showErrorMessage(error);
+            });
+    }
+
     handleFormSubmit(event)
     {
         event.preventDefault();
@@ -131,7 +185,10 @@ export default class UpcomingVersionsList extends BaseComponent
 
     handleStartBuildClick(project)
     {
-        project.isBuilding = true;
+        let projects = projectsRepository.getProjects();
+        let projectModel = projects.find(p => p.name === project.name);
+
+        projectModel.pendingVersions.push(project.version);
 
         this.setState(
         {
@@ -142,13 +199,16 @@ export default class UpcomingVersionsList extends BaseComponent
         buildsRepository.startBuild(project.name, project.version);
     }
 
-    isBuildInProgress(project)
+    isProjectBuilding(project)
     {
-        let buildStatus = this.state.buildStatuses[project.name];
-        if (!buildStatus)
-            return false;
+        let projectModel = projectsRepository.getProjects().find(p => p.name == project.name);
+        return projectModel.isVersionBeingBuilt(project.version);
+    }
 
-        return buildStatus.buildVersion === project.version && buildStatus.isBuilding;
+    isProjectBuildPending(project)
+    {
+        let projectModel = projectsRepository.getProjects().find(p => p.name == project.name);
+        return projectModel.isVersionPending(project.version);
     }
 
     loadAvailableReleases()
@@ -188,11 +248,11 @@ export default class UpcomingVersionsList extends BaseComponent
     loadBuildStatuses()
     {
         buildsRepository.getBuildStatuses()
-            .then(buildStatuses =>
+            .then(() =>
             {
                 this.setState(
                 {
-                    buildStatuses: buildStatuses
+                    projects: projectsRepository.getProjects()
                 });
             });
     }
@@ -297,11 +357,40 @@ export default class UpcomingVersionsList extends BaseComponent
         );
     }
 
+    renderActionsCell(project)
+    {
+        return (
+            <div className="btn-group">
+                <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Deploy <span className="caret"></span>
+                </button>
+                <ul className="dropdown-menu">
+                    <li><a href="#" onClick={this.handleDeployToQA.bind(this, project)}>QA</a></li>
+                    <li><a href="#" onClick={this.handleDeployToStaging.bind(this, project)}>Staging</a></li>
+                </ul>
+            </div>
+        );
+    }
+
     renderBuildNumberCell(project)
     {
-        if (project.isBuilding || this.state.isLoadingBuilds || this.isBuildInProgress(project))
+        if (this.state.isLoadingBuilds)
         {
-            return <InfiniteLoading />;
+            return <InfiniteLoading />
+        }
+
+        if (this.isProjectBuildPending(project))
+        {
+            return <a href={this.getCiBuildProjectUrl(project)} target="_blank" rel="external">Build queued</a>
+        }
+
+        if (this.isProjectBuilding(project))
+        {
+            return (
+                <div>
+                    <a href={this.getCiBuildJobUrl(project)} target="_blank" rel="external">Building <SmallSpinner /></a>
+                </div>
+            );
         }
 
         let projectBuilds = this.state.successfulBuilds[project.name];
