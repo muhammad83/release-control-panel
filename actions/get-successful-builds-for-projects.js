@@ -61,11 +61,11 @@ function getSuccessfulBuilds(projectName)
         catch (ex)
         {
             deferred.reject(
-                {
-                    data: data,
-                    message: "Could not parse JSON data from CI-BUILD.",
-                    status: 500
-                });
+            {
+                data: data,
+                message: "Could not parse JSON data from CI-BUILD.",
+                status: 500
+            });
             return;
         }
 

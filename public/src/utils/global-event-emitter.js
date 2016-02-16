@@ -5,6 +5,7 @@ let singletonEnforcer = Symbol();
 
 export const Events =
 {
+    PROJECTS_UPDATED: "projects-updated",
     SEARCH_TICKETS: "search-tickets",
     SEARCH_PROJECT_TICKETS: "search-project-tickets",
     SELECTED_RELEASE_CHANGED: "selected-release-changed",
