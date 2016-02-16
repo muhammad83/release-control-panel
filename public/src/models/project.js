@@ -4,46 +4,80 @@ export default class Project
 {
     constructor(name)
     {
-        this.buildNumber = null;
-        this.buildVersion = null;
-        this.isBuilding = false;
+        this.buildNumbers = {};
         this.key = nextProjectKey++;
         this.name = name;
-        this.pendingVersions = [];
+        this.pendingBuilds = [];
+        this.runningBuildNumber = null;
+        this.runningBuildVersion = null;
+        this.successfulBuilds = [];
     }
 
-    isVersionBeingBuilt(version)
+    getBuildNumber(version)
     {
-        return this.isBuilding && this.buildVersion === version;
-    }
-
-    isVersionPending(version)
-    {
-        return this.pendingVersions.indexOf(version) !== -1;
-    }
-
-    updateBuildStatus(buildStatus)
-    {
-        if (!buildStatus)
+        if (this.isBuildRunning(version))
         {
-            if (this.isBuilding)
+            return this.runningBuildNumber;
+        }
+
+        return this.buildNumbers[version];
+    }
+
+    isBuildRunning(version)
+    {
+        return this.runningBuildVersion === version;
+    }
+
+    isBuildScheduled(version)
+    {
+        return this.pendingBuilds.indexOf(version) !== -1;
+    }
+
+    isBuilt(version)
+    {
+        return this.successfulBuilds.indexOf(version) !== -1;
+    }
+
+    onBuildScheduled(version)
+    {
+        if (this.pendingBuilds.indexOf(version) === -1)
+        {
+            this.pendingBuilds.push(version);
+        }
+    }
+
+    updateBuildStatus(buildStatus, successfulBuilds)
+    {
+        if (successfulBuilds)
+        {
+            for (let successfulVersion in successfulBuilds)
             {
-                this.isBuilding = false;
-                this.buildNumber = null;
-                this.buildVersion = null;
+                if (!successfulBuilds.hasOwnProperty(successfulVersion))
+                    continue;
+
+                let indexOfPendingBuild = this.pendingBuilds.indexOf(successfulVersion);
+                if (indexOfPendingBuild !== -1)
+                {
+                    this.pendingBuilds.splice(indexOfPendingBuild, 1);
+                }
+
+                if (this.successfulBuilds.indexOf(successfulVersion) === -1)
+                {
+                    this.successfulBuilds.push(successfulVersion);
+                    this.buildNumbers[successfulVersion] = successfulBuilds[successfulVersion].buildNumber;
+                }
             }
+        }
+
+        if (buildStatus && buildStatus.isBuilding)
+        {
+            this.runningBuildNumber = buildStatus.number;
+            this.runningBuildVersion = buildStatus.version;
         }
         else
         {
-            this.buildNumber = buildStatus.number;
-            this.buildVersion = buildStatus.version;
-            this.isBuilding = true;
-
-            let pendingIndex = this.pendingVersions.indexOf(this.buildVersion);
-            if (pendingIndex !== -1)
-            {
-                this.pendingVersions.splice(pendingIndex, 1);
-            }
+            this.runningBuildNumber = null;
+            this.runningBuildVersion = null;
         }
     }
 }

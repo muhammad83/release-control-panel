@@ -2,6 +2,7 @@ import $ from "jquery";
 import q from "q";
 import BaseRepository from "./base-repository";
 import { configRepository } from "./config-repository";
+import { globalEventEmitter, Events } from "../utils/global-event-emitter";
 import { projectsRepository } from "./projects-repository";
 
 let singleton = Symbol();
@@ -39,18 +40,14 @@ export class BuildsRepository extends BaseRepository
         return `${configRepository.ciBuildUrl}/job/${projectName}/`;
     }
 
-    getBuildStatuses()
+    loadBuildStatuses()
     {
         let deferred = q.defer();
 
         let request = $.get("/build-statuses")
             .done(data =>
             {
-                let projects = projectsRepository.getProjects();
-                for (let project of projects)
-                {
-                    project.updateBuildStatus(data[projects.name]);
-                }
+                deferred.resolve(data);
             })
             .fail(error =>
             {
@@ -62,7 +59,7 @@ export class BuildsRepository extends BaseRepository
         return deferred.promise;
     }
 
-    getSuccessfulBuildsForProjects()
+    loadSuccessfulBuildsForProjects()
     {
         let deferred = q.defer();
 
@@ -90,6 +87,14 @@ export class BuildsRepository extends BaseRepository
             version: version
         };
 
+        let project = projectsRepository.getProjects().find(p => p.name === projectName);
+        if (project)
+        {
+            project.onBuildScheduled(version);
+        }
+
+        globalEventEmitter.emit(Events.PROJECTS_UPDATED);
+
         let request = $.post(`/start-build`, requestData)
             .done(data =>
             {
@@ -103,6 +108,24 @@ export class BuildsRepository extends BaseRepository
         this.safeMonitorRequest(request);
 
         return deferred.promise;
+    }
+
+    updateBuildNumbersAndProgress()
+    {
+        let promises = [ this.loadBuildStatuses(), this.loadSuccessfulBuildsForProjects() ];
+        return q.all(promises).then(results =>
+        {
+            let buildStatuses = results[0];
+            let successfulBuilds = results[1];
+            let projects = projectsRepository.getProjects();
+
+            for (let project of projects)
+            {
+                project.updateBuildStatus(buildStatuses[project.name], successfulBuilds[project.name]);
+            }
+
+            globalEventEmitter.emit(Events.PROJECTS_UPDATED);
+        });
     }
 }
 
