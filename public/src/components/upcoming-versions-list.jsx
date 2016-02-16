@@ -2,7 +2,7 @@ import BaseComponent from "./base-component";
 import BuildNumber from "./build-number.jsx";
 import { buildsRepository } from "../repositories/builds-repository";
 import copyContent from "../utils/copy-content";
-import { deploymentRepository } from "../repositories/deployment-repository";
+import Deployment from "./deployment.jsx";
 import ErrorHandler from "../handlers/error-handler";
 import { globalEventEmitter, Events } from "../utils/global-event-emitter";
 import { projectsRepository } from "../repositories/projects-repository";
@@ -96,36 +96,6 @@ export default class UpcomingVersionsList extends BaseComponent
         }
         
         return this.state.selectedRelease.applications || [];
-    }
-
-    handleDeployToQA(project, event)
-    {
-        event.preventDefault();
-
-        deploymentRepository.deployToQA(project.name, project.version)
-            .then(() =>
-            {
-                globalEventEmitter.emit(Events.SHOW_NOTIFICATION, "success", "Deployment to QA started.");
-            })
-            .catch(error =>
-            {
-                ErrorHandler.showErrorMessage(error);
-            });
-    }
-
-    handleDeployToStaging(project, event)
-    {
-        event.preventDefault();
-
-        deploymentRepository.deployToStaging(project.name, project.version)
-            .then(() =>
-            {
-                globalEventEmitter.emit(Events.SHOW_NOTIFICATION, "success", "Deployment to staging started.");
-            })
-            .catch(error =>
-            {
-                ErrorHandler.showErrorMessage(error);
-            });
     }
 
     handleFormSubmit(event)
@@ -290,18 +260,9 @@ export default class UpcomingVersionsList extends BaseComponent
 
     renderActionsCell(project)
     {
-        return (
-            <div className="btn-group">
-                <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Deploy <span className="caret"></span>
-                </button>
-                <ul className="dropdown-menu">
-                    <li><a href="#" onClick={this.handleDeployToQA.bind(this, project)}>QA</a></li>
-                    <li><a href="#" onClick={this.handleDeployToStaging.bind(this, project)}>Staging</a></li>
-                </ul>
-            </div>
-        );
+        return <Deployment projectName={project.name} version={project.version}/>;
     }
+
 
     renderBuildNumberCell(project)
     {

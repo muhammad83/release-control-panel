@@ -60,7 +60,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(189);
+	var _reactDom = __webpack_require__(190);
 
 	var _configRepository = __webpack_require__(167);
 
@@ -34592,7 +34592,9 @@
 
 	var _copyContent2 = _interopRequireDefault(_copyContent);
 
-	var _deploymentRepository = __webpack_require__(188);
+	var _deployment = __webpack_require__(188);
+
+	var _deployment2 = _interopRequireDefault(_deployment);
 
 	var _errorHandler = __webpack_require__(172);
 
@@ -34698,28 +34700,6 @@
 	            }
 
 	            return this.state.selectedRelease.applications || [];
-	        }
-	    }, {
-	        key: "handleDeployToQA",
-	        value: function handleDeployToQA(project, event) {
-	            event.preventDefault();
-
-	            _deploymentRepository.deploymentRepository.deployToQA(project.name, project.version).then(function () {
-	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Deployment to QA started.");
-	            }).catch(function (error) {
-	                _errorHandler2.default.showErrorMessage(error);
-	            });
-	        }
-	    }, {
-	        key: "handleDeployToStaging",
-	        value: function handleDeployToStaging(project, event) {
-	            event.preventDefault();
-
-	            _deploymentRepository.deploymentRepository.deployToStaging(project.name, project.version).then(function () {
-	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Deployment to staging started.");
-	            }).catch(function (error) {
-	                _errorHandler2.default.showErrorMessage(error);
-	            });
 	        }
 	    }, {
 	        key: "handleFormSubmit",
@@ -34910,38 +34890,7 @@
 	    }, {
 	        key: "renderActionsCell",
 	        value: function renderActionsCell(project) {
-	            return React.createElement(
-	                "div",
-	                { className: "btn-group" },
-	                React.createElement(
-	                    "button",
-	                    { type: "button", className: "btn btn-default dropdown-toggle", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false" },
-	                    "Deploy ",
-	                    React.createElement("span", { className: "caret" })
-	                ),
-	                React.createElement(
-	                    "ul",
-	                    { className: "dropdown-menu" },
-	                    React.createElement(
-	                        "li",
-	                        null,
-	                        React.createElement(
-	                            "a",
-	                            { href: "#", onClick: this.handleDeployToQA.bind(this, project) },
-	                            "QA"
-	                        )
-	                    ),
-	                    React.createElement(
-	                        "li",
-	                        null,
-	                        React.createElement(
-	                            "a",
-	                            { href: "#", onClick: this.handleDeployToStaging.bind(this, project) },
-	                            "Staging"
-	                        )
-	                    )
-	                )
-	            );
+	            return React.createElement(_deployment2.default, { projectName: project.name, version: project.version });
 	        }
 	    }, {
 	        key: "renderBuildNumberCell",
@@ -35407,6 +35356,112 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+
+	var _baseComponent = __webpack_require__(2);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _deploymentRepository = __webpack_require__(189);
+
+	var _errorHandler = __webpack_require__(172);
+
+	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+
+	var _globalEventEmitter = __webpack_require__(169);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var SmallSpinner = function (_BaseComponent) {
+	    _inherits(SmallSpinner, _BaseComponent);
+
+	    function SmallSpinner() {
+	        _classCallCheck(this, SmallSpinner);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(SmallSpinner).apply(this, arguments));
+	    }
+
+	    _createClass(SmallSpinner, [{
+	        key: "handleDeployToQA",
+	        value: function handleDeployToQA(event) {
+	            event.preventDefault();
+
+	            _deploymentRepository.deploymentRepository.deployToQA(this.props.projectName, this.props.version).then(function () {
+	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Deployment to QA started.");
+	            }).catch(function (error) {
+	                _errorHandler2.default.showErrorMessage(error);
+	            });
+	        }
+	    }, {
+	        key: "handleDeployToStaging",
+	        value: function handleDeployToStaging(event) {
+	            event.preventDefault();
+
+	            _deploymentRepository.deploymentRepository.deployToStaging(this.props.projectName, this.props.version).then(function () {
+	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Deployment to staging started.");
+	            }).catch(function (error) {
+	                _errorHandler2.default.showErrorMessage(error);
+	            });
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            return React.createElement(
+	                "div",
+	                { className: "btn-group" },
+	                React.createElement(
+	                    "button",
+	                    { type: "button", className: "btn btn-default dropdown-toggle", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false" },
+	                    "Deploy ",
+	                    React.createElement("span", { className: "caret" })
+	                ),
+	                React.createElement(
+	                    "ul",
+	                    { className: "dropdown-menu" },
+	                    React.createElement(
+	                        "li",
+	                        null,
+	                        React.createElement(
+	                            "a",
+	                            { href: "#", onClick: this.handleDeployToQA.bind(this) },
+	                            "QA"
+	                        )
+	                    ),
+	                    React.createElement(
+	                        "li",
+	                        null,
+	                        React.createElement(
+	                            "a",
+	                            { href: "#", onClick: this.handleDeployToStaging.bind(this) },
+	                            "Staging"
+	                        )
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return SmallSpinner;
+	}(_baseComponent2.default);
+
+	exports.default = SmallSpinner;
+
+/***/ },
+/* 189 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 	exports.deploymentRepository = exports.DeploymentRepository = undefined;
 
 	var _jquery = __webpack_require__(162);
@@ -35505,7 +35560,7 @@
 	var deploymentRepository = exports.deploymentRepository = DeploymentRepository.instance;
 
 /***/ },
-/* 189 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
