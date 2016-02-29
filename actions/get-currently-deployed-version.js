@@ -11,7 +11,7 @@ function getProdReleaseVer(outputFromServer)
     return (/(\d.\d*.\d)/.exec(outputFromServer)|| [])[0] || null;
 }
 
-module.exports = function getProdReleaseNumber(serviceName)
+module.exports = function getCurrentlyDeployedVersions(serviceName)
 {
     let deferred = q.defer();
     let serviceCmdOptions = { cwd: path.join(workspace, serviceName) };

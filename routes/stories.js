@@ -1,7 +1,7 @@
 "use strict";
 
 const createReleaseFilter = require("../actions/create-release-filter");
-const getProdReleaseNumber = require("../actions/get-prod-release-number");
+const getCurrentlyDeployedVersion = require("../actions/get-currently-deployed-version");
 const getStableApplications = require("../actions/get-stable-applications");
 const getStories = require("../actions/get-stories");
 const getTags = require("../actions/get-tags");
@@ -98,7 +98,7 @@ class Stories
                     return "release/" + projectsVersions.find(pv => pv.name == project).version;
                 });
 
-                let promises = projects.map(project => getProdReleaseNumber(project));
+                let promises = projects.map(project => getCurrentlyDeployedVersion(project));
                 return q.all(promises);
             })
             .then(prodVersions =>
