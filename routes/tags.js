@@ -1,19 +1,20 @@
 "use strict";
 
 const getAllStableVersions = require("../actions/get-all-stable-versions");
-const getProdReleaseNumber = require("../actions/get-prod-release-number");
+const getCurrentlyDeployedVersion = require("../actions/get-currently-deployed-version");
 const getProjectNames = require("../helpers/get-project-names");
 const getStableApplications = require("../actions/get-stable-applications");
 const getStableTags = require("../actions/get-stable-tags");
 const getTags = require("../actions/get-tags");
 const q = require("q");
+const semver = require("semver");
 
 class Tags
 {
     static getCurrentVersions(request, response)
     {
         let projects = getProjectNames();
-        let promises = projects.map(project => getProdReleaseNumber(project));
+        let promises = projects.map(project => getCurrentlyDeployedVersion(project));
 
         q.all(promises)
             .then(versions =>
@@ -52,7 +53,8 @@ class Tags
     {
         let releaseVersions;
 
-        getAllStableVersions()
+        let availableReleasesPromise =
+            getAllStableVersions()
             .then(versions =>
             {
                 releaseVersions = versions;
@@ -62,14 +64,40 @@ class Tags
             })
             .then(applicationVersions =>
             {
-                let data = releaseVersions.map((version, index) =>
+                return releaseVersions.map((version, index) =>
                 {
                     return {
                         name: version,
                         applications: applicationVersions[index]
                     };
                 });
+            });
 
+        let projectNames = getProjectNames();
+        let currentVersionsPromise = q.all(projectNames.map(projectName => getCurrentlyDeployedVersion(projectName)));
+
+        q.all([currentVersionsPromise, availableReleasesPromise])
+            .then(data =>
+            {
+                let availableReleases = data[1];
+                let currentVersions = data[0].map(release => release.replace("release/", ""));
+
+                return availableReleases.filter(release =>
+                {
+                    return release.applications.every(application =>
+                    {
+                        let projectNameIndex = projectNames.indexOf(application.name);
+
+                        if (projectNameIndex == -1)
+                            return true;
+
+                        let currentlyReleasedVersion = currentVersions[projectNameIndex];
+                        return semver.valid(application.version) && semver.gte(application.version, currentlyReleasedVersion);
+                    })
+                });
+            })
+            .then(data =>
+            {
                 response.send(data);
             })
             .catch(ex =>
@@ -84,7 +112,7 @@ class Tags
 
         let promises = [
             getTags(serviceName),
-            getProdReleaseNumber(serviceName)
+            getCurrentlyDeployedVersion(serviceName)
         ];
 
         q.all(promises)
