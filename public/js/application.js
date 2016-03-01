@@ -33475,6 +33475,10 @@
 	            var encodedEndTag = encodeURIComponent(endTag);
 
 	            var request = _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date()).done(function (data) {
+	                for (var index = 0; index < data.length; index++) {
+	                    data[index].dateTime = new Date(data[index].dateTime);
+	                }
+
 	                deferred.resolve(data);
 	            }).fail(function (response) {
 	                deferred.reject(_this3.processRequestFailure(response));
@@ -33495,6 +33499,10 @@
 	            }).join(",");
 
 	            var request = _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + projects + "&timestamp=" + +new Date()).done(function (data) {
+	                for (var index = 0; index < data.length; index++) {
+	                    data[index].dateTime = new Date(data[index].dateTime);
+	                }
+
 	                deferred.resolve(data);
 	            }).fail(function (response) {
 	                deferred.reject(_this4.processRequestFailure(response));
@@ -34037,7 +34045,7 @@
 	                                        React.createElement(
 	                                            "td",
 	                                            null,
-	                                            ticket.dateTime
+	                                            ticket.dateTime.toLocaleString("en-GB")
 	                                        ),
 	                                        React.createElement(
 	                                            "td",

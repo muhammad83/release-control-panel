@@ -278,7 +278,7 @@ export default class TicketsList extends BaseComponent
                                                     }
                                                 </ul>
                                             </td>
-                                            <td>{ticket.dateTime}</td>
+                                            <td>{ticket.dateTime.toLocaleString("en-GB")}</td>
                                             <td>
                                                 {
                                                     (() =>

@@ -57,6 +57,11 @@ export class StoriesRepository extends BaseRepository
         let request = $.get(`/stories?serviceName=${serviceName}&startTag=${encodedStartTag}&endTag=${encodedEndTag}&timestamp=${+new Date()}`)
             .done(data =>
             {
+                for (let index = 0; index < data.length; index++)
+                {
+                    data[index].dateTime = new Date(data[index].dateTime);
+                }
+
                 deferred.resolve(data);
             })
             .fail(response =>
@@ -77,6 +82,11 @@ export class StoriesRepository extends BaseRepository
         let request = $.get(`/stories-for-projects?version=${releaseName}&projects=${projects}&timestamp=${+new Date()}`)
             .done(data =>
             {
+                for (let index = 0; index < data.length; index++)
+                {
+                    data[index].dateTime = new Date(data[index].dateTime);
+                }
+
                 deferred.resolve(data);
             })
             .fail(response =>

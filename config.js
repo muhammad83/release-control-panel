@@ -1,4 +1,8 @@
-var config =
+"use strict";
+
+let environments = require("./helpers/environments");
+
+let config =
 {
     ciBuildUserName: "",
     ciBuildApiToken: "",
@@ -13,6 +17,7 @@ var config =
 
     isValid: true,
     jiraUrl: "https://jira.tools.tax.service.gov.uk",
+    appsReleaseHistoryUrl: "https://releases.tax.service.gov.uk/apps",
     prodLeftUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
     prodRightUrl: "https://releases.tax.service.gov.uk/env/production-skyscape-farnborough",
     ciBuildUrl: "https://ci-build.tax.service.gov.uk",
@@ -26,21 +31,37 @@ var config =
         { name: "cato-frontend", location: "left" },
         { name: "cato-submit", location: "left" },
         { name: "files", location: "right" }
+    ],
+    environments:
+    [
+        { name: /^qa-.*$/i, type: environments.QA },
+        { name: /^staging-.*$/i, type: environments.Staging },
+        { name: /^prod-.*$/i, type: environments.Production },
+        { name: /^production-.*$/i, type: environments.Production }
     ]
 };
 
-verifyNonEmpty("jiraUserName", "JIRA username not set.");
-verifyNonEmpty("jiraPassword", "JIRA password not set.");
-verifyNonEmpty("ciBuildUserName", "CI-BUILD username not set.");
-verifyNonEmpty("ciBuildApiToken", "CI-BUILD api token not set.");
-
-module.exports = config;
-
-function verifyNonEmpty(key, errorMessage)
+// Validating the configuration settings
+// Stop the execution if anything goes wrong
+[
+    { field: "ciBuildUserName", error: "CI-BUILD user name not set." },
+    { field: "ciBuildApiToken", error: "CI-BUILD api token not set." },
+    { field: "ciQaLeftUserName", error: "CI-QA Left user name not set." },
+    { field: "ciQaLeftApiToken", error: "CI-QA Left api token not set." },
+    { field: "ciQaRightUserName", error: "CI-QA Right user name not set." },
+    { field: "ciQaRightApiToken", error: "CI-QA Right api token not set." },
+    { field: "ciStagingUserName", error: "CI-STAGING user name not set." },
+    { field: "ciStagingApiToken", error: "CI-STAGING api token not set." },
+    { field: "jiraUserName", error: "JIRA user name not set." },
+    { field: "jiraPassword", error: "JIRA password not set." }
+].forEach(item =>
 {
-    if (!config[key] || config[key].length === 0)
+    let fieldValue = config[item.field];
+    if (!fieldValue || fieldValue.length === 0)
     {
-        console.error(errorMessage);
+        console.error(item.error);
         config.isValid = false;
     }
-}
+});
+
+module.exports = config;
