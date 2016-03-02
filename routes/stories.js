@@ -114,7 +114,7 @@ class Stories
                 {
                     let tagsToFind = tags.slice(
                         tags.indexOf(versions[projectIndex]),
-                        tags.indexOf(projectProdReleaseNumbers[projectIndex])
+                        tags.indexOf(projectProdReleaseNumbers[projectIndex]) + 1
                     ).map(tag => tag.replace("release/", ""));
 
                     return {
