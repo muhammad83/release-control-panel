@@ -22,6 +22,8 @@ require("./routes/routes")(app);
 app.use("/libs/bootstrap/", express.static("bootstrap/"));
 app.use("/libs/jquery/", express.static("node_modules/jquery/dist"));
 app.use("/libs/react/", express.static("node_modules/react/dist"));
+app.use("/libs/d3/", express.static("node_modules/d3"));
+app.use("/libs/c3/", express.static("node_modules/c3"));
 
 app.use(express.static("public"));
 

@@ -4,6 +4,7 @@ import Notifications from "./notifications.jsx";
 import ProjectDetails from "./project-details.jsx";
 import ProjectsList from "./projects-list.jsx"
 import Releases from "./releases.jsx";
+import Reporting from "./reporting.jsx";
 
 export default class App extends BaseComponent
 {
@@ -42,6 +43,10 @@ export default class App extends BaseComponent
         else if (this.state.route == "/releases")
         {
             Child = Releases;
+        }
+        else if (this.state.route == "/reporting")
+        {
+            Child = Reporting;
         }
         else
         {

@@ -8,7 +8,7 @@ gulp.task("webpack", function (cb)
 {
     webpack(
         {
-            bail: true,
+            bail: false,
             entry: "./public/src/main.jsx",
             module:
             {

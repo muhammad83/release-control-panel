@@ -69,6 +69,20 @@ h2
     text-transform: uppercase;
 }
 
+.c3-tooltip td
+{
+    color: #000;
+}
+
+
+/* don't do anything fancy when hovering */
+ .c3-defocused.c3-target {
+    opacity: 0 !important;
+}
+ text {
+    fill: #72cc2d;
+}
+
 @-webkit-keyframes spin
 {
     from
