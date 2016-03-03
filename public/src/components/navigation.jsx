@@ -40,6 +40,7 @@ export default class Navigation extends BaseComponent
                             </ul>
                         </li>
                         <li><a href="#/releases">Releases</a></li>
+                        <li><a href="#/reporting">Reporting</a></li>
                     </ul>
                 </div>
             </div>
