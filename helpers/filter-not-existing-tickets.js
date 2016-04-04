@@ -1,23 +1,15 @@
 "use strict";
 
 const config = require("../config");
+const findTicketsInText = require("./find-tickets-in-text");
+const prepareJqlForTickets = require("./prepare-jql-for-tickets");
 const q = require("q");
 const request = require("request");
 
-module.exports = function getStoriesFromJira(jql, maxResults)
+module.exports = function filterNotExistingTickets(tickets)
 {
-    if (!maxResults)
-    {
-        maxResults = 99999;
-    }
-
     let deferred = q.defer();
-    // Make sure NOT to search for empty query...
-    if (!jql || jql.trim().length === 0)
-    {
-        deferred.resolve([]);
-        return deferred.promise;
-    }
+    let searchTicketsQuery = prepareJqlForTickets(null, tickets);
 
     let requestOptions =
     {
@@ -30,8 +22,8 @@ module.exports = function getStoriesFromJira(jql, maxResults)
         },
         qs:
         {
-            jql: jql,
-            maxResults: maxResults
+            jql: searchTicketsQuery,
+            maxResults: 1
         },
         headers:
         {
@@ -52,7 +44,14 @@ module.exports = function getStoriesFromJira(jql, maxResults)
             return;
         }
 
-        if (response.statusCode !== 200)
+        // Got incorrect tickets. Time to find them and remove from the array.
+        if (response.statusCode === 400)
+        {
+            let missingTickets = findTicketsInText(data);
+            let filteredTickets = tickets.filter(ticket => missingTickets.indexOf(ticket) === -1);
+            deferred.resolve(filteredTickets);
+        }
+        else if (response.statusCode !== 200)
         {
             let message = null;
 
@@ -75,52 +74,10 @@ module.exports = function getStoriesFromJira(jql, maxResults)
             return;
         }
 
-        let parsedData;
-
-        try
-        {
-            parsedData = JSON.parse(data);
-        }
-        catch (ex)
-        {
-            deferred.reject(
-            {
-                data: data,
-                message: "Could not parse JSON data from JIRA.",
-                status: 500
-            });
-            return;
-        }
-
-        if (!parsedData.issues)
-        {
-            deferred.reject(
-            {
-                data: data,
-                message: "Parsed JIRA data does not contain issues.",
-                status: 500
-            });
-            return;
-        }
-
-        let jiraStories = parsedData.issues.map(issue =>
-        {
-            return {
-                ticketNumber: issue.key,
-                message: issue.fields.summary,
-                dateTime: issue.fields.updated,
-                author: issue.fields.creator.displayName,
-                status: issue.fields.status.name,
-                url: `${config.jiraUrl}/browse/${issue.key}`,
-                gitTags: issue.fields.customfield_10900,
-                epicKey: issue.fields.customfield_10008
-            };
-        });
-
-        deferred.resolve(jiraStories);
+        deferred.resolve(tickets);
     };
 
     request(requestOptions, responseHandler);
-
+    
     return deferred.promise;
 };

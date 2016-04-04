@@ -1,7 +1,7 @@
 "use strict";
 
 const config = require("../config");
-const prepareJQLForTags = require("../helpers/prepare-jql-for-tags");
+const prepareJQLForTickets = require("../helpers/prepare-jql-for-tickets");
 const q = require("q");
 const request = require("request");
 
@@ -21,7 +21,7 @@ module.exports = function createReleaseFilter(releaseName, projectsAndTags)
             description: `List of tasks included in '${releaseName}' release.`,
             favourite: true,
             name: releaseName,
-            jql: prepareJQLForTags(projectsAndTags, [])
+            jql: prepareJQLForTickets(projectsAndTags, [])
         }),
         headers:
         {

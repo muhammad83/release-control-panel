@@ -5,7 +5,7 @@ const exec = require("child_process").exec;
 const getStoriesFromJira = require("./../helpers/get-stories-from-jira");
 const path = require("path");
 const prepareJQLForEpics = require("../helpers/prepare-jql-for-epics");
-const prepareJQLForTags = require("../helpers/prepare-jql-for-tags");
+const prepareJQLForTickets = require("../helpers/prepare-jql-for-tickets");
 const q = require("q");
 const request = require("request");
 const workspace = process.env.WORKSPACE;
@@ -155,7 +155,7 @@ module.exports = function getStories(projectsAndTags)
                 return [];
             }
 
-            let jql = prepareJQLForTags(projectsAndTags, jiraNumbers);
+            let jql = prepareJQLForTickets(projectsAndTags, jiraNumbers);
             return getStoriesFromJira(jql);
         })
         .then(stories => linkEpicsToStories(stories));

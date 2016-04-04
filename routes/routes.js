@@ -23,4 +23,5 @@ module.exports = (app) =>
     app.get("/stories-for-projects", storiesController.getStoriesForRelease);
     app.get("/successful-builds-for-projects", buildsController.getSuccessfulBuildsForProjects);
     app.get("/tags", tagsController.getTags);
+    app.get("/upcoming-releases", buildsController.getUpcomingReleases);
 };
