@@ -1,4 +1,5 @@
 import React from "react";
+import RequestManager from "../utils/request-manager";
 
 export default class BaseComponent extends React.Component
 {
@@ -6,6 +7,7 @@ export default class BaseComponent extends React.Component
     {
         super(props);
 
+        this.requestManager = new RequestManager();
         this.m_isMounted = false;
     }
 
@@ -17,5 +19,6 @@ export default class BaseComponent extends React.Component
     componentWillUnmount()
     {
         this.m_isMounted = false;
+        this.requestManager.abortPendingRequests();
     }
 }

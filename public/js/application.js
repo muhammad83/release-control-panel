@@ -60,9 +60,9 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(192);
+	var _reactDom = __webpack_require__(189);
 
-	var _configRepository = __webpack_require__(167);
+	var _configRepository = __webpack_require__(168);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -186,15 +186,15 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _navigation = __webpack_require__(160);
+	var _navigation = __webpack_require__(161);
 
 	var _navigation2 = _interopRequireDefault(_navigation);
 
-	var _notifications = __webpack_require__(168);
+	var _notifications = __webpack_require__(169);
 
 	var _notifications2 = _interopRequireDefault(_notifications);
 
-	var _projectDetails = __webpack_require__(171);
+	var _projectDetails = __webpack_require__(172);
 
 	var _projectDetails2 = _interopRequireDefault(_projectDetails);
 
@@ -206,7 +206,7 @@
 
 	var _releases2 = _interopRequireDefault(_releases);
 
-	var _reporting = __webpack_require__(190);
+	var _reporting = __webpack_require__(187);
 
 	var _reporting2 = _interopRequireDefault(_reporting);
 
@@ -295,6 +295,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _requestManager = __webpack_require__(160);
+
+	var _requestManager2 = _interopRequireDefault(_requestManager);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -311,6 +315,7 @@
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BaseComponent).call(this, props));
 
+	        _this.requestManager = new _requestManager2.default();
 	        _this.m_isMounted = false;
 	        return _this;
 	    }
@@ -324,6 +329,7 @@
 	        key: "componentWillUnmount",
 	        value: function componentWillUnmount() {
 	            this.m_isMounted = false;
+	            this.requestManager.abortPendingRequests();
 	        }
 	    }]);
 
@@ -19926,6 +19932,83 @@
 
 /***/ },
 /* 160 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var RequestManager = function () {
+	    function RequestManager() {
+	        _classCallCheck(this, RequestManager);
+
+	        this.isAborting = false;
+	        this.requests = [];
+	    }
+
+	    _createClass(RequestManager, [{
+	        key: "abortPendingRequests",
+	        value: function abortPendingRequests() {
+	            this.isAborting = true;
+
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = this.requests[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var request = _step.value;
+
+	                    request.abort();
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            this.requests = [];
+	        }
+	    }, {
+	        key: "onRequestFinished",
+	        value: function onRequestFinished(request) {
+	            if (this.isAborting) return;
+
+	            var index = this.requests.indexOf(request);
+	            if (index === -1) return;
+
+	            this.requests.splice(index, 1);
+	        }
+	    }, {
+	        key: "monitorRequest",
+	        value: function monitorRequest(request) {
+	            request.always(this.onRequestFinished.bind(this, request));
+	            this.requests.push(request);
+	        }
+	    }]);
+
+	    return RequestManager;
+	}();
+
+	exports.default = RequestManager;
+
+/***/ },
+/* 161 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -19940,7 +20023,7 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _projectsRepository = __webpack_require__(161);
+	var _projectsRepository = __webpack_require__(162);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20065,7 +20148,7 @@
 	exports.default = Navigation;
 
 /***/ },
-/* 161 */
+/* 162 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -20077,23 +20160,23 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(163);
+	var _q = __webpack_require__(164);
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _project = __webpack_require__(165);
+	var _project = __webpack_require__(166);
 
 	var _project2 = _interopRequireDefault(_project);
 
-	var _baseRepository = __webpack_require__(166);
+	var _baseRepository = __webpack_require__(167);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
-	var _configRepository = __webpack_require__(167);
+	var _configRepository = __webpack_require__(168);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20185,7 +20268,7 @@
 	var projectsRepository = exports.projectsRepository = ProjectsRepository.instance;
 
 /***/ },
-/* 162 */
+/* 163 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -30022,7 +30105,7 @@
 
 
 /***/ },
-/* 163 */
+/* 164 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process, setImmediate) {// vim:ts=4:sts=4:sw=4:
@@ -32074,10 +32157,10 @@
 
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(164).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(165).setImmediate))
 
 /***/ },
-/* 164 */
+/* 165 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(6).nextTick;
@@ -32156,10 +32239,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(164).setImmediate, __webpack_require__(164).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(165).setImmediate, __webpack_require__(165).clearImmediate))
 
 /***/ },
-/* 165 */
+/* 166 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32253,7 +32336,7 @@
 	exports.default = Project;
 
 /***/ },
-/* 166 */
+/* 167 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32308,7 +32391,7 @@
 	exports.default = BaseRepository;
 
 /***/ },
-/* 167 */
+/* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -32320,19 +32403,19 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(163);
+	var _q = __webpack_require__(164);
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _project = __webpack_require__(165);
+	var _project = __webpack_require__(166);
 
 	var _project2 = _interopRequireDefault(_project);
 
-	var _baseRepository = __webpack_require__(166);
+	var _baseRepository = __webpack_require__(167);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
@@ -32408,7 +32491,7 @@
 	var configRepository = exports.configRepository = ConfigRepository.instance;
 
 /***/ },
-/* 168 */
+/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -32425,7 +32508,7 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _globalEventEmitter = __webpack_require__(169);
+	var _globalEventEmitter = __webpack_require__(170);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -32522,7 +32605,7 @@
 	exports.default = SmallSpinner;
 
 /***/ },
-/* 169 */
+/* 170 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -32534,7 +32617,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _events = __webpack_require__(170);
+	var _events = __webpack_require__(171);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -32550,6 +32633,8 @@
 	    SEARCH_TICKETS: "search-tickets",
 	    SEARCH_PROJECT_TICKETS: "search-project-tickets",
 	    SELECTED_RELEASE_CHANGED: "selected-release-changed",
+	    START_RELEASE_CHANGED: "start-release-changed",
+	    END_RELEASE_CHANGED: "end-release-changed",
 	    SHOW_NOTIFICATION: "show-notification"
 	};
 
@@ -32588,7 +32673,7 @@
 	var globalEventEmitter = exports.globalEventEmitter = GlobalEventEmitter.instance;
 
 /***/ },
-/* 170 */
+/* 171 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -32892,7 +32977,7 @@
 
 
 /***/ },
-/* 171 */
+/* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -32905,7 +32990,7 @@
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
@@ -32913,17 +32998,17 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _errorHandler = __webpack_require__(172);
+	var _errorHandler = __webpack_require__(173);
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _globalEventEmitter = __webpack_require__(169);
+	var _globalEventEmitter = __webpack_require__(170);
 
-	var _infiniteLoading = __webpack_require__(173);
+	var _infiniteLoading = __webpack_require__(174);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
-	var _requestManager = __webpack_require__(174);
+	var _requestManager = __webpack_require__(160);
 
 	var _requestManager2 = _interopRequireDefault(_requestManager);
 
@@ -33245,7 +33330,7 @@
 	exports.default = ProjectDetails;
 
 /***/ },
-/* 172 */
+/* 173 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -33276,7 +33361,7 @@
 	exports.default = ErrorHandler;
 
 /***/ },
-/* 173 */
+/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -33339,83 +33424,6 @@
 	exports.default = InfiniteLoading;
 
 /***/ },
-/* 174 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var RequestManager = function () {
-	    function RequestManager() {
-	        _classCallCheck(this, RequestManager);
-
-	        this.isAborting = false;
-	        this.requests = [];
-	    }
-
-	    _createClass(RequestManager, [{
-	        key: "abortPendingRequests",
-	        value: function abortPendingRequests() {
-	            this.isAborting = true;
-
-	            var _iteratorNormalCompletion = true;
-	            var _didIteratorError = false;
-	            var _iteratorError = undefined;
-
-	            try {
-	                for (var _iterator = this.requests[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                    var request = _step.value;
-
-	                    request.abort();
-	                }
-	            } catch (err) {
-	                _didIteratorError = true;
-	                _iteratorError = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion && _iterator.return) {
-	                        _iterator.return();
-	                    }
-	                } finally {
-	                    if (_didIteratorError) {
-	                        throw _iteratorError;
-	                    }
-	                }
-	            }
-
-	            this.requests = [];
-	        }
-	    }, {
-	        key: "onRequestFinished",
-	        value: function onRequestFinished(request) {
-	            if (this.isAborting) return;
-
-	            var index = this.requests.indexOf(request);
-	            if (index === -1) return;
-
-	            this.requests.splice(index, 1);
-	        }
-	    }, {
-	        key: "monitorRequest",
-	        value: function monitorRequest(request) {
-	            request.always(this.onRequestFinished.bind(this, request));
-	            this.requests.push(request);
-	        }
-	    }]);
-
-	    return RequestManager;
-	}();
-
-	exports.default = RequestManager;
-
-/***/ },
 /* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -33428,19 +33436,19 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(163);
+	var _q = __webpack_require__(164);
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _baseRepository = __webpack_require__(166);
+	var _baseRepository = __webpack_require__(167);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
-	var _projectsRepository = __webpack_require__(161);
+	var _projectsRepository = __webpack_require__(162);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -33563,11 +33571,11 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(163);
+	var _q = __webpack_require__(164);
 
 	var _q2 = _interopRequireDefault(_q);
 
@@ -33575,7 +33583,7 @@
 
 	var _tag2 = _interopRequireDefault(_tag);
 
-	var _baseRepository = __webpack_require__(166);
+	var _baseRepository = __webpack_require__(167);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
@@ -33700,7 +33708,7 @@
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _jquery = __webpack_require__(162);
+	var _jquery = __webpack_require__(163);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
@@ -33708,17 +33716,17 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _errorHandler = __webpack_require__(172);
+	var _errorHandler = __webpack_require__(173);
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _globalEventEmitter = __webpack_require__(169);
+	var _globalEventEmitter = __webpack_require__(170);
 
-	var _infiniteLoading = __webpack_require__(173);
+	var _infiniteLoading = __webpack_require__(174);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
-	var _requestManager = __webpack_require__(174);
+	var _requestManager = __webpack_require__(160);
 
 	var _requestManager2 = _interopRequireDefault(_requestManager);
 
@@ -34140,7 +34148,7 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _projectsRepository = __webpack_require__(161);
+	var _projectsRepository = __webpack_require__(162);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -34256,21 +34264,33 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _react = __webpack_require__(3);
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _react2 = _interopRequireDefault(_react);
+	var _baseComponent = __webpack_require__(2);
 
-	var _currentVersionsList = __webpack_require__(181);
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _currentVersionsList2 = _interopRequireDefault(_currentVersionsList);
+	var _buildsRepository = __webpack_require__(181);
 
-	var _ticketsList = __webpack_require__(178);
+	var _endReleaseSelector = __webpack_require__(182);
 
-	var _ticketsList2 = _interopRequireDefault(_ticketsList);
+	var _endReleaseSelector2 = _interopRequireDefault(_endReleaseSelector);
 
-	var _upcomingVersionsList = __webpack_require__(183);
+	var _errorHandler = __webpack_require__(173);
 
-	var _upcomingVersionsList2 = _interopRequireDefault(_upcomingVersionsList);
+	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+
+	var _infiniteLoading = __webpack_require__(174);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
+
+	var _startReleaseSelector = __webpack_require__(185);
+
+	var _startReleaseSelector2 = _interopRequireDefault(_startReleaseSelector);
+
+	var _extendedTicketsList = __webpack_require__(186);
+
+	var _extendedTicketsList2 = _interopRequireDefault(_extendedTicketsList);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -34280,42 +34300,99 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Releases = function (_React$Component) {
-	    _inherits(Releases, _React$Component);
+	var Releases = function (_BaseComponent) {
+	    _inherits(Releases, _BaseComponent);
 
-	    function Releases() {
+	    function Releases(props) {
 	        _classCallCheck(this, Releases);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Releases).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Releases).call(this, props));
+
+	        _this.state = {
+	            isLoading: true,
+	            upcomingReleases: null
+	        };
+	        return _this;
 	    }
 
 	    _createClass(Releases, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(Releases.prototype), "componentDidMount", this).call(this);
+	            this.loadReleases();
+	        }
+	    }, {
+	        key: "loadReleases",
+	        value: function loadReleases() {
+	            var _this2 = this;
+
+	            _buildsRepository.buildsRepository.setRequestManager(this.requestManager);
+	            _buildsRepository.buildsRepository.getUpcomingReleases().then(function (upcomingReleases) {
+	                _this2.setState({
+	                    upcomingReleases: upcomingReleases
+	                });
+	            }).catch(function (error) {
+	                _errorHandler2.default.showErrorMessage(error);
+	            }).finally(function () {
+	                _this2.setState({
+	                    isLoading: false
+	                });
+	            });
+	        }
+	    }, {
 	        key: "render",
 	        value: function render() {
-	            return _react2.default.createElement(
+	            if (this.state.isLoading) {
+	                return React.createElement(
+	                    "div",
+	                    { className: "container-fluid" },
+	                    React.createElement(
+	                        "div",
+	                        { className: "row" },
+	                        React.createElement(
+	                            "div",
+	                            { className: "col-md-6 col-md-offset-3" },
+	                            React.createElement(
+	                                "h1",
+	                                null,
+	                                "Loading releases."
+	                            ),
+	                            React.createElement(
+	                                "p",
+	                                null,
+	                                "This might take up to a minute."
+	                            ),
+	                            React.createElement(_infiniteLoading2.default, null)
+	                        )
+	                    )
+	                );
+	            }
+
+	            //<TicketsList upcomingReleases={this.state.upcomingReleases} />
+	            return React.createElement(
 	                "div",
 	                { className: "container-fluid" },
-	                _react2.default.createElement(
+	                React.createElement(
 	                    "div",
 	                    { className: "row" },
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "div",
 	                        { className: "col-md-6" },
-	                        _react2.default.createElement(_currentVersionsList2.default, null)
+	                        React.createElement(_startReleaseSelector2.default, { upcomingReleases: this.state.upcomingReleases })
 	                    ),
-	                    _react2.default.createElement(
+	                    React.createElement(
 	                        "div",
 	                        { className: "col-md-6" },
-	                        _react2.default.createElement(_upcomingVersionsList2.default, null)
+	                        React.createElement(_endReleaseSelector2.default, { upcomingReleases: this.state.upcomingReleases })
 	                    )
 	                ),
-	                _react2.default.createElement(_ticketsList2.default, null)
+	                React.createElement(_extendedTicketsList2.default, { upcomingReleases: this.state.upcomingReleases })
 	            );
 	        }
 	    }]);
 
 	    return Releases;
-	}(_react2.default.Component);
+	}(_baseComponent2.default);
 
 	exports.default = Releases;
 
@@ -34328,28 +34405,27 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.buildsRepository = exports.BuildsRepository = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	var _jquery = __webpack_require__(163);
 
-	var _baseComponent = __webpack_require__(2);
+	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+	var _q = __webpack_require__(164);
 
-	var _errorHandler = __webpack_require__(172);
+	var _q2 = _interopRequireDefault(_q);
 
-	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+	var _baseRepository = __webpack_require__(167);
 
-	var _projectsRepository = __webpack_require__(161);
+	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
-	var _projectVersionsList = __webpack_require__(182);
+	var _configRepository = __webpack_require__(168);
 
-	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
+	var _globalEventEmitter = __webpack_require__(170);
 
-	var _requestManager = __webpack_require__(174);
-
-	var _requestManager2 = _interopRequireDefault(_requestManager);
+	var _projectsRepository = __webpack_require__(162);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -34359,81 +34435,166 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var CurrentVersionsList = function (_BaseComponent) {
-	    _inherits(CurrentVersionsList, _BaseComponent);
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
 
-	    function CurrentVersionsList(props) {
-	        _classCallCheck(this, CurrentVersionsList);
+	var BuildsRepository = exports.BuildsRepository = function (_BaseRepository) {
+	    _inherits(BuildsRepository, _BaseRepository);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CurrentVersionsList).call(this, props));
+	    function BuildsRepository(enforcer) {
+	        _classCallCheck(this, BuildsRepository);
 
-	        _this.requestManager = new _requestManager2.default();
-	        _this.state = {
-	            currentVersions: [],
-	            isLoadingCurrentVersions: false
-	        };
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BuildsRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton!";
+	        }
 	        return _this;
 	    }
 
-	    _createClass(CurrentVersionsList, [{
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            _get(Object.getPrototypeOf(CurrentVersionsList.prototype), "componentDidMount", this).call(this);
-	            this.loadCurrentVersions();
+	    _createClass(BuildsRepository, [{
+	        key: "getCiBuildJobUrl",
+	        value: function getCiBuildJobUrl(projectName, jobNumber) {
+	            return "" + this.getCiBuildProjectUrl(projectName) + jobNumber + "/";
 	        }
 	    }, {
-	        key: "componentWillUnmount",
-	        value: function componentWillUnmount() {
-	            _get(Object.getPrototypeOf(CurrentVersionsList.prototype), "componentWillUnmount", this).call(this);
-	            this.requestManager.abortPendingRequests();
+	        key: "getCiBuildProjectUrl",
+	        value: function getCiBuildProjectUrl(projectName) {
+	            return _configRepository.configRepository.ciBuildUrl + "/job/" + projectName + "/";
 	        }
 	    }, {
-	        key: "loadCurrentVersions",
-	        value: function loadCurrentVersions() {
+	        key: "getUpcomingReleases",
+	        value: function getUpcomingReleases() {
 	            var _this2 = this;
 
-	            this.setState({
-	                isLoadingCurrentVersions: true
+	            var deferred = _q2.default.defer();
+
+	            var request = _jquery2.default.get("/upcoming-releases").done(function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (error) {
+	                deferred.reject(_this2.processRequestFailure(error));
 	            });
 
-	            _projectsRepository.projectsRepository.setRequestManager(this.requestManager);
-	            _projectsRepository.projectsRepository.getCurrentVersions().then(function (versions) {
-	                if (!_this2.m_isMounted) return;
+	            this.safeMonitorRequest(request);
 
-	                _this2.setState({
-	                    currentVersions: versions,
-	                    isLoadingCurrentVersions: false
-	                });
-	            }).catch(function (error) {
-	                if (!_this2.m_isMounted) return;
-
-	                _this2.setState({
-	                    isLoadingCurrentVersions: false
-	                });
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            });
+	            return deferred.promise;
 	        }
 	    }, {
-	        key: "render",
-	        value: function render() {
-	            return React.createElement(
-	                "div",
-	                null,
-	                React.createElement(
-	                    "h2",
-	                    { style: { marginTop: "4.6em" } },
-	                    "Current versions"
-	                ),
-	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingCurrentVersions, projects: this.state.currentVersions })
-	            );
+	        key: "loadBuildStatuses",
+	        value: function loadBuildStatuses() {
+	            var _this3 = this;
+
+	            var deferred = _q2.default.defer();
+
+	            var request = _jquery2.default.get("/build-statuses").done(function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (error) {
+	                deferred.reject(_this3.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "loadSuccessfulBuildsForProjects",
+	        value: function loadSuccessfulBuildsForProjects() {
+	            var _this4 = this;
+
+	            var deferred = _q2.default.defer();
+
+	            var request = _jquery2.default.get("/successful-builds-for-projects").done(function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (error) {
+	                deferred.reject(_this4.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "startBuild",
+	        value: function startBuild(projectName, version) {
+	            var _this5 = this;
+
+	            var deferred = _q2.default.defer();
+	            var requestData = {
+	                project: projectName,
+	                version: version
+	            };
+
+	            var project = _projectsRepository.projectsRepository.getProjects().find(function (p) {
+	                return p.name === projectName;
+	            });
+	            if (project) {
+	                project.onBuildScheduled(version);
+	            }
+
+	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.PROJECTS_UPDATED);
+
+	            var request = _jquery2.default.post("/start-build", requestData).done(function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (error) {
+	                deferred.reject(_this5.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "updateBuildNumbersAndProgress",
+	        value: function updateBuildNumbersAndProgress() {
+	            var promises = [this.loadBuildStatuses(), this.loadSuccessfulBuildsForProjects()];
+	            return _q2.default.all(promises).then(function (results) {
+	                var buildStatuses = results[0];
+	                var successfulBuilds = results[1];
+	                var projects = _projectsRepository.projectsRepository.getProjects();
+
+	                var _iteratorNormalCompletion = true;
+	                var _didIteratorError = false;
+	                var _iteratorError = undefined;
+
+	                try {
+	                    for (var _iterator = projects[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                        var project = _step.value;
+
+	                        project.updateBuildStatus(buildStatuses[project.name], successfulBuilds[project.name]);
+	                    }
+	                } catch (err) {
+	                    _didIteratorError = true;
+	                    _iteratorError = err;
+	                } finally {
+	                    try {
+	                        if (!_iteratorNormalCompletion && _iterator.return) {
+	                            _iterator.return();
+	                        }
+	                    } finally {
+	                        if (_didIteratorError) {
+	                            throw _iteratorError;
+	                        }
+	                    }
+	                }
+
+	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.PROJECTS_UPDATED);
+	            });
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new BuildsRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
 	        }
 	    }]);
 
-	    return CurrentVersionsList;
-	}(_baseComponent2.default);
+	    return BuildsRepository;
+	}(_baseRepository2.default);
 
-	exports.default = CurrentVersionsList;
+	var buildsRepository = exports.buildsRepository = BuildsRepository.instance;
 
 /***/ },
 /* 182 */
@@ -34451,7 +34612,231 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _infiniteLoading = __webpack_require__(173);
+	var _copyContent = __webpack_require__(183);
+
+	var _copyContent2 = _interopRequireDefault(_copyContent);
+
+	var _globalEventEmitter = __webpack_require__(170);
+
+	var _projectVersionsList = __webpack_require__(184);
+
+	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var EndReleaseSelector = function (_BaseComponent) {
+	    _inherits(EndReleaseSelector, _BaseComponent);
+
+	    function EndReleaseSelector(props) {
+	        _classCallCheck(this, EndReleaseSelector);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(EndReleaseSelector).call(this, props));
+
+	        _this.state = {
+	            versions: null,
+	            releases: _this.getReleasesList(props)
+	        };
+	        return _this;
+	    }
+
+	    _createClass(EndReleaseSelector, [{
+	        key: "componentWillReceiveProps",
+	        value: function componentWillReceiveProps(newProps) {
+	            this.setState({
+	                releases: this.getReleasesList(newProps)
+	            });
+	        }
+	    }, {
+	        key: "copyCommandLineScript",
+	        value: function copyCommandLineScript() {
+	            if ((0, _copyContent2.default)("#commandLineScript")) {
+	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Copied.");
+	            } else {
+	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "danger", "Could not copy the script. Check browser console for more info.");
+	            }
+	        }
+	    }, {
+	        key: "getCommandLineScript",
+	        value: function getCommandLineScript(versionsToShow) {
+	            return versionsToShow.map(function (project) {
+	                var smProjectName = project.name.toUpperCase().replace(/-/g, "_");
+	                return "sm --restart " + smProjectName + " -r " + project.version;
+	            }).join(" & ");
+	        }
+	    }, {
+	        key: "getReleasesList",
+	        value: function getReleasesList(props) {
+	            var upcomingReleases = props.upcomingReleases.upcomingReleases;
+	            var releases = [{
+	                id: -1,
+	                name: ""
+	            }];
+
+	            upcomingReleases.forEach(function (release) {
+	                releases.push({
+	                    name: release.release
+	                });
+	            });
+
+	            return releases;
+	        }
+	    }, {
+	        key: "handleReleaseSelection",
+	        value: function handleReleaseSelection(event) {
+	            var selectedValue = event.target.value;
+
+	            var upcomingReleases = this.props.upcomingReleases;
+	            var commandLineScript = "";
+	            var versionsToShow = null;
+	            var foundRelease = upcomingReleases.upcomingReleases.find(function (ur) {
+	                return ur.release === selectedValue;
+	            });
+	            if (foundRelease) {
+	                versionsToShow = foundRelease.projects;
+	                commandLineScript = this.getCommandLineScript(versionsToShow);
+	            }
+
+	            this.setState({
+	                commandLineScript: commandLineScript,
+	                versions: versionsToShow
+	            });
+
+	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.END_RELEASE_CHANGED, selectedValue);
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            var _this2 = this;
+
+	            return React.createElement(
+	                "div",
+	                null,
+	                React.createElement(
+	                    "div",
+	                    { className: "form-group" },
+	                    React.createElement(
+	                        "select",
+	                        { className: "form-control", onChange: this.handleReleaseSelection.bind(this) },
+	                        this.state.releases.map(function (release, index) {
+	                            if (release.disabled) return React.createElement(
+	                                "option",
+	                                { key: index, value: release.name, disabled: "disabled" },
+	                                release.name
+	                            );else return React.createElement(
+	                                "option",
+	                                { key: index, value: release.name },
+	                                release.name
+	                            );
+	                        })
+	                    )
+	                ),
+	                function () {
+	                    if (_this2.state.versions) {
+	                        return React.createElement(
+	                            "div",
+	                            { className: "form-group" },
+	                            React.createElement(
+	                                "div",
+	                                { className: "input-group" },
+	                                React.createElement(
+	                                    "span",
+	                                    { className: "input-group-btn" },
+	                                    React.createElement(
+	                                        "button",
+	                                        { className: "btn btn-default",
+	                                            onClick: _this2.copyCommandLineScript.bind(_this2), type: "button" },
+	                                        "Copy 'sm' start script"
+	                                    )
+	                                ),
+	                                React.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true",
+	                                    value: _this2.state.commandLineScript, type: "text" })
+	                            )
+	                        );
+	                    }
+	                }(),
+	                React.createElement(
+	                    "h2",
+	                    { style: { marginTop: !this.state.versions ? "2.55em" : "" } },
+	                    "To versions"
+	                ),
+	                React.createElement(_projectVersionsList2.default, { projects: this.state.versions })
+	            );
+	        }
+	    }]);
+
+	    return EndReleaseSelector;
+	}(_baseComponent2.default);
+
+	exports.default = EndReleaseSelector;
+
+/***/ },
+/* 183 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = copyContent;
+	function clearSelection() {
+	    if (window.getSelection) {
+	        if (window.getSelection().empty) {
+	            window.getSelection().empty();
+	        } else if (window.getSelection().removeAllRanges) {
+	            window.getSelection().removeAllRanges();
+	        }
+	    } else if (document.selection) {
+	        document.selection.empty();
+	    }
+	}
+
+	function copyContent(selector) {
+	    var commandLineScript = document.querySelector(selector);
+	    var range = document.createRange();
+	    var selection = window.getSelection();
+	    var result = true;
+
+	    clearSelection();
+
+	    range.selectNode(commandLineScript);
+	    selection.addRange(range);
+
+	    try {
+	        document.execCommand("copy");
+	    } catch (ex) {
+	        console.error("Sorry bro, your browser does not support 'copy' command. Move on and get something which actually works!");
+	        result = false;
+	    }
+
+	    clearSelection();
+
+	    return result;
+	}
+
+/***/ },
+/* 184 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _baseComponent = __webpack_require__(2);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _infiniteLoading = __webpack_require__(174);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
@@ -34523,7 +34908,7 @@
 	                                    React.createElement(_infiniteLoading2.default, null)
 	                                )
 	                            );
-	                        } else if (!_this2.props.projects.length) {
+	                        } else if (!_this2.props.projects || !_this2.props.projects.length) {
 	                            return React.createElement(
 	                                "tr",
 	                                null,
@@ -34596,508 +34981,6 @@
 	exports.default = ProjectVersionsList;
 
 /***/ },
-/* 183 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-	var _baseComponent = __webpack_require__(2);
-
-	var _baseComponent2 = _interopRequireDefault(_baseComponent);
-
-	var _buildNumber = __webpack_require__(184);
-
-	var _buildNumber2 = _interopRequireDefault(_buildNumber);
-
-	var _buildsRepository = __webpack_require__(185);
-
-	var _copyContent = __webpack_require__(187);
-
-	var _copyContent2 = _interopRequireDefault(_copyContent);
-
-	var _deployment = __webpack_require__(188);
-
-	var _deployment2 = _interopRequireDefault(_deployment);
-
-	var _errorHandler = __webpack_require__(172);
-
-	var _errorHandler2 = _interopRequireDefault(_errorHandler);
-
-	var _globalEventEmitter = __webpack_require__(169);
-
-	var _projectsRepository = __webpack_require__(161);
-
-	var _projectVersionsList = __webpack_require__(182);
-
-	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
-
-	var _q = __webpack_require__(163);
-
-	var _q2 = _interopRequireDefault(_q);
-
-	var _requestManager = __webpack_require__(174);
-
-	var _requestManager2 = _interopRequireDefault(_requestManager);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var BUILD_REFRESH_INTERVAL = 1000 * 60;
-
-	var UpcomingVersionsList = function (_BaseComponent) {
-	    _inherits(UpcomingVersionsList, _BaseComponent);
-
-	    function UpcomingVersionsList(props) {
-	        _classCallCheck(this, UpcomingVersionsList);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(UpcomingVersionsList).call(this, props));
-
-	        _this.buildMonitorInterval = null;
-	        _this.requestManager = new _requestManager2.default();
-	        _this.state = {
-	            commandLineScript: "",
-	            extraColumns: [{
-	                heading: "Build number",
-	                type: "template",
-	                template: _this.renderBuildNumberCell.bind(_this)
-	            }, {
-	                heading: "Actions",
-	                type: "template",
-	                template: _this.renderActionsCell.bind(_this)
-	            }],
-	            isLoadingReleases: false,
-	            releases: [],
-	            selectedRelease: null,
-	            selectedReleaseIndex: -1
-	        };
-	        return _this;
-	    }
-
-	    _createClass(UpcomingVersionsList, [{
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            _get(Object.getPrototypeOf(UpcomingVersionsList.prototype), "componentDidMount", this).call(this);
-
-	            this.loadAvailableReleases();
-	            this.startBuildsMonitor();
-	        }
-	    }, {
-	        key: "componentWillUnmount",
-	        value: function componentWillUnmount() {
-	            if (this.buildMonitorInterval) {
-	                clearInterval(this.buildMonitorInterval);
-	            }
-
-	            this.requestManager.abortPendingRequests();
-
-	            _get(Object.getPrototypeOf(UpcomingVersionsList.prototype), "componentWillUnmount", this).call(this);
-	        }
-	    }, {
-	        key: "copyCommandLineScript",
-	        value: function copyCommandLineScript() {
-	            if ((0, _copyContent2.default)("#commandLineScript")) {
-	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Copied.");
-	            } else {
-	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "danger", "Could not copy the script. Check browser console for more info.");
-	            }
-	        }
-	    }, {
-	        key: "getCommandLineScript",
-	        value: function getCommandLineScript(selectedRelease) {
-	            var applications = selectedRelease ? selectedRelease.applications || [] : [];
-	            return applications.map(function (project) {
-	                var smProjectName = project.name.toUpperCase().replace(/-/g, "_");
-	                return "sm --restart " + smProjectName + " -r " + project.version;
-	            }).join(" & ");
-	        }
-	    }, {
-	        key: "getSelectedReleaseApplications",
-	        value: function getSelectedReleaseApplications() {
-	            if (!this.state.selectedRelease) {
-	                return [];
-	            }
-
-	            return this.state.selectedRelease.applications || [];
-	        }
-	    }, {
-	        key: "handleFormSubmit",
-	        value: function handleFormSubmit(event) {
-	            event.preventDefault();
-
-	            if (!this.state.selectedRelease) {
-	                return;
-	            }
-
-	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SEARCH_TICKETS, this.state.selectedRelease);
-	        }
-	    }, {
-	        key: "handleRefreshClick",
-	        value: function handleRefreshClick() {
-	            this.setState({
-	                releases: [],
-	                selectedRelease: null,
-	                selectedReleaseIndex: -1
-	            });
-
-	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, null);
-
-	            this.loadAvailableReleases();
-	        }
-	    }, {
-	        key: "handleReleaseChange",
-	        value: function handleReleaseChange(event) {
-	            var selectedIndex = parseInt(event.target.value);
-	            var selectedRelease = selectedIndex > -1 ? this.state.releases[selectedIndex] : null;
-
-	            this.setState({
-	                commandLineScript: this.getCommandLineScript(selectedRelease),
-	                selectedRelease: selectedRelease,
-	                selectedReleaseIndex: selectedIndex
-	            });
-
-	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, selectedRelease);
-	        }
-	    }, {
-	        key: "loadAvailableReleases",
-	        value: function loadAvailableReleases() {
-	            var _this2 = this;
-
-	            this.setState({
-	                isLoadingReleases: true
-	            });
-
-	            _projectsRepository.projectsRepository.setRequestManager(this.requestManager);
-	            _projectsRepository.projectsRepository.getUpcomingReleases().then(function (releases) {
-	                if (!_this2.m_isMounted) return;
-
-	                _this2.setState({
-	                    releases: releases,
-	                    isLoadingReleases: false
-	                });
-	            }).catch(function (error) {
-	                if (!_this2.m_isMounted) return;
-
-	                _this2.setState({
-	                    isLoadingReleases: false
-	                });
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            });
-	        }
-	    }, {
-	        key: "refreshBuildStatuses",
-	        value: function refreshBuildStatuses() {
-	            var _this3 = this;
-
-	            var handleError = function handleError(error) {
-	                if (!_this3.m_isMounted) return;
-
-	                _this3.setState({
-	                    isLoadingBuilds: false
-	                });
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            };
-
-	            _buildsRepository.buildsRepository.setRequestManager(this.requestManager);
-	            _buildsRepository.buildsRepository.updateBuildNumbersAndProgress().catch(handleError);
-	        }
-	    }, {
-	        key: "startBuildsMonitor",
-	        value: function startBuildsMonitor() {
-	            this.refreshBuildStatuses();
-	            this.buildMonitorInterval = setInterval(this.refreshBuildStatuses.bind(this), BUILD_REFRESH_INTERVAL);
-	        }
-	    }, {
-	        key: "render",
-	        value: function render() {
-	            var _this4 = this;
-
-	            return React.createElement(
-	                "div",
-	                null,
-	                React.createElement(
-	                    "form",
-	                    { onSubmit: this.handleFormSubmit.bind(this) },
-	                    React.createElement(
-	                        "div",
-	                        { className: "form-group" },
-	                        React.createElement(
-	                            "label",
-	                            { htmlFor: "release" },
-	                            "Release:"
-	                        ),
-	                        React.createElement(
-	                            "div",
-	                            { className: "row" },
-	                            React.createElement(
-	                                "div",
-	                                { className: "col-md-10" },
-	                                React.createElement(
-	                                    "select",
-	                                    { id: "release", className: "form-control", onChange: this.handleReleaseChange.bind(this), value: this.state.selectedReleaseIndex },
-	                                    React.createElement(
-	                                        "option",
-	                                        { value: "-1" },
-	                                        " "
-	                                    ),
-	                                    this.state.releases.map(function (release, index) {
-	                                        return React.createElement(
-	                                            "option",
-	                                            { key: index, value: index },
-	                                            release.name
-	                                        );
-	                                    })
-	                                )
-	                            ),
-	                            React.createElement(
-	                                "div",
-	                                { className: "col-md-2" },
-	                                React.createElement(
-	                                    "button",
-	                                    { className: "btn btn-default", onClick: this.handleRefreshClick.bind(this) },
-	                                    "Refresh"
-	                                )
-	                            )
-	                        )
-	                    ),
-	                    React.createElement(
-	                        "div",
-	                        { className: "form-group" },
-	                        function () {
-	                            if (!_this4.state.isLoadingReleases && _this4.state.selectedRelease) {
-	                                return React.createElement(
-	                                    "div",
-	                                    { className: "input-group" },
-	                                    React.createElement(
-	                                        "span",
-	                                        { className: "input-group-btn" },
-	                                        React.createElement(
-	                                            "button",
-	                                            { className: "btn btn-primary" },
-	                                            "Search"
-	                                        ),
-	                                        React.createElement(
-	                                            "button",
-	                                            { className: "btn btn-default", onClick: _this4.copyCommandLineScript.bind(_this4), type: "button" },
-	                                            "Copy 'sm' start script"
-	                                        )
-	                                    ),
-	                                    React.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true", value: _this4.state.commandLineScript, type: "text" })
-	                                );
-	                            } else {
-	                                return React.createElement(
-	                                    "button",
-	                                    { className: "btn btn-primary" },
-	                                    "Search"
-	                                );
-	                            }
-	                        }()
-	                    )
-	                ),
-	                React.createElement(
-	                    "h2",
-	                    null,
-	                    "Upcoming versions"
-	                ),
-	                React.createElement(_projectVersionsList2.default, { isLoading: this.state.isLoadingReleases,
-	                    projects: this.getSelectedReleaseApplications(),
-	                    extraColumns: this.state.extraColumns })
-	            );
-	        }
-	    }, {
-	        key: "renderActionsCell",
-	        value: function renderActionsCell(project) {
-	            return React.createElement(_deployment2.default, { projectName: project.name, version: project.version });
-	        }
-	    }, {
-	        key: "renderBuildNumberCell",
-	        value: function renderBuildNumberCell(project) {
-	            return React.createElement(_buildNumber2.default, { projectName: project.name, version: project.version });
-	        }
-	    }]);
-
-	    return UpcomingVersionsList;
-	}(_baseComponent2.default);
-
-	exports.default = UpcomingVersionsList;
-
-/***/ },
-/* 184 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-	var _baseComponent = __webpack_require__(2);
-
-	var _baseComponent2 = _interopRequireDefault(_baseComponent);
-
-	var _buildsRepository = __webpack_require__(185);
-
-	var _globalEventEmitter = __webpack_require__(169);
-
-	var _infiniteLoading = __webpack_require__(173);
-
-	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
-
-	var _projectsRepository = __webpack_require__(161);
-
-	var _requestManager = __webpack_require__(174);
-
-	var _requestManager2 = _interopRequireDefault(_requestManager);
-
-	var _smallSpinner = __webpack_require__(186);
-
-	var _smallSpinner2 = _interopRequireDefault(_smallSpinner);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var BuildNumber = function (_BaseComponent) {
-	    _inherits(BuildNumber, _BaseComponent);
-
-	    function BuildNumber(props) {
-	        _classCallCheck(this, BuildNumber);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BuildNumber).call(this, props));
-
-	        _this._onProjectsUpdated = _this.onProjectsUpdated.bind(_this);
-	        _this.project = _projectsRepository.projectsRepository.getProjects().find(function (p) {
-	            return p.name == props.projectName;
-	        }) || null;
-	        _this.requestManager = new _requestManager2.default();
-	        return _this;
-	    }
-
-	    _createClass(BuildNumber, [{
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            _get(Object.getPrototypeOf(BuildNumber.prototype), "componentDidMount", this).call(this);
-
-	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.PROJECTS_UPDATED, this._onProjectsUpdated);
-	        }
-	    }, {
-	        key: "componentWillUnmount",
-	        value: function componentWillUnmount() {
-	            _get(Object.getPrototypeOf(BuildNumber.prototype), "componentWillUnmount", this).call(this);
-
-	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.PROJECTS_UPDATED, this._onProjectsUpdated);
-	        }
-	    }, {
-	        key: "getBuildNumber",
-	        value: function getBuildNumber() {
-	            return this.project.getBuildNumber(this.props.version);
-	        }
-	    }, {
-	        key: "getCiBuildJobUrl",
-	        value: function getCiBuildJobUrl() {
-	            return _buildsRepository.buildsRepository.getCiBuildJobUrl(this.props.projectName, this.getBuildNumber());
-	        }
-	    }, {
-	        key: "getCiBuildProjectUrl",
-	        value: function getCiBuildProjectUrl() {
-	            return _buildsRepository.buildsRepository.getCiBuildProjectUrl(this.props.projectName);
-	        }
-	    }, {
-	        key: "handleStartBuildClick",
-	        value: function handleStartBuildClick() {
-	            _buildsRepository.buildsRepository.setRequestManager(this.requestManager);
-	            _buildsRepository.buildsRepository.startBuild(this.props.projectName, this.props.version);
-	        }
-	    }, {
-	        key: "isBuilding",
-	        value: function isBuilding() {
-	            return this.project.isBuildRunning(this.props.version);
-	        }
-	    }, {
-	        key: "isBuilt",
-	        value: function isBuilt() {
-	            return this.project.isBuilt(this.props.version);
-	        }
-	    }, {
-	        key: "isPending",
-	        value: function isPending() {
-	            return this.project.isBuildScheduled(this.props.version);
-	        }
-	    }, {
-	        key: "onProjectsUpdated",
-	        value: function onProjectsUpdated() {
-	            this.forceUpdate();
-	        }
-	    }, {
-	        key: "render",
-	        value: function render() {
-	            if (this.isPending()) {
-	                return React.createElement(
-	                    "a",
-	                    { href: this.getCiBuildProjectUrl(), target: "_blank", rel: "external" },
-	                    "Build queued"
-	                );
-	            }
-
-	            if (this.isBuilding()) {
-	                return React.createElement(
-	                    "div",
-	                    null,
-	                    React.createElement(
-	                        "a",
-	                        { href: this.getCiBuildJobUrl(), target: "_blank", rel: "external" },
-	                        "Building ",
-	                        React.createElement(_smallSpinner2.default, null)
-	                    )
-	                );
-	            }
-
-	            if (this.isBuilt()) {
-	                return React.createElement(
-	                    "span",
-	                    null,
-	                    this.getBuildNumber()
-	                );
-	            } else {
-	                return React.createElement(
-	                    "button",
-	                    { className: "btn btn-default", onClick: this.handleStartBuildClick.bind(this) },
-	                    "Start build"
-	                );
-	            }
-
-	            return null;
-	        }
-	    }]);
-
-	    return BuildNumber;
-	}(_baseComponent2.default);
-
-	exports.default = BuildNumber;
-
-/***/ },
 /* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -35106,27 +34989,18 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.buildsRepository = exports.BuildsRepository = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _jquery = __webpack_require__(162);
+	var _baseComponent = __webpack_require__(2);
 
-	var _jquery2 = _interopRequireDefault(_jquery);
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _q = __webpack_require__(163);
+	var _globalEventEmitter = __webpack_require__(170);
 
-	var _q2 = _interopRequireDefault(_q);
+	var _projectVersionsList = __webpack_require__(184);
 
-	var _baseRepository = __webpack_require__(166);
-
-	var _baseRepository2 = _interopRequireDefault(_baseRepository);
-
-	var _configRepository = __webpack_require__(167);
-
-	var _globalEventEmitter = __webpack_require__(169);
-
-	var _projectsRepository = __webpack_require__(161);
+	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -35136,149 +35010,131 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var singleton = Symbol();
-	var singletonEnforcer = Symbol();
+	var StartReleaseSelector = function (_BaseComponent) {
+	    _inherits(StartReleaseSelector, _BaseComponent);
 
-	var BuildsRepository = exports.BuildsRepository = function (_BaseRepository) {
-	    _inherits(BuildsRepository, _BaseRepository);
+	    function StartReleaseSelector(props) {
+	        _classCallCheck(this, StartReleaseSelector);
 
-	    function BuildsRepository(enforcer) {
-	        _classCallCheck(this, BuildsRepository);
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StartReleaseSelector).call(this, props));
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BuildsRepository).call(this));
-
-	        if (enforcer !== singletonEnforcer) {
-	            throw "Cannot construct singleton!";
-	        }
+	        _this.state = {
+	            versions: null,
+	            releases: _this.getReleasesList(props)
+	        };
 	        return _this;
 	    }
 
-	    _createClass(BuildsRepository, [{
-	        key: "getCiBuildJobUrl",
-	        value: function getCiBuildJobUrl(projectName, jobNumber) {
-	            return "" + this.getCiBuildProjectUrl(projectName) + jobNumber + "/";
+	    _createClass(StartReleaseSelector, [{
+	        key: "componentWillReceiveProps",
+	        value: function componentWillReceiveProps(newProps) {
+	            this.setState({
+	                releases: this.getReleasesList(newProps)
+	            });
 	        }
 	    }, {
-	        key: "getCiBuildProjectUrl",
-	        value: function getCiBuildProjectUrl(projectName) {
-	            return _configRepository.configRepository.ciBuildUrl + "/job/" + projectName + "/";
-	        }
-	    }, {
-	        key: "loadBuildStatuses",
-	        value: function loadBuildStatuses() {
-	            var _this2 = this;
+	        key: "getReleasesList",
+	        value: function getReleasesList(props) {
+	            var upcomingReleases = props.upcomingReleases;
+	            var releases = [{
+	                name: ""
+	            }, {
+	                name: "-- Current production manifest --",
+	                versions: upcomingReleases.productionVersions
+	            }];
 
-	            var deferred = _q2.default.defer();
-
-	            var request = _jquery2.default.get("/build-statuses").done(function (data) {
-	                deferred.resolve(data);
-	            }).fail(function (error) {
-	                deferred.reject(_this2.processRequestFailure(error));
+	            var releasesWithPendingTickets = upcomingReleases.jira.filter(function (release) {
+	                return release.tickets.some(function (ticket) {
+	                    return ["Closed", "Released", "In QA"].indexOf(ticket.status) === -1;
+	                });
 	            });
 
-	            this.safeMonitorRequest(request);
+	            if (releasesWithPendingTickets.length > 0) {
+	                releases.push({
+	                    name: "-- Untested manifests --",
+	                    disabled: true
+	                });
 
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "loadSuccessfulBuildsForProjects",
-	        value: function loadSuccessfulBuildsForProjects() {
-	            var _this3 = this;
-
-	            var deferred = _q2.default.defer();
-
-	            var request = _jquery2.default.get("/successful-builds-for-projects").done(function (data) {
-	                deferred.resolve(data);
-	            }).fail(function (error) {
-	                deferred.reject(_this3.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "startBuild",
-	        value: function startBuild(projectName, version) {
-	            var _this4 = this;
-
-	            var deferred = _q2.default.defer();
-	            var requestData = {
-	                project: projectName,
-	                version: version
-	            };
-
-	            var project = _projectsRepository.projectsRepository.getProjects().find(function (p) {
-	                return p.name === projectName;
-	            });
-	            if (project) {
-	                project.onBuildScheduled(version);
+	                releasesWithPendingTickets.forEach(function (rwpt) {
+	                    var releaseData = upcomingReleases.upcomingReleases.find(function (ur) {
+	                        return ur.release === rwpt.release;
+	                    });
+	                    releases.push({
+	                        name: releaseData.release,
+	                        versions: releaseData.projects
+	                    });
+	                });
 	            }
 
-	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.PROJECTS_UPDATED);
-
-	            var request = _jquery2.default.post("/start-build", requestData).done(function (data) {
-	                deferred.resolve(data);
-	            }).fail(function (error) {
-	                deferred.reject(_this4.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
+	            return releases;
 	        }
 	    }, {
-	        key: "updateBuildNumbersAndProgress",
-	        value: function updateBuildNumbersAndProgress() {
-	            var promises = [this.loadBuildStatuses(), this.loadSuccessfulBuildsForProjects()];
-	            return _q2.default.all(promises).then(function (results) {
-	                var buildStatuses = results[0];
-	                var successfulBuilds = results[1];
-	                var projects = _projectsRepository.projectsRepository.getProjects();
+	        key: "handleReleaseSelection",
+	        value: function handleReleaseSelection(event) {
+	            var selectedValue = event.target.value;
 
-	                var _iteratorNormalCompletion = true;
-	                var _didIteratorError = false;
-	                var _iteratorError = undefined;
-
-	                try {
-	                    for (var _iterator = projects[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                        var project = _step.value;
-
-	                        project.updateBuildStatus(buildStatuses[project.name], successfulBuilds[project.name]);
-	                    }
-	                } catch (err) {
-	                    _didIteratorError = true;
-	                    _iteratorError = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion && _iterator.return) {
-	                            _iterator.return();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError) {
-	                            throw _iteratorError;
-	                        }
+	            var selectedProduction = false;
+	            var upcomingReleases = this.props.upcomingReleases;
+	            var versionsToShow = null;
+	            if (selectedValue && selectedValue.length > 0) {
+	                if (selectedValue.startsWith("--")) {
+	                    selectedProduction = true;
+	                    versionsToShow = upcomingReleases.productionVersions;
+	                } else {
+	                    var foundRelease = upcomingReleases.upcomingReleases.find(function (ur) {
+	                        return ur.release === selectedValue;
+	                    });
+	                    if (foundRelease) {
+	                        versionsToShow = foundRelease.projects;
 	                    }
 	                }
-
-	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.PROJECTS_UPDATED);
-	            });
-	        }
-	    }], [{
-	        key: "instance",
-	        get: function get() {
-	            if (!this[singleton]) {
-	                this[singleton] = new BuildsRepository(singletonEnforcer);
 	            }
 
-	            return this[singleton];
+	            this.setState({
+	                versions: versionsToShow
+	            });
+
+	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.START_RELEASE_CHANGED, selectedProduction ? true : selectedValue);
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            return React.createElement(
+	                "div",
+	                null,
+	                React.createElement(
+	                    "select",
+	                    { className: "form-control", onChange: this.handleReleaseSelection.bind(this) },
+	                    this.state.releases.map(function (release, index) {
+	                        if (release.disabled) {
+	                            return React.createElement(
+	                                "option",
+	                                { key: index, value: release.name, disabled: "disabled" },
+	                                release.name
+	                            );
+	                        } else {
+	                            return React.createElement(
+	                                "option",
+	                                { key: index, value: release.name },
+	                                release.name
+	                            );
+	                        }
+	                    })
+	                ),
+	                React.createElement(
+	                    "h2",
+	                    { style: { marginTop: "2.55em" } },
+	                    "From versions"
+	                ),
+	                React.createElement(_projectVersionsList2.default, { projects: this.state.versions })
+	            );
 	        }
 	    }]);
 
-	    return BuildsRepository;
-	}(_baseRepository2.default);
+	    return StartReleaseSelector;
+	}(_baseComponent2.default);
 
-	var buildsRepository = exports.buildsRepository = BuildsRepository.instance;
+	exports.default = StartReleaseSelector;
 
 /***/ },
 /* 186 */
@@ -35292,9 +35148,13 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 	var _baseComponent = __webpack_require__(2);
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _globalEventEmitter = __webpack_require__(170);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -35304,294 +35164,321 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var SmallSpinner = function (_BaseComponent) {
-	    _inherits(SmallSpinner, _BaseComponent);
+	var TicketsList = function (_BaseComponent) {
+	    _inherits(TicketsList, _BaseComponent);
 
-	    function SmallSpinner() {
-	        _classCallCheck(this, SmallSpinner);
+	    function TicketsList(props) {
+	        _classCallCheck(this, TicketsList);
 
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(SmallSpinner).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).call(this, props));
+
+	        _this.state = {
+	            endReleaseName: null,
+	            releases: [],
+	            startReleaseName: null
+	        };
+	        return _this;
 	    }
 
-	    _createClass(SmallSpinner, [{
-	        key: "render",
-	        value: function render() {
-	            var isLoadingProp = this.props.isLoading;
+	    _createClass(TicketsList, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentDidMount", this).call(this);
 
-	            if (isLoadingProp == undefined || isLoadingProp == null || isLoadingProp) {
-	                return React.createElement("i", { className: "glyphicon glyphicon-refresh infinite-spin" });
-	            } else {
-	                return null;
+	            this._onEndReleaseChanged = this.onEndReleaseChanged.bind(this);
+	            this._onStartReleaseChanged = this.onStartReleaseChanged.bind(this);
+
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.END_RELEASE_CHANGED, this._onEndReleaseChanged);
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.START_RELEASE_CHANGED, this._onStartReleaseChanged);
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentWillUnmount", this).call(this);
+
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.END_RELEASE_CHANGED, this._onEndReleaseChanged);
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.START_RELEASE_CHANGED, this._onStartReleaseChanged);
+	        }
+	    }, {
+	        key: "findEpicByKey",
+	        value: function findEpicByKey(epicKey) {
+	            return this.props.upcomingReleases.epics.find(function (epic) {
+	                return epic.ticketNumber === epicKey;
+	            });
+	        }
+	    }, {
+	        key: "onEndReleaseChanged",
+	        value: function onEndReleaseChanged(name) {
+	            this.setState({
+	                endReleaseName: name
+	            });
+
+	            this.updateReleasesAndTicketsList(this.state.startReleaseName, name);
+	        }
+	    }, {
+	        key: "onStartReleaseChanged",
+	        value: function onStartReleaseChanged(release) {
+	            var releaseName = release;
+	            if (release === true) // this means it is a production release
+	                {
+	                    var upcomingReleases = this.props.upcomingReleases.upcomingReleases;
+	                    if (upcomingReleases.length > 0) {
+	                        releaseName = upcomingReleases[0].release;
+	                    }
+	                }
+
+	            this.setState({
+	                startReleaseName: releaseName
+	            });
+
+	            this.updateReleasesAndTicketsList(releaseName, this.state.endReleaseName);
+	        }
+	    }, {
+	        key: "updateReleasesAndTicketsList",
+	        value: function updateReleasesAndTicketsList(startReleaseName, endReleaseName) {
+	            if (!endReleaseName || !startReleaseName) {
+	                this.setState({
+	                    releases: []
+	                });
+	                return;
 	            }
-	        }
-	    }]);
 
-	    return SmallSpinner;
-	}(_baseComponent2.default);
+	            var releases = [];
+	            var foundStart = false;
+	            var foundEnd = false;
 
-	exports.default = SmallSpinner;
+	            this.props.upcomingReleases.jira.forEach(function (release) {
+	                if (foundEnd) return;
 
-/***/ },
-/* 187 */
-/***/ function(module, exports) {
+	                if (!foundStart) {
+	                    if (startReleaseName === release.release) foundStart = true;else return;
+	                }
 
-	"use strict";
+	                releases.push(release);
 
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.default = copyContent;
-	function clearSelection() {
-	    if (window.getSelection) {
-	        if (window.getSelection().empty) {
-	            window.getSelection().empty();
-	        } else if (window.getSelection().removeAllRanges) {
-	            window.getSelection().removeAllRanges();
-	        }
-	    } else if (document.selection) {
-	        document.selection.empty();
-	    }
-	}
-
-	function copyContent(selector) {
-	    var commandLineScript = document.querySelector(selector);
-	    var range = document.createRange();
-	    var selection = window.getSelection();
-	    var result = true;
-
-	    clearSelection();
-
-	    range.selectNode(commandLineScript);
-	    selection.addRange(range);
-
-	    try {
-	        document.execCommand("copy");
-	    } catch (ex) {
-	        console.error("Sorry bro, your browser does not support 'copy' command. Move on and get something which actually works!");
-	        result = false;
-	    }
-
-	    clearSelection();
-
-	    return result;
-	}
-
-/***/ },
-/* 188 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _baseComponent = __webpack_require__(2);
-
-	var _baseComponent2 = _interopRequireDefault(_baseComponent);
-
-	var _deploymentRepository = __webpack_require__(189);
-
-	var _errorHandler = __webpack_require__(172);
-
-	var _errorHandler2 = _interopRequireDefault(_errorHandler);
-
-	var _globalEventEmitter = __webpack_require__(169);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var SmallSpinner = function (_BaseComponent) {
-	    _inherits(SmallSpinner, _BaseComponent);
-
-	    function SmallSpinner() {
-	        _classCallCheck(this, SmallSpinner);
-
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(SmallSpinner).apply(this, arguments));
-	    }
-
-	    _createClass(SmallSpinner, [{
-	        key: "handleDeployToQA",
-	        value: function handleDeployToQA(event) {
-	            event.preventDefault();
-
-	            _deploymentRepository.deploymentRepository.deployToQA(this.props.projectName, this.props.version).then(function () {
-	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Deployment to QA started.");
-	            }).catch(function (error) {
-	                _errorHandler2.default.showErrorMessage(error);
+	                if (endReleaseName === release.release) {
+	                    foundEnd = true;
+	                }
 	            });
-	        }
-	    }, {
-	        key: "handleDeployToStaging",
-	        value: function handleDeployToStaging(event) {
-	            event.preventDefault();
 
-	            _deploymentRepository.deploymentRepository.deployToStaging(this.props.projectName, this.props.version).then(function () {
-	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Deployment to staging started.");
-	            }).catch(function (error) {
-	                _errorHandler2.default.showErrorMessage(error);
+	            this.setState({
+	                releases: releases
 	            });
 	        }
 	    }, {
 	        key: "render",
 	        value: function render() {
+	            var _this2 = this;
+
 	            return React.createElement(
 	                "div",
-	                { className: "btn-group" },
+	                { className: "row" },
 	                React.createElement(
-	                    "button",
-	                    { type: "button", className: "btn btn-default dropdown-toggle", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false" },
-	                    "Deploy ",
-	                    React.createElement("span", { className: "caret" })
-	                ),
-	                React.createElement(
-	                    "ul",
-	                    { className: "dropdown-menu" },
+	                    "div",
+	                    { className: "col-md-12" },
 	                    React.createElement(
-	                        "li",
+	                        "h2",
 	                        null,
-	                        React.createElement(
-	                            "a",
-	                            { href: "#", onClick: this.handleDeployToQA.bind(this) },
-	                            "QA"
-	                        )
+	                        "Jira tickets"
 	                    ),
-	                    React.createElement(
-	                        "li",
-	                        null,
-	                        React.createElement(
-	                            "a",
-	                            { href: "#", onClick: this.handleDeployToStaging.bind(this) },
-	                            "Staging"
-	                        )
-	                    )
+	                    function () {
+	                        if (_this2.state.releases.length === 0) {
+	                            return React.createElement(
+	                                "p",
+	                                null,
+	                                "Select \"FROM\" and \"TO\" releases in order to see tickets."
+	                            );
+	                        }
+	                    }(),
+	                    this.state.releases.map(function (release, index) {
+	                        return React.createElement(
+	                            "div",
+	                            { key: index },
+	                            React.createElement(
+	                                "h2",
+	                                null,
+	                                release.release
+	                            ),
+	                            React.createElement(
+	                                "table",
+	                                { className: "table tickets-list" },
+	                                React.createElement(
+	                                    "thead",
+	                                    null,
+	                                    React.createElement(
+	                                        "tr",
+	                                        null,
+	                                        React.createElement(
+	                                            "th",
+	                                            { className: "ticket-number" },
+	                                            "#"
+	                                        ),
+	                                        React.createElement(
+	                                            "th",
+	                                            { className: "ticket-summary" },
+	                                            "Summary"
+	                                        ),
+	                                        React.createElement(
+	                                            "th",
+	                                            { className: "ticket-epic" },
+	                                            "Epic"
+	                                        ),
+	                                        React.createElement(
+	                                            "th",
+	                                            { className: "ticket-tags" },
+	                                            "Git tags"
+	                                        ),
+	                                        React.createElement(
+	                                            "th",
+	                                            { className: "ticket-date" },
+	                                            "Date"
+	                                        ),
+	                                        React.createElement(
+	                                            "th",
+	                                            { className: "ticket-status" },
+	                                            "Status"
+	                                        ),
+	                                        React.createElement(
+	                                            "th",
+	                                            { className: "ticket-author" },
+	                                            "Author"
+	                                        )
+	                                    )
+	                                ),
+	                                React.createElement(
+	                                    "tbody",
+	                                    null,
+	                                    function () {
+	                                        if (!release.tickets || !release.tickets.length) {
+	                                            return React.createElement(
+	                                                "tr",
+	                                                null,
+	                                                React.createElement(
+	                                                    "td",
+	                                                    { colSpan: "7" },
+	                                                    React.createElement(
+	                                                        "p",
+	                                                        null,
+	                                                        "No JIRA tickets found for this release."
+	                                                    )
+	                                                )
+	                                            );
+	                                        }
+
+	                                        return release.tickets.map(function (ticket, ticketIndex) {
+	                                            return React.createElement(
+	                                                "tr",
+	                                                { key: ticketIndex },
+	                                                React.createElement(
+	                                                    "td",
+	                                                    null,
+	                                                    ticketIndex + 1
+	                                                ),
+	                                                React.createElement(
+	                                                    "td",
+	                                                    null,
+	                                                    React.createElement(
+	                                                        "a",
+	                                                        { href: ticket.url, target: "_blank", rel: "external" },
+	                                                        ticket.ticketNumber,
+	                                                        ": ",
+	                                                        ticket.message
+	                                                    )
+	                                                ),
+	                                                React.createElement(
+	                                                    "td",
+	                                                    null,
+	                                                    function () {
+	                                                        if (ticket.epicKey) {
+	                                                            var epic = _this2.findEpicByKey(ticket.epicKey);
+	                                                            return React.createElement(
+	                                                                "a",
+	                                                                { href: epic.url, target: "_blank", rel: "external" },
+	                                                                epic.ticketNumber,
+	                                                                ": ",
+	                                                                epic.message
+	                                                            );
+	                                                        }
+	                                                    }()
+	                                                ),
+	                                                React.createElement(
+	                                                    "td",
+	                                                    null,
+	                                                    React.createElement(
+	                                                        "ul",
+	                                                        { className: "list-unstyled" },
+	                                                        (ticket.gitTags || []).map(function (tag, tagIndex) {
+	                                                            return React.createElement(
+	                                                                "li",
+	                                                                { key: tagIndex },
+	                                                                tag
+	                                                            );
+	                                                        })
+	                                                    )
+	                                                ),
+	                                                React.createElement(
+	                                                    "td",
+	                                                    null,
+	                                                    ticket.dateTime.toLocaleString("en-GB")
+	                                                ),
+	                                                React.createElement(
+	                                                    "td",
+	                                                    null,
+	                                                    function () {
+	                                                        switch (ticket.status) {
+	                                                            case "Dev Ready":
+	                                                            case "Dev Complete":
+	                                                                return React.createElement(
+	                                                                    "span",
+	                                                                    { className: "label label-danger" },
+	                                                                    ticket.status
+	                                                                );
+	                                                            case "In QA":
+	                                                                return React.createElement(
+	                                                                    "span",
+	                                                                    { className: "label label-warning" },
+	                                                                    ticket.status
+	                                                                );
+	                                                            case "QA Complete":
+	                                                            case "Resolved":
+	                                                                return React.createElement(
+	                                                                    "span",
+	                                                                    { className: "label label-success" },
+	                                                                    ticket.status
+	                                                                );
+	                                                            default:
+	                                                                return React.createElement(
+	                                                                    "span",
+	                                                                    { className: "label label-default" },
+	                                                                    ticket.status
+	                                                                );
+	                                                        }
+	                                                    }()
+	                                                ),
+	                                                React.createElement(
+	                                                    "td",
+	                                                    null,
+	                                                    ticket.author
+	                                                )
+	                                            );
+	                                        });
+	                                    }()
+	                                )
+	                            )
+	                        );
+	                    })
 	                )
 	            );
 	        }
 	    }]);
 
-	    return SmallSpinner;
+	    return TicketsList;
 	}(_baseComponent2.default);
 
-	exports.default = SmallSpinner;
+	exports.default = TicketsList;
 
 /***/ },
-/* 189 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.deploymentRepository = exports.DeploymentRepository = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _jquery = __webpack_require__(162);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _q = __webpack_require__(163);
-
-	var _q2 = _interopRequireDefault(_q);
-
-	var _baseRepository = __webpack_require__(166);
-
-	var _baseRepository2 = _interopRequireDefault(_baseRepository);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var singleton = Symbol();
-	var singletonEnforcer = Symbol();
-
-	var DeploymentRepository = exports.DeploymentRepository = function (_BaseRepository) {
-	    _inherits(DeploymentRepository, _BaseRepository);
-
-	    function DeploymentRepository(enforcer) {
-	        _classCallCheck(this, DeploymentRepository);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(DeploymentRepository).call(this));
-
-	        if (enforcer !== singletonEnforcer) {
-	            throw "Cannot construct singleton!";
-	        }
-	        return _this;
-	    }
-
-	    _createClass(DeploymentRepository, [{
-	        key: "deployToQA",
-	        value: function deployToQA(projectName, version) {
-	            var _this2 = this;
-
-	            var deferred = _q2.default.defer();
-	            var requestData = {
-	                projectName: projectName,
-	                version: version
-	            };
-
-	            var request = _jquery2.default.post("/deploy-to-qa", requestData).done(function (data) {
-	                deferred.resolve(data);
-	            }).fail(function (error) {
-	                deferred.reject(_this2.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "deployToStaging",
-	        value: function deployToStaging(projectName, version) {
-	            var _this3 = this;
-
-	            var deferred = _q2.default.defer();
-	            var requestData = {
-	                projectName: projectName,
-	                version: version
-	            };
-
-	            var request = _jquery2.default.post("/deploy-to-staging", requestData).done(function (data) {
-	                deferred.resolve(data);
-	            }).fail(function (error) {
-	                deferred.reject(_this3.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }], [{
-	        key: "instance",
-	        get: function get() {
-	            if (!this[singleton]) {
-	                this[singleton] = new DeploymentRepository(singletonEnforcer);
-	            }
-
-	            return this[singleton];
-	        }
-	    }]);
-
-	    return DeploymentRepository;
-	}(_baseRepository2.default);
-
-	var deploymentRepository = exports.deploymentRepository = DeploymentRepository.instance;
-
-/***/ },
-/* 190 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35606,15 +35493,15 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _environments = __webpack_require__(191);
+	var _environments = __webpack_require__(188);
 
 	var _environments2 = _interopRequireDefault(_environments);
 
-	var _infiniteLoading = __webpack_require__(173);
+	var _infiniteLoading = __webpack_require__(174);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
-	var _projectsRepository = __webpack_require__(161);
+	var _projectsRepository = __webpack_require__(162);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -35850,7 +35737,7 @@
 	exports.default = Reporting;
 
 /***/ },
-/* 191 */
+/* 188 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -35863,7 +35750,7 @@
 	};
 
 /***/ },
-/* 192 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

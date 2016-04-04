@@ -9,6 +9,8 @@ export const Events =
     SEARCH_TICKETS: "search-tickets",
     SEARCH_PROJECT_TICKETS: "search-project-tickets",
     SELECTED_RELEASE_CHANGED: "selected-release-changed",
+    START_RELEASE_CHANGED: "start-release-changed",
+    END_RELEASE_CHANGED: "end-release-changed",
     SHOW_NOTIFICATION: "show-notification"
 };
 

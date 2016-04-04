@@ -63,11 +63,18 @@ function getVersionsForReleaseName(versionName)
                     version: app.version
                 };
             });
+            let uniqueApplications = [];
+            applications.forEach(app =>
+            {
+                if (uniqueApplications.findIndex(ua => ua.name === app.name) !== -1)
+                    return;
 
+                uniqueApplications.push(app);
+            });
 
             deferred.resolve({
                 release: versionName,
-                projects: applications
+                projects: uniqueApplications
             });
         }
     );

@@ -26,7 +26,7 @@ module.exports = function getUpcomingReleases(projectNames)
 
             return {
                 productionVersions: productionVersions,
-                upcomingReleases: getReleasesAfterProductionVersion(productionVersions, availableReleases)
+                upcomingReleases: getReleasesAfterProductionVersion(productionVersions, availableReleases) // availableReleases
             };
         })
         .then(results => // Get tickets and tags from git log for each release

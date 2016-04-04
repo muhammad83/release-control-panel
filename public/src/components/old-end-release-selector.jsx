@@ -7,7 +7,6 @@ import ErrorHandler from "../handlers/error-handler";
 import { globalEventEmitter, Events } from "../utils/global-event-emitter";
 import { projectsRepository } from "../repositories/projects-repository";
 import ProjectVersionsList from "./project-versions-list.jsx";
-import q from "q";
 import RequestManager from "../utils/request-manager";
 
 
