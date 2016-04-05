@@ -3,13 +3,13 @@
 const filterNotExistingJiraTickets = require("../helpers/filter-not-existing-tickets");
 const getAvailableReleases = require("../helpers/get-available-releases");
 const getProductionVersions = require("../helpers/get-production-versions");
-const getReleasesAfterProductionVersion = require("../helpers/get-releases-after-production-version");
 const getStoriesFromJira = require("../helpers/get-stories-from-jira");
 const getTagsForReleases = require("../helpers/get-tags-for-releases");
 const getTicketsForReleases = require("../helpers/get-tickets-for-releases");
 const prepareJqlForEpics = require("../helpers/prepare-jql-for-epics");
 const prepareJqlForTickets = require("../helpers/prepare-jql-for-tickets");
 const q = require("q");
+const semver = require("semver");
 const updateProjects = require("../helpers/update-projects");
 
 module.exports = function getUpcomingReleases(projectNames)
@@ -26,7 +26,7 @@ module.exports = function getUpcomingReleases(projectNames)
 
             return {
                 productionVersions: productionVersions,
-                upcomingReleases: getReleasesAfterProductionVersion(productionVersions, availableReleases) // availableReleases
+                upcomingReleases: availableReleases
             };
         })
         .then(results => // Get tickets and tags from git log for each release
@@ -34,8 +34,8 @@ module.exports = function getUpcomingReleases(projectNames)
             let productionVersions = results.productionVersions;
             let upcomingReleases = results.upcomingReleases;
 
-            let ticketsForReleasesPromise = getTicketsForReleases(productionVersions, upcomingReleases);
-            let tagsForReleasesPromise = getTagsForReleases(productionVersions, upcomingReleases);
+            let ticketsForReleasesPromise = getTicketsForReleases(projectNames, upcomingReleases);
+            let tagsForReleasesPromise = getTagsForReleases(projectNames, upcomingReleases);
 
             return q.all([ticketsForReleasesPromise, tagsForReleasesPromise])
                 .then(results =>
@@ -45,11 +45,11 @@ module.exports = function getUpcomingReleases(projectNames)
 
                     upcomingReleases.forEach(upcomingRelease =>
                     {
-                        let ticketsForRelease = ticketsForReleases.find(ticketsForRelease => ticketsForRelease.release === upcomingRelease.release).tickets;
-                        let tagsForRelease = tagsForReleases.find(tagsForRelease => tagsForRelease.release === upcomingRelease.release).tags;
+                        let ticketsForRelease = ticketsForReleases.find(ticketsForRelease => ticketsForRelease.release === upcomingRelease.release);
+                        let tagsForRelease = tagsForReleases.find(tagsForRelease => tagsForRelease.release === upcomingRelease.release);
 
-                        upcomingRelease.tickets = ticketsForRelease;
-                        upcomingRelease.tags = tagsForRelease;
+                        upcomingRelease.tickets = (ticketsForRelease && ticketsForRelease.tickets) || [];
+                        upcomingRelease.tags = (tagsForRelease && tagsForRelease.tags) || [];
                     });
 
                     return {
@@ -86,29 +86,142 @@ module.exports = function getUpcomingReleases(projectNames)
         })
         .then(results => // Prepare JIRA search queries
         {
-            results.jira = results.upcomingReleases.map(upcomingRelease =>
+            let tickets = [];
+            let tags = [];
+
+            projectNames.forEach(projectName =>
             {
-                return {
-                    release: upcomingRelease.release,
-                    jql: prepareJqlForTickets(upcomingRelease.tags, upcomingRelease.tickets, true)
+                let projectTags =
+                {
+                    name: projectName,
+                    tags: []
                 };
+
+                tags.push(projectTags);
+
+                results.upcomingReleases.forEach(release =>
+                {
+                    release.tags.find(project => project.name === projectName).tags.forEach(tag =>
+                    {
+                        if (projectTags.tags.indexOf(tag) !== -1)
+                            return;
+
+                        projectTags.tags.push(tag);
+                    });
+
+                    release.tickets.forEach(ticket =>
+                    {
+                        if (tickets.indexOf(ticket) !== -1)
+                            return;
+
+                        tickets.push(ticket);
+                    });
+                });
             });
+
+
+
+            results.jira = [];
+            results.jiraJQL = prepareJqlForTickets(tags, tickets);
 
             return results;
         })
         .then(results => // Search for tickets in JIRA
         {
-            let searchPromises = results.jira.map(jira =>
-            {
-                return getStoriesFromJira(jira.jql);
-            });
-
-            return q.all(searchPromises)
-                .then(searchResults =>
+            return getStoriesFromJira(results.jiraJQL)
+                .then(searchResult => // Make a "ticket -> tag -> project" map
                 {
-                    searchResults.forEach((result, index) =>
+                    let ticketsTagsProjectsMap = {};
+
+                    searchResult.forEach(ticket =>
                     {
-                        results.jira[index].tickets = result;
+                        if (!ticket.gitTags)
+                            return;
+
+                        // Get the array of projects and tags
+                        let projectsTags = ticket.gitTags.map(tag =>
+                        {
+                            let index = tag.lastIndexOf("-");
+                            if (index == -1)
+                                return null;
+
+                            return {
+                                project: tag.slice(0, index),
+                                tag: tag.slice(index + 1)
+                            };
+                        });
+
+                        projectsTags
+                            .filter(pt => // Discard the incorrect tags
+                            {
+                                return pt && projectNames.indexOf(pt.project) !== 1 && semver.valid(pt.tag);
+                            })
+                            .forEach(pt => // Add the projects and tags to the 'ticketsTagsProjectsMap' map
+                            {
+                                let projectTagsTickets = ticketsTagsProjectsMap[pt.project];
+                                if (!projectTagsTickets) // Check if project exist
+                                {
+                                    projectTagsTickets = {};
+                                    ticketsTagsProjectsMap[pt.project] = projectTagsTickets;
+                                }
+
+                                let tagTickets = projectTagsTickets[pt.tag];
+                                if (!tagTickets)
+                                {
+                                    tagTickets = [];
+                                    projectTagsTickets[pt.tag] = tagTickets;
+                                }
+
+                                tagTickets.push(ticket);
+                            });
+                    });
+
+                    return {
+                        searchResults: searchResult,
+                        ticketsTagsProjectsMap: ticketsTagsProjectsMap
+                    };
+                })
+                .then(improvedSearchResults => // Add the search results to the releases
+                {
+                    results.jira = results.upcomingReleases.map(upcomingRelease =>
+                    {
+                        let tickets = [];
+
+                        upcomingRelease.tickets.forEach(ticketNumber => // Add tickets by their numbers
+                        {
+                            let ticket = improvedSearchResults.searchResults.find(ticket => ticket.ticketNumber === ticketNumber);
+                            if (ticket && tickets.indexOf(ticket) === -1)
+                            {
+                                tickets.push(ticket);
+                            }
+                        });
+
+                        upcomingRelease.tags.forEach(project => // Add tickets by their tags.
+                        {
+                            let projectTagsTickets = improvedSearchResults.ticketsTagsProjectsMap[project.name];
+                            if (!projectTagsTickets)
+                                return;
+
+                            project.tags.forEach(tag =>
+                            {
+                                let tagTickets = projectTagsTickets[tag];
+                                if (!tagTickets)
+                                    return;
+
+                                tagTickets.forEach(ticket =>
+                                {
+                                    if (tickets.indexOf(ticket) !== -1)
+                                        return;
+
+                                    tickets.push(ticket);
+                                });
+                            });
+                        });
+
+                        return {
+                            release: upcomingRelease.release,
+                            tickets: tickets
+                        };
                     });
 
                     return results;

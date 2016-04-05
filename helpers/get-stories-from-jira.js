@@ -21,21 +21,17 @@ module.exports = function getStoriesFromJira(jql, maxResults)
 
     let requestOptions =
     {
-        method: "GET",
+        method: "POST",
         url: `${config.jiraUrl}/rest/api/2/search`,
         auth:
         {
             user: config.jiraUserName,
             pass: config.jiraPassword
         },
-        qs:
+        json:
         {
             jql: jql,
             maxResults: maxResults
-        },
-        headers:
-        {
-            "Content-Type": "application/json"
         }
     };
 
@@ -79,7 +75,10 @@ module.exports = function getStoriesFromJira(jql, maxResults)
 
         try
         {
-            parsedData = JSON.parse(data);
+            if (typeof(data) === "string")
+                parsedData = JSON.parse(data);
+            else
+                parsedData = data;
         }
         catch (ex)
         {

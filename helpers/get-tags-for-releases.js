@@ -3,28 +3,28 @@
 const getTagsFromGit = require("./get-tags-from-git");
 const q = require("q");
 
-module.exports = function getTagsForReleases(productionVersions, releases)
+module.exports = function getTagsForReleases(projectNames, releases)
 {
-    let projectNames = productionVersions.map(productionVersion => productionVersion.name);
+    let firstRelease = releases[0];
 
     return getTagsFromGit(projectNames)
         .then(projectsTags =>
         {
-            let projectsLastUsedTagIndex = productionVersions.map(productionVersion =>
+            let projectsLastUsedTagIndex = projectNames.map(projectName =>
             {
-                let projectTags = projectsTags.find(projectTags => projectTags.name === productionVersion.name).tags;
-                return projectTags.indexOf(productionVersion.version);
+                let projectTags = projectsTags.find(projectTags => projectTags.name === projectName).tags;
+                let firstReleaseProject = firstRelease.projects.find(project => project.name === projectName);
+                return projectTags.indexOf(firstReleaseProject.version);
             });
 
             return releases.map(release =>
             {
                 return {
                     release: release.release,
-                    tags: productionVersions.map(productionVersion =>
+                    tags: projectNames.map((projectName, projectIndex) =>
                     {
-                        let projectIndex = projectsTags.findIndex(projectTags => projectTags.name === productionVersion.name);
                         let projectTags = projectsTags[projectIndex].tags;
-                        let releaseProject = release.projects.find(project => project.name === productionVersion.name);
+                        let releaseProject = release.projects.find(project => project.name === projectName);
 
                         let startVersionIndex = projectsLastUsedTagIndex[projectIndex];
 
@@ -34,7 +34,7 @@ module.exports = function getTagsForReleases(productionVersions, releases)
                         projectsLastUsedTagIndex[projectIndex] = endVersionIndex;
 
                         return {
-                            name: productionVersion.name,
+                            name: projectName,
                             tags: projectTags.slice(startVersionIndex, endVersionIndex)
                         };
                     })

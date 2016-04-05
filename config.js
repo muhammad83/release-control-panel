@@ -15,6 +15,7 @@ let config =
     jiraUserName: "",
     jiraPassword: "",
 
+    maxSimultaneousProcesses: 20,
     isValid: true,
     jiraUrl: "https://jira.tools.tax.service.gov.uk",
     appsReleaseHistoryUrl: "https://releases.tax.service.gov.uk/apps",
