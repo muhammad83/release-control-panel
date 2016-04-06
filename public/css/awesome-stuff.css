@@ -69,6 +69,41 @@ h2
     text-transform: uppercase;
 }
 
+.ticket-number
+{
+    width: 3%;
+}
+
+.ticket-summary
+{
+    width: 37%;
+}
+
+.ticket-epic
+{
+    width: 25%;
+}
+
+.ticket-tags
+{
+    width: 10%;
+}
+
+.ticket-date
+{
+    width: 12%;
+}
+
+.ticket-status
+{
+    width: 5%;
+}
+
+.ticket-author
+{
+    width: 8%;
+}
+
 .c3-tooltip td
 {
     color: #000;

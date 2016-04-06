@@ -4,34 +4,47 @@ const config = require("../config");
 const q = require("q");
 const request = require("request");
 
-module.exports = function getStoriesFromJira(jql)
+module.exports = function getStoriesFromJira(jql, maxResults)
 {
+    if (!maxResults)
+    {
+        maxResults = 99999;
+    }
+
     let deferred = q.defer();
-    let requestOptions = {
-        method: "GET",
+    // Make sure NOT to search for empty query...
+    if (!jql || jql.trim().length === 0)
+    {
+        deferred.resolve([]);
+        return deferred.promise;
+    }
+
+    let requestOptions =
+    {
+        method: "POST",
         url: `${config.jiraUrl}/rest/api/2/search`,
-        auth: {
+        auth:
+        {
             user: config.jiraUserName,
             pass: config.jiraPassword
         },
-        qs: {
+        json:
+        {
             jql: jql,
-            maxResults: 99999
-        },
-        headers: {
-            "Content-Type": "application/json"
+            maxResults: maxResults
         }
     };
+
     let responseHandler = (error, response, data) =>
     {
         if (error)
         {
             deferred.reject(
-                {
-                    data: error,
-                    message: "Unknown error when searching JIRA tickets.",
-                    status: 500
-                });
+            {
+                data: error,
+                message: "Unknown error when searching JIRA tickets.",
+                status: 500
+            });
             return;
         }
 
@@ -62,7 +75,10 @@ module.exports = function getStoriesFromJira(jql)
 
         try
         {
-            parsedData = JSON.parse(data);
+            if (typeof(data) === "string")
+                parsedData = JSON.parse(data);
+            else
+                parsedData = data;
         }
         catch (ex)
         {

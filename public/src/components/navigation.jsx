@@ -28,7 +28,7 @@ export default class Navigation extends BaseComponent
                 <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul className="nav navbar-nav">
                         <li><a href="#/">Home</a></li>
-                        <li className="dropdown">
+                        {/*<li className="dropdown">
                             <a href="" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Projects <span className="caret"></span></a>
                             <ul className="dropdown-menu">
                                 {
@@ -38,7 +38,7 @@ export default class Navigation extends BaseComponent
                                     })
                                 }
                             </ul>
-                        </li>
+                        </li>*/}
                         <li><a href="#/releases">Releases</a></li>
                         <li><a href="#/reporting">Reporting</a></li>
                     </ul>

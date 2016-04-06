@@ -40,6 +40,25 @@ export class BuildsRepository extends BaseRepository
         return `${configRepository.ciBuildUrl}/job/${projectName}/`;
     }
 
+    getUpcomingReleases()
+    {
+        let deferred = q.defer();
+
+        let request = $.get(`/upcoming-releases`)
+            .done(data =>
+            {
+                deferred.resolve(data);
+            })
+            .fail(error =>
+            {
+                deferred.reject(this.processRequestFailure(error));
+            });
+
+        this.safeMonitorRequest(request);
+
+        return deferred.promise;
+    }
+
     loadBuildStatuses()
     {
         let deferred = q.defer();

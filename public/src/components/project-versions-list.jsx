@@ -39,7 +39,7 @@ export default class ProjectVersionsList extends BaseComponent
                                 </tr>
                             );
                         }
-                        else if (!this.props.projects.length)
+                        else if (!this.props.projects || !this.props.projects.length)
                         {
                             return (
                                 <tr>
