@@ -11,6 +11,7 @@ export const Events =
     SELECTED_RELEASE_CHANGED: "selected-release-changed",
     START_RELEASE_CHANGED: "start-release-changed",
     END_RELEASE_CHANGED: "end-release-changed",
+    SEARCH_FLAGS_CHANGED: "search-flags-changed",
     SHOW_NOTIFICATION: "show-notification"
 };
 

@@ -60,7 +60,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(189);
+	var _reactDom = __webpack_require__(190);
 
 	var _configRepository = __webpack_require__(168);
 
@@ -206,7 +206,7 @@
 
 	var _releases2 = _interopRequireDefault(_releases);
 
-	var _reporting = __webpack_require__(187);
+	var _reporting = __webpack_require__(188);
 
 	var _reporting2 = _interopRequireDefault(_reporting);
 
@@ -32635,6 +32635,7 @@
 	    SELECTED_RELEASE_CHANGED: "selected-release-changed",
 	    START_RELEASE_CHANGED: "start-release-changed",
 	    END_RELEASE_CHANGED: "end-release-changed",
+	    SEARCH_FLAGS_CHANGED: "search-flags-changed",
 	    SHOW_NOTIFICATION: "show-notification"
 	};
 
@@ -34284,11 +34285,11 @@
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
-	var _startReleaseSelector = __webpack_require__(185);
+	var _startReleaseSelector = __webpack_require__(186);
 
 	var _startReleaseSelector2 = _interopRequireDefault(_startReleaseSelector);
 
-	var _extendedTicketsList = __webpack_require__(186);
+	var _extendedTicketsList = __webpack_require__(187);
 
 	var _extendedTicketsList2 = _interopRequireDefault(_extendedTicketsList);
 
@@ -34608,6 +34609,8 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 	var _baseComponent = __webpack_require__(2);
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
@@ -34621,6 +34624,10 @@
 	var _projectVersionsList = __webpack_require__(184);
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
+
+	var _searchFlags = __webpack_require__(185);
+
+	var _searchFlags2 = _interopRequireDefault(_searchFlags);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -34639,18 +34646,27 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(EndReleaseSelector).call(this, props));
 
 	        _this.state = {
-	            versions: null,
-	            releases: _this.getReleasesList(props)
+	            searchFlags: _searchFlags2.default.ShowAll,
+	            versions: null
 	        };
 	        return _this;
 	    }
 
 	    _createClass(EndReleaseSelector, [{
-	        key: "componentWillReceiveProps",
-	        value: function componentWillReceiveProps(newProps) {
-	            this.setState({
-	                releases: this.getReleasesList(newProps)
-	            });
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(EndReleaseSelector.prototype), "componentDidMount", this).call(this);
+
+	            this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
+
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            _get(Object.getPrototypeOf(EndReleaseSelector.prototype), "componentWillUnmount", this).call(this);
+
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
 	        }
 	    }, {
 	        key: "copyCommandLineScript",
@@ -34670,9 +34686,25 @@
 	            }).join(" & ");
 	        }
 	    }, {
-	        key: "getReleasesList",
-	        value: function getReleasesList(props) {
-	            var upcomingReleases = props.upcomingReleases.upcomingReleases;
+	        key: "getFilteredReleases",
+	        value: function getFilteredReleases() {
+	            var upcomingReleases = this.props.upcomingReleases.upcomingReleases;
+	            var jira = this.props.upcomingReleases.jira;
+
+	            if (this.state.searchFlags & _searchFlags2.default.HideCompletedReleases) {
+	                upcomingReleases = upcomingReleases.filter(function (release) {
+	                    var jiraReleaseInformation = jira.find(function (jr) {
+	                        return jr.release === release.release;
+	                    });
+
+	                    if (!jiraReleaseInformation) return false;
+
+	                    return jiraReleaseInformation.tickets.some(function (ticket) {
+	                        return ["Closed", "Resolved"].indexOf(ticket.status) === -1;
+	                    });
+	                });
+	            }
+
 	            var releases = [{
 	                id: -1,
 	                name: ""
@@ -34710,6 +34742,13 @@
 	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.END_RELEASE_CHANGED, selectedValue);
 	        }
 	    }, {
+	        key: "onSearchFlagsChanged",
+	        value: function onSearchFlagsChanged(flags) {
+	            this.setState({
+	                searchFlags: flags
+	            });
+	        }
+	    }, {
 	        key: "render",
 	        value: function render() {
 	            var _this2 = this;
@@ -34723,7 +34762,7 @@
 	                    React.createElement(
 	                        "select",
 	                        { className: "form-control", onChange: this.handleReleaseSelection.bind(this) },
-	                        this.state.releases.map(function (release, index) {
+	                        this.getFilteredReleases().map(function (release, index) {
 	                            if (release.disabled) return React.createElement(
 	                                "option",
 	                                { key: index, value: release.name, disabled: "disabled" },
@@ -34982,6 +35021,24 @@
 
 /***/ },
 /* 185 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var SearchFlags = {
+	    ShowAll: 1,
+	    HideCompletedReleases: 2,
+	    HideResolvedTasks: 4,
+	    CombineTasks: 8
+	};
+
+	exports.default = SearchFlags;
+
+/***/ },
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35002,6 +35059,10 @@
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
+	var _searchFlags = __webpack_require__(185);
+
+	var _searchFlags2 = _interopRequireDefault(_searchFlags);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -35019,8 +35080,9 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StartReleaseSelector).call(this, props));
 
 	        _this.state = {
-	            versions: null,
-	            releases: _this.getReleasesList(props)
+	            releases: _this.getReleasesList(props),
+	            searchFlags: _searchFlags2.default.ShowAll,
+	            versions: null
 	        };
 	        return _this;
 	    }
@@ -35031,6 +35093,20 @@
 	            this.setState({
 	                releases: this.getReleasesList(newProps)
 	            });
+	        }
+	    }, {
+	        key: "getFilterActiveClass",
+	        value: function getFilterActiveClass(flags) {
+	            var active = false;
+	            var searchFlags = this.state.searchFlags;
+
+	            if (flags === _searchFlags2.default.ShowAll) {
+	                active = !(searchFlags & (_searchFlags2.default.HideCompletedReleases | _searchFlags2.default.HideResolvedTasks));
+	            } else {
+	                active = !!(searchFlags & flags);
+	            }
+
+	            return active ? "active" : "";
 	        }
 	    }, {
 	        key: "getReleasesList",
@@ -35045,7 +35121,7 @@
 
 	            var releasesWithPendingTickets = upcomingReleases.jira.filter(function (release) {
 	                return release.tickets.some(function (ticket) {
-	                    return ["Closed", "Released", "In QA"].indexOf(ticket.status) === -1;
+	                    return ["Closed", "Released"].indexOf(ticket.status) === -1;
 	                });
 	            });
 
@@ -35067,6 +35143,23 @@
 	            }
 
 	            return releases;
+	        }
+	    }, {
+	        key: "handleFilterChange",
+	        value: function handleFilterChange(filter) {
+	            var valueToSet = this.state.searchFlags;
+
+	            if (filter === _searchFlags2.default.ShowAll) {
+	                valueToSet &= ~_searchFlags2.default.HideCompletedReleases & ~_searchFlags2.default.HideResolvedTasks;
+	            } else {
+	                valueToSet ^= filter;
+	            }
+
+	            this.setState({
+	                searchFlags: valueToSet
+	            });
+
+	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SEARCH_FLAGS_CHANGED, valueToSet);
 	        }
 	    }, {
 	        key: "handleReleaseSelection",
@@ -35103,23 +35196,59 @@
 	                "div",
 	                null,
 	                React.createElement(
-	                    "select",
-	                    { className: "form-control", onChange: this.handleReleaseSelection.bind(this) },
-	                    this.state.releases.map(function (release, index) {
-	                        if (release.disabled) {
-	                            return React.createElement(
-	                                "option",
-	                                { key: index, value: release.name, disabled: "disabled" },
-	                                release.name
-	                            );
-	                        } else {
-	                            return React.createElement(
-	                                "option",
-	                                { key: index, value: release.name },
-	                                release.name
-	                            );
-	                        }
-	                    })
+	                    "div",
+	                    { className: "form-group" },
+	                    React.createElement(
+	                        "select",
+	                        { className: "form-control", onChange: this.handleReleaseSelection.bind(this) },
+	                        this.state.releases.map(function (release, index) {
+	                            if (release.disabled) {
+	                                return React.createElement(
+	                                    "option",
+	                                    { key: index, value: release.name, disabled: "disabled" },
+	                                    release.name
+	                                );
+	                            } else {
+	                                return React.createElement(
+	                                    "option",
+	                                    { key: index, value: release.name },
+	                                    release.name
+	                                );
+	                            }
+	                        })
+	                    )
+	                ),
+	                React.createElement(
+	                    "div",
+	                    { className: "form-group" },
+	                    React.createElement(
+	                        "div",
+	                        { className: "input-group" },
+	                        React.createElement(
+	                            "span",
+	                            { className: "input-group-btn" },
+	                            React.createElement(
+	                                "button",
+	                                { className: "btn btn-primary " + this.getFilterActiveClass(_searchFlags2.default.ShowAll), onClick: this.handleFilterChange.bind(this, _searchFlags2.default.ShowAll) },
+	                                "Show all"
+	                            ),
+	                            React.createElement(
+	                                "button",
+	                                { className: "btn btn-primary " + this.getFilterActiveClass(_searchFlags2.default.HideCompletedReleases), onClick: this.handleFilterChange.bind(this, _searchFlags2.default.HideCompletedReleases) },
+	                                "Hide completed releases"
+	                            ),
+	                            React.createElement(
+	                                "button",
+	                                { className: "btn btn-primary " + this.getFilterActiveClass(_searchFlags2.default.HideResolvedTasks), onClick: this.handleFilterChange.bind(this, _searchFlags2.default.HideResolvedTasks) },
+	                                "Hide resolved tasks"
+	                            ),
+	                            React.createElement(
+	                                "button",
+	                                { className: "btn btn-primary " + this.getFilterActiveClass(_searchFlags2.default.CombineTasks), onClick: this.handleFilterChange.bind(this, _searchFlags2.default.CombineTasks) },
+	                                "Combine tasks"
+	                            )
+	                        )
+	                    )
 	                ),
 	                React.createElement(
 	                    "h2",
@@ -35137,7 +35266,7 @@
 	exports.default = StartReleaseSelector;
 
 /***/ },
-/* 186 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35155,6 +35284,10 @@
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
 	var _globalEventEmitter = __webpack_require__(170);
+
+	var _searchFlags = __webpack_require__(185);
+
+	var _searchFlags2 = _interopRequireDefault(_searchFlags);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -35174,6 +35307,7 @@
 
 	        _this.state = {
 	            endReleaseName: null,
+	            searchFlags: _searchFlags2.default.ShowAll,
 	            releases: [],
 	            startReleaseName: null
 	        };
@@ -35186,9 +35320,11 @@
 	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentDidMount", this).call(this);
 
 	            this._onEndReleaseChanged = this.onEndReleaseChanged.bind(this);
+	            this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
 	            this._onStartReleaseChanged = this.onStartReleaseChanged.bind(this);
 
 	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.END_RELEASE_CHANGED, this._onEndReleaseChanged);
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
 	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.START_RELEASE_CHANGED, this._onStartReleaseChanged);
 	        }
 	    }, {
@@ -35197,7 +35333,19 @@
 	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentWillUnmount", this).call(this);
 
 	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.END_RELEASE_CHANGED, this._onEndReleaseChanged);
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
 	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.START_RELEASE_CHANGED, this._onStartReleaseChanged);
+	        }
+	    }, {
+	        key: "filterTickets",
+	        value: function filterTickets(tickets) {
+	            if (this.state.searchFlags & _searchFlags2.default.HideResolvedTasks) {
+	                tickets = tickets.filter(function (ticket) {
+	                    return ["Closed", "Resolved"].indexOf(ticket.status) === -1;
+	                });
+	            }
+
+	            return tickets;
 	        }
 	    }, {
 	        key: "findEpicByKey",
@@ -35205,6 +35353,43 @@
 	            return this.props.upcomingReleases.epics.find(function (epic) {
 	                return epic.ticketNumber === epicKey;
 	            });
+	        }
+	    }, {
+	        key: "getCombinedTicketList",
+	        value: function getCombinedTicketList() {
+	            var _this2 = this;
+
+	            var filteredReleases = this.getFilteredReleases();
+	            var filteredTicketsArray = filteredReleases.map(function (release) {
+	                return _this2.filterTickets(release.tickets);
+	            }).reduce(function (previous, current) {
+	                return previous.concat(current);
+	            }, []);
+	            var uniqueTicketsArray = [];
+	            filteredTicketsArray.forEach(function (ticket) {
+	                if (uniqueTicketsArray.findIndex(function (ut) {
+	                    return ut.ticketNumber === ticket.ticketNumber;
+	                }) !== -1) return;
+
+	                uniqueTicketsArray.push(ticket);
+	            });
+
+	            return uniqueTicketsArray;
+	        }
+	    }, {
+	        key: "getFilteredReleases",
+	        value: function getFilteredReleases() {
+	            var releases = this.state.releases;
+
+	            if (this.state.searchFlags & _searchFlags2.default.HideCompletedReleases) {
+	                releases = releases.filter(function (release) {
+	                    return release.tickets.some(function (ticket) {
+	                        return ["Closed", "Resolved"].indexOf(ticket.status) === -1;
+	                    });
+	                });
+	            }
+
+	            return releases;
 	        }
 	    }, {
 	        key: "onEndReleaseChanged",
@@ -35216,14 +35401,40 @@
 	            this.updateReleasesAndTicketsList(this.state.startReleaseName, name);
 	        }
 	    }, {
+	        key: "onSearchFlagsChanged",
+	        value: function onSearchFlagsChanged(flags) {
+	            this.setState({
+	                searchFlags: flags
+	            });
+	        }
+	    }, {
 	        key: "onStartReleaseChanged",
 	        value: function onStartReleaseChanged(release) {
 	            var releaseName = release;
 	            if (release === true) // this means it is a production release
 	                {
+	                    releaseName = null;
+
+	                    var productionVersions = this.props.upcomingReleases.productionVersions;
 	                    var upcomingReleases = this.props.upcomingReleases.upcomingReleases;
-	                    if (upcomingReleases.length > 0) {
-	                        releaseName = upcomingReleases[0].release;
+
+	                    // Finding the release name based on the versions
+
+	                    var _loop = function _loop() {
+	                        var currentRelease = upcomingReleases[releaseIndex];
+	                        var isMatch = productionVersions.every(function (pv) {
+	                            return currentRelease.projects.some(function (crpv) {
+	                                return crpv.name == pv.name && crpv.version == pv.version;
+	                            });
+	                        });
+
+	                        if (isMatch) {
+	                            releaseName = currentRelease.release;
+	                        }
+	                    };
+
+	                    for (var releaseIndex = upcomingReleases.length - 1; releaseIndex >= 0; releaseIndex--) {
+	                        _loop();
 	                    }
 	                }
 
@@ -35232,6 +35443,11 @@
 	            });
 
 	            this.updateReleasesAndTicketsList(releaseName, this.state.endReleaseName);
+	        }
+	    }, {
+	        key: "showCombinedList",
+	        value: function showCombinedList() {
+	            return !!(this.state.searchFlags & _searchFlags2.default.CombineTasks);
 	        }
 	    }, {
 	        key: "updateReleasesAndTicketsList",
@@ -35268,7 +35484,7 @@
 	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            return React.createElement(
 	                "div",
@@ -35282,7 +35498,7 @@
 	                        "Jira tickets"
 	                    ),
 	                    function () {
-	                        if (_this2.state.releases.length === 0) {
+	                        if (_this3.state.releases.length === 0) {
 	                            return React.createElement(
 	                                "p",
 	                                null,
@@ -35290,16 +35506,9 @@
 	                            );
 	                        }
 	                    }(),
-	                    this.state.releases.map(function (release, index) {
-	                        return React.createElement(
-	                            "div",
-	                            { key: index },
-	                            React.createElement(
-	                                "h2",
-	                                null,
-	                                release.release
-	                            ),
-	                            React.createElement(
+	                    function () {
+	                        if (_this3.showCombinedList()) {
+	                            return React.createElement(
 	                                "table",
 	                                { className: "table tickets-list" },
 	                                React.createElement(
@@ -35348,127 +35557,200 @@
 	                                React.createElement(
 	                                    "tbody",
 	                                    null,
-	                                    function () {
-	                                        if (!release.tickets || !release.tickets.length) {
-	                                            return React.createElement(
+	                                    _this3.renderTicketsList(_this3.getCombinedTicketList())
+	                                )
+	                            );
+	                        } else {
+	                            return _this3.getFilteredReleases().map(function (release, index) {
+	                                return React.createElement(
+	                                    "div",
+	                                    { key: index },
+	                                    React.createElement(
+	                                        "h2",
+	                                        null,
+	                                        release.release
+	                                    ),
+	                                    React.createElement(
+	                                        "table",
+	                                        { className: "table tickets-list" },
+	                                        React.createElement(
+	                                            "thead",
+	                                            null,
+	                                            React.createElement(
 	                                                "tr",
 	                                                null,
 	                                                React.createElement(
-	                                                    "td",
-	                                                    { colSpan: "7" },
-	                                                    React.createElement(
-	                                                        "p",
-	                                                        null,
-	                                                        "No JIRA tickets found for this release."
-	                                                    )
+	                                                    "th",
+	                                                    { className: "ticket-number" },
+	                                                    "#"
+	                                                ),
+	                                                React.createElement(
+	                                                    "th",
+	                                                    { className: "ticket-summary" },
+	                                                    "Summary"
+	                                                ),
+	                                                React.createElement(
+	                                                    "th",
+	                                                    { className: "ticket-epic" },
+	                                                    "Epic"
+	                                                ),
+	                                                React.createElement(
+	                                                    "th",
+	                                                    { className: "ticket-tags" },
+	                                                    "Git tags"
+	                                                ),
+	                                                React.createElement(
+	                                                    "th",
+	                                                    { className: "ticket-date" },
+	                                                    "Date"
+	                                                ),
+	                                                React.createElement(
+	                                                    "th",
+	                                                    { className: "ticket-status" },
+	                                                    "Status"
+	                                                ),
+	                                                React.createElement(
+	                                                    "th",
+	                                                    { className: "ticket-author" },
+	                                                    "Author"
 	                                                )
-	                                            );
-	                                        }
-
-	                                        return release.tickets.map(function (ticket, ticketIndex) {
-	                                            return React.createElement(
-	                                                "tr",
-	                                                { key: ticketIndex },
-	                                                React.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    ticketIndex + 1
-	                                                ),
-	                                                React.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    React.createElement(
-	                                                        "a",
-	                                                        { href: ticket.url, target: "_blank", rel: "external" },
-	                                                        ticket.ticketNumber,
-	                                                        ": ",
-	                                                        ticket.message
-	                                                    )
-	                                                ),
-	                                                React.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    function () {
-	                                                        if (ticket.epicKey) {
-	                                                            var epic = _this2.findEpicByKey(ticket.epicKey);
-	                                                            return React.createElement(
-	                                                                "a",
-	                                                                { href: epic.url, target: "_blank", rel: "external" },
-	                                                                epic.ticketNumber,
-	                                                                ": ",
-	                                                                epic.message
-	                                                            );
-	                                                        }
-	                                                    }()
-	                                                ),
-	                                                React.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    React.createElement(
-	                                                        "ul",
-	                                                        { className: "list-unstyled" },
-	                                                        (ticket.gitTags || []).map(function (tag, tagIndex) {
-	                                                            return React.createElement(
-	                                                                "li",
-	                                                                { key: tagIndex },
-	                                                                tag
-	                                                            );
-	                                                        })
-	                                                    )
-	                                                ),
-	                                                React.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    ticket.dateTime.toLocaleString("en-GB")
-	                                                ),
-	                                                React.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    function () {
-	                                                        switch (ticket.status) {
-	                                                            case "Dev Ready":
-	                                                            case "Dev Complete":
-	                                                                return React.createElement(
-	                                                                    "span",
-	                                                                    { className: "label label-danger" },
-	                                                                    ticket.status
-	                                                                );
-	                                                            case "In QA":
-	                                                                return React.createElement(
-	                                                                    "span",
-	                                                                    { className: "label label-warning" },
-	                                                                    ticket.status
-	                                                                );
-	                                                            case "QA Complete":
-	                                                            case "Resolved":
-	                                                                return React.createElement(
-	                                                                    "span",
-	                                                                    { className: "label label-success" },
-	                                                                    ticket.status
-	                                                                );
-	                                                            default:
-	                                                                return React.createElement(
-	                                                                    "span",
-	                                                                    { className: "label label-default" },
-	                                                                    ticket.status
-	                                                                );
-	                                                        }
-	                                                    }()
-	                                                ),
-	                                                React.createElement(
-	                                                    "td",
-	                                                    null,
-	                                                    ticket.author
-	                                                )
-	                                            );
-	                                        });
-	                                    }()
-	                                )
-	                            )
-	                        );
-	                    })
+	                                            )
+	                                        ),
+	                                        React.createElement(
+	                                            "tbody",
+	                                            null,
+	                                            _this3.renderTicketsList(release.tickets)
+	                                        )
+	                                    )
+	                                );
+	                            });
+	                        }
+	                    }()
 	                )
 	            );
+	        }
+	    }, {
+	        key: "renderTicketsList",
+	        value: function renderTicketsList(tickets) {
+	            var _this4 = this;
+
+	            var filteredTickets = this.filterTickets(tickets);
+
+	            if (!this.showCombinedList() && !filteredTickets.length) {
+	                return React.createElement(
+	                    "tr",
+	                    null,
+	                    React.createElement(
+	                        "td",
+	                        { colSpan: "7" },
+	                        React.createElement(
+	                            "p",
+	                            null,
+	                            "No JIRA tickets found for this release."
+	                        )
+	                    )
+	                );
+	            }
+
+	            return filteredTickets.map(function (ticket, ticketIndex) {
+	                return React.createElement(
+	                    "tr",
+	                    { key: ticketIndex },
+	                    React.createElement(
+	                        "td",
+	                        null,
+	                        ticketIndex + 1
+	                    ),
+	                    React.createElement(
+	                        "td",
+	                        null,
+	                        React.createElement(
+	                            "a",
+	                            { href: ticket.url, target: "_blank", rel: "external" },
+	                            ticket.ticketNumber,
+	                            ": ",
+	                            ticket.message
+	                        )
+	                    ),
+	                    React.createElement(
+	                        "td",
+	                        null,
+	                        function () {
+	                            if (ticket.epicKey) {
+	                                var epic = _this4.findEpicByKey(ticket.epicKey);
+	                                return React.createElement(
+	                                    "a",
+	                                    { href: epic.url, target: "_blank", rel: "external" },
+	                                    epic.ticketNumber,
+	                                    ": ",
+	                                    epic.message
+	                                );
+	                            }
+	                        }()
+	                    ),
+	                    React.createElement(
+	                        "td",
+	                        null,
+	                        React.createElement(
+	                            "ul",
+	                            { className: "list-unstyled" },
+	                            (ticket.gitTags || []).map(function (tag, tagIndex) {
+	                                return React.createElement(
+	                                    "li",
+	                                    { key: tagIndex },
+	                                    tag
+	                                );
+	                            })
+	                        )
+	                    ),
+	                    React.createElement(
+	                        "td",
+	                        null,
+	                        ticket.dateTime.toLocaleString("en-GB")
+	                    ),
+	                    React.createElement(
+	                        "td",
+	                        null,
+	                        function () {
+	                            switch (ticket.status) {
+	                                case "In Progress":
+	                                case "In PO Review":
+	                                case "Dev Ready":
+	                                case "Dev Complete":
+	                                    return React.createElement(
+	                                        "span",
+	                                        { className: "label label-danger" },
+	                                        ticket.status
+	                                    );
+	                                case "In QA":
+	                                    return React.createElement(
+	                                        "span",
+	                                        { className: "label label-warning" },
+	                                        ticket.status
+	                                    );
+	                                case "QA Complete":
+	                                case "Resolved":
+	                                    return React.createElement(
+	                                        "span",
+	                                        { className: "label label-success" },
+	                                        ticket.status
+	                                    );
+	                                default:
+	                                    return React.createElement(
+	                                        "span",
+	                                        { className: "label label-default" },
+	                                        ticket.status
+	                                    );
+	                            }
+	                        }()
+	                    ),
+	                    React.createElement(
+	                        "td",
+	                        null,
+	                        ticket.author
+	                    )
+	                );
+	            });
 	        }
 	    }]);
 
@@ -35478,7 +35760,7 @@
 	exports.default = TicketsList;
 
 /***/ },
-/* 187 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35493,7 +35775,7 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _environments = __webpack_require__(188);
+	var _environments = __webpack_require__(189);
 
 	var _environments2 = _interopRequireDefault(_environments);
 
@@ -35737,7 +36019,7 @@
 	exports.default = Reporting;
 
 /***/ },
-/* 188 */
+/* 189 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -35750,7 +36032,7 @@
 	};
 
 /***/ },
-/* 189 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

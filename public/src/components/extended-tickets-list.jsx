@@ -1,5 +1,6 @@
 import BaseComponent from "./base-component";
 import {globalEventEmitter, Events} from "../utils/global-event-emitter";
+import SearchFlags from "../models/search-flags"
 
 export default class TicketsList extends BaseComponent
 {
@@ -10,6 +11,7 @@ export default class TicketsList extends BaseComponent
         this.state =
         {
             endReleaseName: null,
+            searchFlags: SearchFlags.ShowAll,
             releases: [],
             startReleaseName: null
         };
@@ -20,9 +22,11 @@ export default class TicketsList extends BaseComponent
         super.componentDidMount();
 
         this._onEndReleaseChanged = this.onEndReleaseChanged.bind(this);
+        this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
         this._onStartReleaseChanged = this.onStartReleaseChanged.bind(this);
 
         globalEventEmitter.addListener(Events.END_RELEASE_CHANGED, this._onEndReleaseChanged);
+        globalEventEmitter.addListener(Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
         globalEventEmitter.addListener(Events.START_RELEASE_CHANGED, this._onStartReleaseChanged);
     }
 
@@ -31,12 +35,54 @@ export default class TicketsList extends BaseComponent
         super.componentWillUnmount();
 
         globalEventEmitter.removeListener(Events.END_RELEASE_CHANGED, this._onEndReleaseChanged);
+        globalEventEmitter.removeListener(Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
         globalEventEmitter.removeListener(Events.START_RELEASE_CHANGED, this._onStartReleaseChanged);
+    }
+
+    filterTickets(tickets)
+    {
+        if (this.state.searchFlags & SearchFlags.HideResolvedTasks)
+        {
+            tickets = tickets.filter(ticket => ["Closed", "Resolved"].indexOf(ticket.status) === -1);
+        }
+
+        return tickets;
     }
 
     findEpicByKey(epicKey)
     {
         return this.props.upcomingReleases.epics.find(epic => epic.ticketNumber === epicKey);
+    }
+
+    getCombinedTicketList()
+    {
+        let filteredReleases = this.getFilteredReleases();
+        let filteredTicketsArray = filteredReleases.map(release => this.filterTickets(release.tickets)).reduce((previous, current) => previous.concat(current), []);
+        let uniqueTicketsArray = [];
+        filteredTicketsArray.forEach(ticket =>
+        {
+            if (uniqueTicketsArray.findIndex(ut => ut.ticketNumber === ticket.ticketNumber) !== -1)
+                return;
+
+            uniqueTicketsArray.push(ticket);
+        });
+
+        return uniqueTicketsArray;
+    }
+
+    getFilteredReleases()
+    {
+        let releases = this.state.releases;
+
+        if (this.state.searchFlags & SearchFlags.HideCompletedReleases)
+        {
+            releases = releases.filter(release =>
+            {
+                return release.tickets.some(ticket => ["Closed", "Resolved"].indexOf(ticket.status) === -1);
+            });
+        }
+
+        return releases;
     }
 
     onEndReleaseChanged(name)
@@ -48,16 +94,38 @@ export default class TicketsList extends BaseComponent
 
         this.updateReleasesAndTicketsList(this.state.startReleaseName, name);
     }
+    
+    onSearchFlagsChanged(flags)
+    {
+        this.setState(
+        {
+            searchFlags: flags
+        });
+    }
 
     onStartReleaseChanged(release)
     {
         let releaseName = release;
         if (release === true) // this means it is a production release
         {
+            releaseName = null;
+
+            let productionVersions = this.props.upcomingReleases.productionVersions;
             let upcomingReleases = this.props.upcomingReleases.upcomingReleases;
-            if (upcomingReleases.length > 0)
+
+            // Finding the release name based on the versions
+            for (var releaseIndex = upcomingReleases.length - 1; releaseIndex >= 0; releaseIndex--)
             {
-                releaseName = upcomingReleases[0].release;
+                let currentRelease = upcomingReleases[releaseIndex];
+                let isMatch = productionVersions.every(pv =>
+                {
+                    return currentRelease.projects.some(crpv => crpv.name == pv.name && crpv.version == pv.version);
+                });
+
+                if (isMatch)
+                {
+                    releaseName = currentRelease.release;
+                }
             }
         }
 
@@ -67,6 +135,11 @@ export default class TicketsList extends BaseComponent
         });
 
         this.updateReleasesAndTicketsList(releaseName, this.state.endReleaseName);
+    }
+
+    showCombinedList()
+    {
+        return !!(this.state.searchFlags & SearchFlags.CombineTasks);
     }
 
     updateReleasesAndTicketsList(startReleaseName, endReleaseName)
@@ -154,11 +227,11 @@ export default class TicketsList extends BaseComponent
                         })()
                     }
                     {
-                        this.state.releases.map((release, index) =>
+                        (() =>
                         {
-                            return (
-                                <div key={index}>
-                                    <h2>{release.release}</h2>
+                            if (this.showCombinedList())
+                            {
+                                return (
                                     <table className="table tickets-list">
                                         <thead>
                                         <tr>
@@ -172,85 +245,118 @@ export default class TicketsList extends BaseComponent
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        {
-                                            (() =>
                                             {
-                                                if (!release.tickets || !release.tickets.length)
-                                                {
-                                                    return (
-                                                        <tr>
-                                                            <td colSpan="7">
-                                                                <p>No JIRA tickets found for this release.</p>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                }
-
-                                                return release.tickets.map((ticket, ticketIndex) =>
-                                                {
-                                                    return (
-                                                        <tr key={ticketIndex}>
-                                                            <td>{ticketIndex + 1}</td>
-                                                            <td><a href={ticket.url} target="_blank" rel="external">{ticket.ticketNumber}: {ticket.message}</a></td>
-                                                            <td>
-                                                                {
-                                                                    (() =>
-                                                                    {
-                                                                        if (ticket.epicKey)
-                                                                        {
-                                                                            let epic = this.findEpicByKey(ticket.epicKey);
-                                                                            return <a href={epic.url} target="_blank" rel="external">{epic.ticketNumber}: {epic.message}</a>
-                                                                        }
-                                                                    })()
-                                                                }
-                                                            </td>
-                                                            <td>
-                                                                <ul className="list-unstyled">
-                                                                    {
-                                                                        (ticket.gitTags||[]).map((tag, tagIndex) =>
-                                                                        {
-                                                                            return (
-                                                                                <li key={tagIndex}>{tag}</li>
-                                                                            );
-                                                                        })
-                                                                    }
-                                                                </ul>
-                                                            </td>
-                                                            <td>{ticket.dateTime.toLocaleString("en-GB")}</td>
-                                                            <td>
-                                                                {
-                                                                    (() =>
-                                                                    {
-                                                                        switch (ticket.status)
-                                                                        {
-                                                                            case "Dev Ready":
-                                                                            case "Dev Complete":
-                                                                                return <span className="label label-danger">{ticket.status}</span>;
-                                                                            case "In QA":
-                                                                                return <span className="label label-warning">{ticket.status}</span>;
-                                                                            case "QA Complete":
-                                                                            case "Resolved":
-                                                                                return <span className="label label-success">{ticket.status}</span>;
-                                                                            default:
-                                                                                return <span className="label label-default">{ticket.status}</span>;
-                                                                        }
-                                                                    })()
-                                                                }
-                                                            </td>
-                                                            <td>{ticket.author}</td>
-                                                        </tr>
-                                                    );
-                                                });
-                                            })()
-                                        }
+                                                this.renderTicketsList(this.getCombinedTicketList())
+                                            }
                                         </tbody>
                                     </table>
-                                </div>
-                            )
-                        })
+                                );
+                            }
+                            else
+                            {
+                                return this.getFilteredReleases().map((release, index) =>
+                                {
+                                    return (
+                                        <div key={index}>
+                                            <h2>{release.release}</h2>
+                                            <table className="table tickets-list">
+                                                <thead>
+                                                <tr>
+                                                    <th className="ticket-number">#</th>
+                                                    <th className="ticket-summary">Summary</th>
+                                                    <th className="ticket-epic">Epic</th>
+                                                    <th className="ticket-tags">Git tags</th>
+                                                    <th className="ticket-date">Date</th>
+                                                    <th className="ticket-status">Status</th>
+                                                    <th className="ticket-author">Author</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {this.renderTicketsList(release.tickets)}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    );
+                                });
+                            }
+                        })()
                     }
                 </div>
             </div>
         );
+    }
+
+    renderTicketsList(tickets)
+    {
+        let filteredTickets = this.filterTickets(tickets);
+
+        if (!this.showCombinedList() && !filteredTickets.length)
+        {
+            return (
+                <tr>
+                    <td colSpan="7">
+                        <p>No JIRA tickets found for this release.</p>
+                    </td>
+                </tr>
+            );
+        }
+
+        return filteredTickets.map((ticket, ticketIndex) =>
+        {
+            return (
+                <tr key={ticketIndex}>
+                    <td>{ticketIndex + 1}</td>
+                    <td><a href={ticket.url} target="_blank" rel="external">{ticket.ticketNumber}: {ticket.message}</a></td>
+                    <td>
+                        {
+                            (() =>
+                            {
+                                if (ticket.epicKey)
+                                {
+                                    let epic = this.findEpicByKey(ticket.epicKey);
+                                    return <a href={epic.url} target="_blank" rel="external">{epic.ticketNumber}: {epic.message}</a>
+                                }
+                            })()
+                        }
+                    </td>
+                    <td>
+                        <ul className="list-unstyled">
+                            {
+                                (ticket.gitTags||[]).map((tag, tagIndex) =>
+                                {
+                                    return (
+                                        <li key={tagIndex}>{tag}</li>
+                                    );
+                                })
+                            }
+                        </ul>
+                    </td>
+                    <td>{ticket.dateTime.toLocaleString("en-GB")}</td>
+                    <td>
+                        {
+                            (() =>
+                            {
+                                switch (ticket.status)
+                                {
+                                    case "In Progress":
+                                    case "In PO Review":
+                                    case "Dev Ready":
+                                    case "Dev Complete":
+                                        return <span className="label label-danger">{ticket.status}</span>;
+                                    case "In QA":
+                                        return <span className="label label-warning">{ticket.status}</span>;
+                                    case "QA Complete":
+                                    case "Resolved":
+                                        return <span className="label label-success">{ticket.status}</span>;
+                                    default:
+                                        return <span className="label label-default">{ticket.status}</span>;
+                                }
+                            })()
+                        }
+                    </td>
+                    <td>{ticket.author}</td>
+                </tr>
+            );
+        });
     }
 }

@@ -2,6 +2,7 @@ import BaseComponent from "./base-component";
 import copyContent from "../utils/copy-content";
 import { globalEventEmitter, Events } from "../utils/global-event-emitter";
 import ProjectVersionsList from "./project-versions-list.jsx";
+import SearchFlags from "../models/search-flags";
 
 export default class EndReleaseSelector extends BaseComponent
 {
@@ -11,17 +12,25 @@ export default class EndReleaseSelector extends BaseComponent
 
         this.state =
         {
-            versions: null,
-            releases: this.getReleasesList(props)
+            searchFlags: SearchFlags.ShowAll,
+            versions: null
         };
     }
 
-    componentWillReceiveProps(newProps)
+    componentDidMount()
     {
-        this.setState(
-        {
-            releases: this.getReleasesList(newProps)
-        });
+        super.componentDidMount();
+
+        this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
+
+        globalEventEmitter.addListener(Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
+    }
+
+    componentWillUnmount()
+    {
+        super.componentWillUnmount();
+
+        globalEventEmitter.removeListener(Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
     }
 
     copyCommandLineScript()
@@ -46,11 +55,27 @@ export default class EndReleaseSelector extends BaseComponent
             })
             .join(" & ");
     }
-    
-    getReleasesList(props)
+
+    getFilteredReleases()
     {
-        let upcomingReleases = props.upcomingReleases.upcomingReleases;
-        let releases = [
+        let upcomingReleases = this.props.upcomingReleases.upcomingReleases;
+        let jira = this.props.upcomingReleases.jira;
+
+        if (this.state.searchFlags & SearchFlags.HideCompletedReleases)
+        {
+            upcomingReleases = upcomingReleases.filter(release =>
+            {
+                let jiraReleaseInformation = jira.find(jr => jr.release === release.release);
+
+                if (!jiraReleaseInformation)
+                    return false;
+
+                return jiraReleaseInformation.tickets.some(ticket => ["Closed", "Resolved"].indexOf(ticket.status) === -1);
+            });
+        }
+
+        let releases =
+        [
             {
                 id: -1,
                 name: ""
@@ -91,6 +116,14 @@ export default class EndReleaseSelector extends BaseComponent
         globalEventEmitter.emit(Events.END_RELEASE_CHANGED, selectedValue);
     }
 
+    onSearchFlagsChanged(flags)
+    {
+        this.setState(
+        {
+            searchFlags: flags
+        });
+    }
+
     render()
     {
         return (
@@ -98,7 +131,7 @@ export default class EndReleaseSelector extends BaseComponent
                 <div className="form-group">
                     <select className="form-control" onChange={this.handleReleaseSelection.bind(this)}>
                         {
-                            this.state.releases.map((release, index) =>
+                            this.getFilteredReleases().map((release, index) =>
                             {
                                 if (release.disabled)
                                     return <option key={index} value={release.name} disabled="disabled">{release.name}</option>;

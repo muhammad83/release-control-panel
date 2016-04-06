@@ -1,6 +1,7 @@
 import BaseComponent from "./base-component";
 import {globalEventEmitter, Events} from "../utils/global-event-emitter";
 import ProjectVersionsList from "./project-versions-list.jsx";
+import SearchFlags from "../models/search-flags";
 
 export default class StartReleaseSelector extends BaseComponent
 {
@@ -10,8 +11,9 @@ export default class StartReleaseSelector extends BaseComponent
 
         this.state =
         {
-            versions: null,
-            releases: this.getReleasesList(props)
+            releases: this.getReleasesList(props),
+            searchFlags: SearchFlags.ShowAll,
+            versions: null
         };
     }
 
@@ -22,7 +24,24 @@ export default class StartReleaseSelector extends BaseComponent
             releases: this.getReleasesList(newProps)
         });
     }
-    
+
+    getFilterActiveClass(flags)
+    {
+        let active = false;
+        let searchFlags = this.state.searchFlags;
+
+        if (flags === SearchFlags.ShowAll)
+        {
+            active = !(searchFlags & (SearchFlags.HideCompletedReleases | SearchFlags.HideResolvedTasks));
+        }
+        else
+        {
+            active = !!(searchFlags & flags);
+        }
+
+        return active ? "active" : "";
+    }
+
     getReleasesList(props)
     {
         let upcomingReleases = props.upcomingReleases;
@@ -38,7 +57,7 @@ export default class StartReleaseSelector extends BaseComponent
 
         let releasesWithPendingTickets = upcomingReleases.jira.filter(release =>
         {
-            return release.tickets.some(ticket => ["Closed", "Released", "In QA"].indexOf(ticket.status) === -1);
+            return release.tickets.some(ticket => ["Closed", "Released"].indexOf(ticket.status) === -1);
         });
 
         if (releasesWithPendingTickets.length > 0)
@@ -51,7 +70,7 @@ export default class StartReleaseSelector extends BaseComponent
 
             releasesWithPendingTickets.forEach(rwpt =>
             {
-                var releaseData = upcomingReleases.upcomingReleases.find(ur => ur.release === rwpt.release);
+                let releaseData = upcomingReleases.upcomingReleases.find(ur => ur.release === rwpt.release);
                 releases.push(
                 {
                     name: releaseData.release,
@@ -61,6 +80,27 @@ export default class StartReleaseSelector extends BaseComponent
         }
 
         return releases;
+    }
+
+    handleFilterChange(filter)
+    {
+        let valueToSet = this.state.searchFlags;
+
+        if (filter === SearchFlags.ShowAll)
+        {
+            valueToSet &= (~SearchFlags.HideCompletedReleases) & (~SearchFlags.HideResolvedTasks);
+        }
+        else
+        {
+            valueToSet ^= filter;
+        }
+
+        this.setState(
+        {
+            searchFlags: valueToSet
+        });
+
+        globalEventEmitter.emit(Events.SEARCH_FLAGS_CHANGED, valueToSet);
     }
 
     handleReleaseSelection(event)
@@ -99,22 +139,34 @@ export default class StartReleaseSelector extends BaseComponent
     {
         return (
             <div>
-                <select className="form-control" onChange={this.handleReleaseSelection.bind(this)}>
-                    {
-                        this.state.releases.map((release, index) =>
+                <div className="form-group">
+                    <select className="form-control" onChange={this.handleReleaseSelection.bind(this)}>
                         {
-                            if (release.disabled) {
-                                return (
-                                    <option key={index} value={release.name} disabled="disabled">{release.name}</option>
-                                );
-                            } else {
-                                return (
-                                    <option key={index} value={release.name}>{release.name}</option>
-                                );
-                            }
-                        })
-                    }
-                </select>
+                            this.state.releases.map((release, index) =>
+                            {
+                                if (release.disabled) {
+                                    return (
+                                        <option key={index} value={release.name} disabled="disabled">{release.name}</option>
+                                    );
+                                } else {
+                                    return (
+                                        <option key={index} value={release.name}>{release.name}</option>
+                                    );
+                                }
+                            })
+                        }
+                    </select>
+                </div>
+                <div className="form-group">
+                    <div className="input-group">
+                        <span className="input-group-btn">
+                            <button className={`btn btn-primary ${this.getFilterActiveClass(SearchFlags.ShowAll)}`} onClick={this.handleFilterChange.bind(this, SearchFlags.ShowAll)}>Show all</button>
+                            <button className={`btn btn-primary ${this.getFilterActiveClass(SearchFlags.HideCompletedReleases)}`} onClick={this.handleFilterChange.bind(this, SearchFlags.HideCompletedReleases)}>Hide completed releases</button>
+                            <button className={`btn btn-primary ${this.getFilterActiveClass(SearchFlags.HideResolvedTasks)}`} onClick={this.handleFilterChange.bind(this, SearchFlags.HideResolvedTasks)}>Hide resolved tasks</button>
+                            <button className={`btn btn-primary ${this.getFilterActiveClass(SearchFlags.CombineTasks)}`} onClick={this.handleFilterChange.bind(this, SearchFlags.CombineTasks)}>Combine tasks</button>
+                        </span>
+                    </div>
+                </div>
                 <h2 style={{ marginTop: "2.55em" }}>From versions</h2>
                 <ProjectVersionsList projects={this.state.versions} />
             </div>
