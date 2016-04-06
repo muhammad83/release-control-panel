@@ -62,7 +62,7 @@
 
 	var _reactDom = __webpack_require__(190);
 
-	var _configRepository = __webpack_require__(168);
+	var _configRepository = __webpack_require__(164);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -194,15 +194,11 @@
 
 	var _notifications2 = _interopRequireDefault(_notifications);
 
-	var _projectDetails = __webpack_require__(172);
-
-	var _projectDetails2 = _interopRequireDefault(_projectDetails);
-
-	var _projectsList = __webpack_require__(179);
+	var _projectsList = __webpack_require__(172);
 
 	var _projectsList2 = _interopRequireDefault(_projectsList);
 
-	var _releases = __webpack_require__(180);
+	var _releases = __webpack_require__(173);
 
 	var _releases2 = _interopRequireDefault(_releases);
 
@@ -217,6 +213,8 @@
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	//import ProjectDetails from "./project-details.jsx";
+
 
 	var App = function (_BaseComponent) {
 	    _inherits(App, _BaseComponent);
@@ -251,12 +249,14 @@
 	            var Child = undefined;
 	            var childProps = {};
 
-	            if (/\/project\/(.*)/.test(this.state.route)) {
-	                Child = _projectDetails2.default;
-	                childProps = {
-	                    projectName: /\/project\/(.*)/.exec(this.state.route)[1]
-	                };
-	            } else if (this.state.route == "/releases") {
+	            // if (/\/project\/(.*)/.test(this.state.route))
+	            // {
+	            //     Child = ProjectDetails;
+	            //     childProps = {
+	            //         projectName: /\/project\/(.*)/.exec(this.state.route)[1]
+	            //     };
+	            // }
+	            if (this.state.route == "/releases") {
 	                Child = _releases2.default;
 	            } else if (this.state.route == "/reporting") {
 	                Child = _reporting2.default;
@@ -20094,31 +20094,6 @@
 	                            ),
 	                            React.createElement(
 	                                "li",
-	                                { className: "dropdown" },
-	                                React.createElement(
-	                                    "a",
-	                                    { href: "", className: "dropdown-toggle", "data-toggle": "dropdown", role: "button", "aria-haspopup": "true", "aria-expanded": "false" },
-	                                    "Projects ",
-	                                    React.createElement("span", { className: "caret" })
-	                                ),
-	                                React.createElement(
-	                                    "ul",
-	                                    { className: "dropdown-menu" },
-	                                    this.state.projects.map(function (project, projectIndex) {
-	                                        return React.createElement(
-	                                            "li",
-	                                            { key: projectIndex },
-	                                            React.createElement(
-	                                                "a",
-	                                                { href: "#/project/" + project.name },
-	                                                project.name
-	                                            )
-	                                        );
-	                                    })
-	                                )
-	                            ),
-	                            React.createElement(
-	                                "li",
 	                                null,
 	                                React.createElement(
 	                                    "a",
@@ -20160,23 +20135,11 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _q = __webpack_require__(164);
-
-	var _q2 = _interopRequireDefault(_q);
-
-	var _project = __webpack_require__(166);
-
-	var _project2 = _interopRequireDefault(_project);
-
-	var _baseRepository = __webpack_require__(167);
+	var _baseRepository = __webpack_require__(163);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
-	var _configRepository = __webpack_require__(168);
+	var _configRepository = __webpack_require__(164);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20204,52 +20167,9 @@
 	    }
 
 	    _createClass(ProjectsRepository, [{
-	        key: "getCurrentVersions",
-	        value: function getCurrentVersions() {
-	            var _this2 = this;
-
-	            var deferred = _q2.default.defer();
-
-	            var request = _jquery2.default.get("/current-versions").done(function (data) {
-	                deferred.resolve(data);
-	            }).fail(function (error) {
-	                deferred.reject(_this2.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
 	        key: "getProjects",
 	        value: function getProjects() {
 	            return _configRepository.configRepository.getProjects();
-	        }
-	    }, {
-	        key: "getUpcomingReleases",
-	        value: function getUpcomingReleases() {
-	            var _this3 = this;
-
-	            var deferred = _q2.default.defer();
-	            var projects = this.getProjects().map(function (p) {
-	                return p.name;
-	            });
-
-	            var request = _jquery2.default.get("/releases?timestamp=" + +new Date()).done(function (data) {
-	                var filteredRelases = data.map(function (r) {
-	                    r.applications = r.applications.filter(function (a) {
-	                        return projects.indexOf(a.name) !== -1;
-	                    });
-	                    return r;
-	                });
-	                deferred.resolve(filteredRelases);
-	            }).fail(function (error) {
-	                deferred.reject(_this3.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
 	        }
 	    }], [{
 	        key: "instance",
@@ -20269,6 +20189,161 @@
 
 /***/ },
 /* 163 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var BaseRepository = function () {
+	    function BaseRepository() {
+	        _classCallCheck(this, BaseRepository);
+
+	        this.requestManager = null;
+	    }
+
+	    _createClass(BaseRepository, [{
+	        key: "processRequestFailure",
+	        value: function processRequestFailure(errorResponse) {
+	            var data = {};
+
+	            if (errorResponse.responseText) {
+	                try {
+	                    data = JSON.parse(errorResponse.responseText);
+	                } catch (ex) {}
+	            }
+
+	            data.status = errorResponse.status;
+
+	            return data;
+	        }
+	    }, {
+	        key: "safeMonitorRequest",
+	        value: function safeMonitorRequest(request) {
+	            if (this.requestManager) {
+	                this.requestManager.monitorRequest(request);
+	            }
+	        }
+	    }, {
+	        key: "setRequestManager",
+	        value: function setRequestManager(manager) {
+	            this.requestManager = manager;
+	        }
+	    }]);
+
+	    return BaseRepository;
+	}();
+
+	exports.default = BaseRepository;
+
+/***/ },
+/* 164 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.configRepository = exports.ConfigRepository = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _jquery = __webpack_require__(165);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _q = __webpack_require__(166);
+
+	var _q2 = _interopRequireDefault(_q);
+
+	var _project = __webpack_require__(168);
+
+	var _project2 = _interopRequireDefault(_project);
+
+	var _baseRepository = __webpack_require__(163);
+
+	var _baseRepository2 = _interopRequireDefault(_baseRepository);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
+	var ConfigRepository = exports.ConfigRepository = function (_BaseRepository) {
+	    _inherits(ConfigRepository, _BaseRepository);
+
+	    function ConfigRepository(enforcer) {
+	        _classCallCheck(this, ConfigRepository);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ConfigRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton";
+	        }
+
+	        _this.ciBuildUrl = "";
+	        _this.projects = [];
+	        return _this;
+	    }
+
+	    _createClass(ConfigRepository, [{
+	        key: "getProjects",
+	        value: function getProjects() {
+	            return this.projects;
+	        }
+	    }, {
+	        key: "loadConfig",
+	        value: function loadConfig() {
+	            var _this2 = this;
+
+	            var deferred = _q2.default.defer();
+
+	            var request = _jquery2.default.get("/config").done(function (config) {
+	                _this2.ciBuildUrl = config.ciBuildUrl;
+	                _this2.projects = config.projectNames.map(function (projectName) {
+	                    return new _project2.default(projectName);
+	                });
+
+	                deferred.resolve(config);
+	            }).fail(function (error) {
+	                deferred.reject(_this2.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new ConfigRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
+	        }
+	    }]);
+
+	    return ConfigRepository;
+	}(_baseRepository2.default);
+
+	var configRepository = exports.configRepository = ConfigRepository.instance;
+
+/***/ },
+/* 165 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -30105,7 +30180,7 @@
 
 
 /***/ },
-/* 164 */
+/* 166 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process, setImmediate) {// vim:ts=4:sts=4:sw=4:
@@ -32157,10 +32232,10 @@
 
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(165).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(167).setImmediate))
 
 /***/ },
-/* 165 */
+/* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(6).nextTick;
@@ -32239,10 +32314,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(165).setImmediate, __webpack_require__(165).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(167).setImmediate, __webpack_require__(167).clearImmediate))
 
 /***/ },
-/* 166 */
+/* 168 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -32334,161 +32409,6 @@
 	}();
 
 	exports.default = Project;
-
-/***/ },
-/* 167 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var BaseRepository = function () {
-	    function BaseRepository() {
-	        _classCallCheck(this, BaseRepository);
-
-	        this.requestManager = null;
-	    }
-
-	    _createClass(BaseRepository, [{
-	        key: "processRequestFailure",
-	        value: function processRequestFailure(errorResponse) {
-	            var data = {};
-
-	            if (errorResponse.responseText) {
-	                try {
-	                    data = JSON.parse(errorResponse.responseText);
-	                } catch (ex) {}
-	            }
-
-	            data.status = errorResponse.status;
-
-	            return data;
-	        }
-	    }, {
-	        key: "safeMonitorRequest",
-	        value: function safeMonitorRequest(request) {
-	            if (this.requestManager) {
-	                this.requestManager.monitorRequest(request);
-	            }
-	        }
-	    }, {
-	        key: "setRequestManager",
-	        value: function setRequestManager(manager) {
-	            this.requestManager = manager;
-	        }
-	    }]);
-
-	    return BaseRepository;
-	}();
-
-	exports.default = BaseRepository;
-
-/***/ },
-/* 168 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.configRepository = exports.ConfigRepository = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _q = __webpack_require__(164);
-
-	var _q2 = _interopRequireDefault(_q);
-
-	var _project = __webpack_require__(166);
-
-	var _project2 = _interopRequireDefault(_project);
-
-	var _baseRepository = __webpack_require__(167);
-
-	var _baseRepository2 = _interopRequireDefault(_baseRepository);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var singleton = Symbol();
-	var singletonEnforcer = Symbol();
-
-	var ConfigRepository = exports.ConfigRepository = function (_BaseRepository) {
-	    _inherits(ConfigRepository, _BaseRepository);
-
-	    function ConfigRepository(enforcer) {
-	        _classCallCheck(this, ConfigRepository);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ConfigRepository).call(this));
-
-	        if (enforcer !== singletonEnforcer) {
-	            throw "Cannot construct singleton";
-	        }
-
-	        _this.ciBuildUrl = "";
-	        _this.projects = [];
-	        return _this;
-	    }
-
-	    _createClass(ConfigRepository, [{
-	        key: "getProjects",
-	        value: function getProjects() {
-	            return this.projects;
-	        }
-	    }, {
-	        key: "loadConfig",
-	        value: function loadConfig() {
-	            var _this2 = this;
-
-	            var deferred = _q2.default.defer();
-
-	            var request = _jquery2.default.get("/config").done(function (config) {
-	                _this2.ciBuildUrl = config.ciBuildUrl;
-	                _this2.projects = config.projectNames.map(function (projectName) {
-	                    return new _project2.default(projectName);
-	                });
-
-	                deferred.resolve(config);
-	            }).fail(function (error) {
-	                deferred.reject(_this2.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }], [{
-	        key: "instance",
-	        get: function get() {
-	            if (!this[singleton]) {
-	                this[singleton] = new ConfigRepository(singletonEnforcer);
-	            }
-
-	            return this[singleton];
-	        }
-	    }]);
-
-	    return ConfigRepository;
-	}(_baseRepository2.default);
-
-	var configRepository = exports.configRepository = ConfigRepository.instance;
 
 /***/ },
 /* 169 */
@@ -32989,1162 +32909,6 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _baseComponent = __webpack_require__(2);
-
-	var _baseComponent2 = _interopRequireDefault(_baseComponent);
-
-	var _errorHandler = __webpack_require__(173);
-
-	var _errorHandler2 = _interopRequireDefault(_errorHandler);
-
-	var _globalEventEmitter = __webpack_require__(170);
-
-	var _infiniteLoading = __webpack_require__(174);
-
-	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
-
-	var _requestManager = __webpack_require__(160);
-
-	var _requestManager2 = _interopRequireDefault(_requestManager);
-
-	var _storiesRepository = __webpack_require__(175);
-
-	var _tagsRepository = __webpack_require__(176);
-
-	var _ticketsList = __webpack_require__(178);
-
-	var _ticketsList2 = _interopRequireDefault(_ticketsList);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var ProjectDetails = function (_BaseComponent) {
-	    _inherits(ProjectDetails, _BaseComponent);
-
-	    function ProjectDetails(params) {
-	        _classCallCheck(this, ProjectDetails);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectDetails).call(this, params));
-
-	        _this.requestManager = new _requestManager2.default();
-	        _this.state = {
-	            endingTags: [],
-	            endingTagIndex: -1,
-	            isLoadingTags: false,
-	            isLoadingStableTags: false,
-	            showStableVersions: false,
-	            startingTagIndex: -1,
-	            tags: []
-	        };
-	        return _this;
-	    }
-
-	    _createClass(ProjectDetails, [{
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            _get(Object.getPrototypeOf(ProjectDetails.prototype), "componentDidMount", this).call(this);
-
-	            this.loadTagsList(this.props);
-	        }
-	    }, {
-	        key: "componentWillReceiveProps",
-	        value: function componentWillReceiveProps(props) {
-	            this.loadTagsList(props);
-	        }
-	    }, {
-	        key: "componentWillUnmount",
-	        value: function componentWillUnmount() {
-	            _get(Object.getPrototypeOf(ProjectDetails.prototype), "componentWillUnmount", this).call(this);
-
-	            this.requestManager.abortPendingRequests();
-	        }
-	    }, {
-	        key: "getEndingTagsForStartTag",
-	        value: function getEndingTagsForStartTag(startTag) {
-	            return this.state.tags.filter(function (tag, tagIndex) {
-	                return tagIndex <= startTag;
-	            });
-	        }
-	    }, {
-	        key: "handleEndingTagChange",
-	        value: function handleEndingTagChange(event) {
-	            this.setState({
-	                endingTagIndex: parseInt(event.target.value)
-	            });
-	        }
-	    }, {
-	        key: "handleStableVersionChange",
-	        value: function handleStableVersionChange(event) {
-	            this.setState({
-	                endingTags: [],
-	                endingTagIndex: -1,
-	                showStableVersions: event.target.checked
-	            });
-
-	            this.loadEndingTags(event.target.checked);
-	        }
-	    }, {
-	        key: "handleStartingTagChange",
-	        value: function handleStartingTagChange(event) {
-	            this.setState({
-	                startingTagIndex: parseInt(event.target.value)
-	            });
-
-	            this.loadEndingTags(this.state.showStableVersions);
-	        }
-	    }, {
-	        key: "loadEndingTags",
-	        value: function loadEndingTags(showStableVersions) {
-	            var _this2 = this;
-
-	            if (showStableVersions) {
-	                this.setState({
-	                    isLoadingStableTags: true
-	                });
-
-	                _tagsRepository.tagsRepository.setRequestManager(this.requestManager);
-	                _tagsRepository.tagsRepository.getStableTags(this.props.projectName).then(function (data) {
-	                    if (!_this2.m_isMounted) return;
-
-	                    _this2.setState({
-	                        endingTagIndex: -1,
-	                        endingTags: data
-	                    });
-	                }).catch(function (error) {
-	                    if (!_this2.m_isMounted) return;
-
-	                    _errorHandler2.default.showErrorMessage(error);
-	                }).finally(function () {
-	                    if (!_this2.m_isMounted) return;
-
-	                    _this2.setState({
-	                        isLoadingStableTags: false
-	                    });
-	                });
-	            } else {
-	                var endingTags = this.getEndingTagsForStartTag(this.state.startingTagIndex);
-
-	                this.setState({
-	                    endingTags: endingTags,
-	                    endingTagIndex: -1
-	                });
-	            }
-	        }
-	    }, {
-	        key: "loadTagsList",
-	        value: function loadTagsList(props) {
-	            var _this3 = this;
-
-	            this.setState({
-	                isLoadingTags: true
-	            });
-
-	            _tagsRepository.tagsRepository.setRequestManager(this.requestManager);
-	            _tagsRepository.tagsRepository.getTags(props.projectName).then(function (data) {
-	                if (!_this3.m_isMounted) return;
-
-	                _this3.setState({
-	                    endingTagIndex: -1,
-	                    endingTags: [],
-	                    startingTagIndex: data.startingTagIndex,
-	                    tags: data.tags
-	                });
-
-	                if (data.startingTagIndex !== -1) {
-	                    _this3.setState({
-	                        endingTags: _this3.getEndingTagsForStartTag(data.startingTagIndex)
-	                    });
-	                }
-	            }).catch(function (error) {
-	                if (!_this3.m_isMounted) return;
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            }).finally(function () {
-	                if (!_this3.m_isMounted) return;
-
-	                _this3.setState({
-	                    isLoadingTags: false
-	                });
-	            });
-	        }
-	    }, {
-	        key: "searchJiraTikets",
-	        value: function searchJiraTikets(event) {
-	            event.preventDefault();
-
-	            if (!(this.state.startingTagIndex >= 0) || !(this.state.endingTagIndex >= 0)) {
-	                return;
-	            }
-
-	            var projectName = this.props.projectName;
-	            var startTag = this.state.tags[this.state.startingTagIndex].name;
-	            var endTag = this.state.endingTags[this.state.endingTagIndex].name;
-
-	            _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SEARCH_PROJECT_TICKETS, {
-	                projectName: projectName,
-	                startTag: startTag,
-	                endTag: endTag
-	            });
-	        }
-	    }, {
-	        key: "render",
-	        value: function render() {
-	            return React.createElement(
-	                "div",
-	                { className: "container-fluid" },
-	                React.createElement(
-	                    "div",
-	                    { className: "row" },
-	                    React.createElement(
-	                        "div",
-	                        { className: "col-md-12" },
-	                        React.createElement(
-	                            "form",
-	                            { className: "form-horizontal", onSubmit: this.searchJiraTikets.bind(this) },
-	                            React.createElement(
-	                                "div",
-	                                { className: "form-group" },
-	                                React.createElement(
-	                                    "label",
-	                                    { htmlFor: "projectName", className: "col-sm-2 control-label" },
-	                                    "Project name:"
-	                                ),
-	                                React.createElement(
-	                                    "div",
-	                                    { className: "col-sm-10" },
-	                                    React.createElement("input", { className: "form-control", id: "projectName", value: this.props.projectName, disabled: "disabled" })
-	                                )
-	                            ),
-	                            React.createElement(
-	                                "div",
-	                                { className: "form-group" },
-	                                React.createElement(
-	                                    "label",
-	                                    { htmlFor: "startingTag", className: "col-sm-2 control-label" },
-	                                    "Select starting tag:"
-	                                ),
-	                                React.createElement(
-	                                    "div",
-	                                    { className: "col-sm-10" },
-	                                    React.createElement(
-	                                        "select",
-	                                        { id: "startingTag", className: "form-control", onChange: this.handleStartingTagChange.bind(this), value: this.state.startingTagIndex },
-	                                        React.createElement(
-	                                            "option",
-	                                            { value: "-1" },
-	                                            " "
-	                                        ),
-	                                        this.state.tags.map(function (tag, tagIndex) {
-	                                            return React.createElement(
-	                                                "option",
-	                                                { key: tagIndex, value: tagIndex },
-	                                                tag.name
-	                                            );
-	                                        })
-	                                    ),
-	                                    React.createElement(_infiniteLoading2.default, { isLoading: this.state.isLoadingTags })
-	                                )
-	                            ),
-	                            React.createElement(
-	                                "div",
-	                                { className: "form-group" },
-	                                React.createElement(
-	                                    "div",
-	                                    { className: "col-sm-offset-2 col-sm-10" },
-	                                    React.createElement(
-	                                        "div",
-	                                        { className: "checkbox" },
-	                                        React.createElement(
-	                                            "label",
-	                                            null,
-	                                            React.createElement("input", { type: "checkbox", onChange: this.handleStableVersionChange.bind(this), checked: this.state.showStableVersions }),
-	                                            " Show only stable versions"
-	                                        )
-	                                    )
-	                                )
-	                            ),
-	                            React.createElement(
-	                                "div",
-	                                { className: "form-group" },
-	                                React.createElement(
-	                                    "label",
-	                                    { htmlFor: "endingTag", className: "col-sm-2 control-label" },
-	                                    "Select ending tag:"
-	                                ),
-	                                React.createElement(
-	                                    "div",
-	                                    { className: "col-sm-10" },
-	                                    React.createElement(
-	                                        "select",
-	                                        { id: "endingTag", className: "form-control", onChange: this.handleEndingTagChange.bind(this), value: this.state.endingTagIndex },
-	                                        React.createElement(
-	                                            "option",
-	                                            { value: "-1" },
-	                                            " "
-	                                        ),
-	                                        this.state.endingTags.map(function (tag, tagIndex) {
-	                                            return React.createElement(
-	                                                "option",
-	                                                { key: tagIndex, value: tagIndex },
-	                                                tag.name
-	                                            );
-	                                        })
-	                                    ),
-	                                    React.createElement(_infiniteLoading2.default, { isLoading: this.state.isLoadingStableTags })
-	                                )
-	                            ),
-	                            React.createElement(
-	                                "div",
-	                                { className: "form-group" },
-	                                React.createElement(
-	                                    "div",
-	                                    { className: "col-sm-offset-2 col-sm-10" },
-	                                    React.createElement(
-	                                        "button",
-	                                        { className: "btn btn-default" },
-	                                        "Search"
-	                                    )
-	                                )
-	                            )
-	                        )
-	                    )
-	                ),
-	                React.createElement(_ticketsList2.default, null)
-	            );
-	        }
-	    }]);
-
-	    return ProjectDetails;
-	}(_baseComponent2.default);
-
-	exports.default = ProjectDetails;
-
-/***/ },
-/* 173 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var ErrorHandler = function () {
-	    function ErrorHandler() {
-	        _classCallCheck(this, ErrorHandler);
-	    }
-
-	    _createClass(ErrorHandler, null, [{
-	        key: "showErrorMessage",
-	        value: function showErrorMessage(error) {
-	            alert(error.message);
-	        }
-	    }]);
-
-	    return ErrorHandler;
-	}();
-
-	exports.default = ErrorHandler;
-
-/***/ },
-/* 174 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _baseComponent = __webpack_require__(2);
-
-	var _baseComponent2 = _interopRequireDefault(_baseComponent);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var InfiniteLoading = function (_BaseComponent) {
-	    _inherits(InfiniteLoading, _BaseComponent);
-
-	    function InfiniteLoading() {
-	        _classCallCheck(this, InfiniteLoading);
-
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(InfiniteLoading).apply(this, arguments));
-	    }
-
-	    _createClass(InfiniteLoading, [{
-	        key: "render",
-	        value: function render() {
-	            var isLoadingProp = this.props.isLoading;
-
-	            if (isLoadingProp == undefined || isLoadingProp == null || isLoadingProp) {
-	                return React.createElement(
-	                    "div",
-	                    { className: "progress" },
-	                    React.createElement(
-	                        "div",
-	                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
-	                        React.createElement(
-	                            "span",
-	                            { className: "sr-only" },
-	                            "100% Complete"
-	                        )
-	                    )
-	                );
-	            } else {
-	                return null;
-	            }
-	        }
-	    }]);
-
-	    return InfiniteLoading;
-	}(_baseComponent2.default);
-
-	exports.default = InfiniteLoading;
-
-/***/ },
-/* 175 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.storiesRepository = exports.StoriesRepository = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _q = __webpack_require__(164);
-
-	var _q2 = _interopRequireDefault(_q);
-
-	var _baseRepository = __webpack_require__(167);
-
-	var _baseRepository2 = _interopRequireDefault(_baseRepository);
-
-	var _projectsRepository = __webpack_require__(162);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var singleton = Symbol();
-	var singletonEnforcer = Symbol();
-
-	var StoriesRepository = exports.StoriesRepository = function (_BaseRepository) {
-	    _inherits(StoriesRepository, _BaseRepository);
-
-	    function StoriesRepository(enforcer) {
-	        _classCallCheck(this, StoriesRepository);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StoriesRepository).call(this));
-
-	        if (enforcer !== singletonEnforcer) {
-	            throw "Cannot construct singleton";
-	        }
-	        return _this;
-	    }
-
-	    _createClass(StoriesRepository, [{
-	        key: "createReleaseFilter",
-	        value: function createReleaseFilter(releaseName) {
-	            var _this2 = this;
-
-	            var deferred = _q2.default.defer();
-	            var projects = _projectsRepository.projectsRepository.getProjects().map(function (p) {
-	                return p.name;
-	            }).join(",");
-
-	            var request = _jquery2.default.post("/create-release-filter?version=" + releaseName + "&projects=" + projects + "&timestamp=" + +new Date()).done(function (data) {
-	                deferred.resolve(data);
-	            }).fail(function (response) {
-	                deferred.reject(_this2.processRequestFailure(response));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "getStories",
-	        value: function getStories(serviceName, startTag, endTag) {
-	            var _this3 = this;
-
-	            var deferred = _q2.default.defer();
-	            var encodedStartTag = encodeURIComponent(startTag);
-	            var encodedEndTag = encodeURIComponent(endTag);
-
-	            var request = _jquery2.default.get("/stories?serviceName=" + serviceName + "&startTag=" + encodedStartTag + "&endTag=" + encodedEndTag + "&timestamp=" + +new Date()).done(function (data) {
-	                for (var index = 0; index < data.length; index++) {
-	                    data[index].dateTime = new Date(data[index].dateTime);
-	                }
-
-	                deferred.resolve(data);
-	            }).fail(function (response) {
-	                deferred.reject(_this3.processRequestFailure(response));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "getStoriesForRelease",
-	        value: function getStoriesForRelease(releaseName) {
-	            var _this4 = this;
-
-	            var deferred = _q2.default.defer();
-	            var projects = _projectsRepository.projectsRepository.getProjects().map(function (p) {
-	                return p.name;
-	            }).join(",");
-
-	            var request = _jquery2.default.get("/stories-for-projects?version=" + releaseName + "&projects=" + projects + "&timestamp=" + +new Date()).done(function (data) {
-	                for (var index = 0; index < data.length; index++) {
-	                    data[index].dateTime = new Date(data[index].dateTime);
-	                }
-
-	                deferred.resolve(data);
-	            }).fail(function (response) {
-	                deferred.reject(_this4.processRequestFailure(response));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }], [{
-	        key: "instance",
-	        get: function get() {
-	            if (!this[singleton]) {
-	                this[singleton] = new StoriesRepository(singletonEnforcer);
-	            }
-
-	            return this[singleton];
-	        }
-	    }]);
-
-	    return StoriesRepository;
-	}(_baseRepository2.default);
-
-	var storiesRepository = exports.storiesRepository = StoriesRepository.instance;
-
-/***/ },
-/* 176 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.tagsRepository = exports.TagsRepository = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _q = __webpack_require__(164);
-
-	var _q2 = _interopRequireDefault(_q);
-
-	var _tag = __webpack_require__(177);
-
-	var _tag2 = _interopRequireDefault(_tag);
-
-	var _baseRepository = __webpack_require__(167);
-
-	var _baseRepository2 = _interopRequireDefault(_baseRepository);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var singleton = Symbol();
-	var singletonEnforcer = Symbol();
-
-	var TagsRepository = exports.TagsRepository = function (_BaseRepository) {
-	    _inherits(TagsRepository, _BaseRepository);
-
-	    function TagsRepository(enforcer) {
-	        _classCallCheck(this, TagsRepository);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TagsRepository).call(this));
-
-	        if (enforcer !== singletonEnforcer) {
-	            throw "Cannot construct singleton";
-	        }
-	        return _this;
-	    }
-
-	    _createClass(TagsRepository, [{
-	        key: "getStableTags",
-	        value: function getStableTags(projectName) {
-	            var _this2 = this;
-
-	            var deferred = _q2.default.defer();
-
-	            var request = _jquery2.default.get("/stable-tags?serviceName=" + projectName + "&timestamp=" + +new Date()).done(function (data) {
-	                deferred.resolve(data.map(function (tag) {
-	                    return new _tag2.default(tag);
-	                }));
-	            }).fail(function (error) {
-	                deferred.reject(_this2.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }, {
-	        key: "getTags",
-	        value: function getTags(projectName) {
-	            var _this3 = this;
-
-	            var deferred = _q2.default.defer();
-
-	            var request = _jquery2.default.get("/tags?serviceName=" + projectName + "&timestamp=" + +new Date()).done(function (data) {
-	                var tags = data.tags.map(function (tag) {
-	                    return new _tag2.default(tag);
-	                });
-	                var startingTagIndex = data.currentVersion ? tags.findIndex(function (tag) {
-	                    return tag.name == data.currentVersion;
-	                }) : -1;
-
-	                deferred.resolve({
-	                    tags: tags,
-	                    startingTagIndex: startingTagIndex
-	                });
-	            }).fail(function (error) {
-	                deferred.reject(_this3.processRequestFailure(error));
-	            });
-
-	            this.safeMonitorRequest(request);
-
-	            return deferred.promise;
-	        }
-	    }], [{
-	        key: "instance",
-	        get: function get() {
-	            if (!this[singleton]) {
-	                this[singleton] = new TagsRepository(singletonEnforcer);
-	            }
-
-	            return this[singleton];
-	        }
-	    }]);
-
-	    return TagsRepository;
-	}(_baseRepository2.default);
-
-	var tagsRepository = exports.tagsRepository = TagsRepository.instance;
-
-/***/ },
-/* 177 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var Tag = function Tag(serverTag) {
-	    _classCallCheck(this, Tag);
-
-	    this.name = serverTag;
-	};
-
-	exports.default = Tag;
-
-/***/ },
-/* 178 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-	var _jquery = __webpack_require__(163);
-
-	var _jquery2 = _interopRequireDefault(_jquery);
-
-	var _baseComponent = __webpack_require__(2);
-
-	var _baseComponent2 = _interopRequireDefault(_baseComponent);
-
-	var _errorHandler = __webpack_require__(173);
-
-	var _errorHandler2 = _interopRequireDefault(_errorHandler);
-
-	var _globalEventEmitter = __webpack_require__(170);
-
-	var _infiniteLoading = __webpack_require__(174);
-
-	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
-
-	var _requestManager = __webpack_require__(160);
-
-	var _requestManager2 = _interopRequireDefault(_requestManager);
-
-	var _storiesRepository = __webpack_require__(175);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var TicketsList = function (_BaseComponent) {
-	    _inherits(TicketsList, _BaseComponent);
-
-	    function TicketsList(props) {
-	        _classCallCheck(this, TicketsList);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).call(this, props));
-
-	        _this.requestManager = new _requestManager2.default();
-	        _this.state = {
-	            createdFilterName: null,
-	            createdFilterUrl: null,
-	            isCreatingFilter: false,
-	            isLoadingStories: false,
-	            jiraTickets: [],
-	            selectedRelease: null
-	        };
-	        return _this;
-	    }
-
-	    _createClass(TicketsList, [{
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentDidMount", this).call(this);
-
-	            this._onSearchProjectStories = this.onSearchProjectStories.bind(this);
-	            this._onSearchStories = this.onSearchStoriesClick.bind(this);
-	            this._onSelectedReleaseChanged = this.onSelectedReleaseChanged.bind(this);
-
-	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_PROJECT_TICKETS, this._onSearchProjectStories);
-	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
-	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
-	        }
-	    }, {
-	        key: "componentWillUnmount",
-	        value: function componentWillUnmount() {
-	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentWillUnmount", this).call(this);
-
-	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_PROJECT_TICKETS, this._onSearchProjectStories);
-	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_TICKETS, this._onSearchStories);
-	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SELECTED_RELEASE_CHANGED, this._onSelectedReleaseChanged);
-
-	            this.requestManager.abortPendingRequests();
-	        }
-	    }, {
-	        key: "handleCreateReleaseFilterClick",
-	        value: function handleCreateReleaseFilterClick() {
-	            var _this2 = this;
-
-	            if (!this.state.selectedRelease) {
-	                alert("Please select release first.");
-	                return;
-	            }
-
-	            this.setState({
-	                isCreatingFilter: true
-	            });
-
-	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
-	            _storiesRepository.storiesRepository.createReleaseFilter(this.state.selectedRelease.name).then(function (data) {
-	                if (!_this2.m_isMounted) return;
-
-	                _this2.setState({
-	                    createdFilterName: data.name,
-	                    createdFilterUrl: data.url
-	                });
-	            }).catch(function (error) {
-	                if (!_this2.m_isMounted) return;
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            }).finally(function () {
-	                if (!_this2.m_isMounted) return;
-
-	                _this2.setState({
-	                    isCreatingFilter: false
-	                });
-	            });
-	        }
-	    }, {
-	        key: "onSearchProjectStories",
-	        value: function onSearchProjectStories(projectSettings) {
-	            var _this3 = this;
-
-	            var projectName = projectSettings.projectName;
-	            var startTag = projectSettings.startTag;
-	            var endTag = projectSettings.endTag;
-
-
-	            this.setState({
-	                isLoadingStories: true,
-	                jiraTickets: []
-	            });
-
-	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
-	            _storiesRepository.storiesRepository.getStories(projectName, startTag, endTag).then(function (data) {
-	                if (!_this3.m_isMounted) return;
-
-	                _this3.setState({
-	                    jiraTickets: data,
-	                    isLoadingStories: false
-	                });
-	            }).catch(function (error) {
-	                if (!_this3.m_isMounted) return;
-
-	                _this3.setState({
-	                    isLoadingStories: false
-	                });
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            });
-	        }
-	    }, {
-	        key: "onSearchStoriesClick",
-	        value: function onSearchStoriesClick(selectedRelease) {
-	            var _this4 = this;
-
-	            this.setState({
-	                isLoadingStories: true,
-	                jiraTickets: [],
-	                selectedRelease: selectedRelease
-	            });
-
-	            if (!selectedRelease) return;
-
-	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
-	            _storiesRepository.storiesRepository.getStoriesForRelease(selectedRelease.name).then(function (data) {
-	                if (!_this4.m_isMounted) return;
-
-	                _this4.setState({
-	                    isLoadingStories: false,
-	                    jiraTickets: data
-	                });
-	            }).catch(function (error) {
-	                if (!_this4.m_isMounted) return;
-
-	                _this4.setState({
-	                    isLoadingStories: false
-	                });
-
-	                _errorHandler2.default.showErrorMessage(error);
-	            });
-	        }
-	    }, {
-	        key: "onSelectedReleaseChanged",
-	        value: function onSelectedReleaseChanged(selectedRelease) {
-	            this.setState({
-	                jiraTickets: [],
-	                selectedRelease: selectedRelease
-	            });
-	        }
-	    }, {
-	        key: "render",
-	        value: function render() {
-	            var _this5 = this;
-
-	            return React.createElement(
-	                "div",
-	                { className: "row" },
-	                React.createElement(
-	                    "div",
-	                    { className: "col-md-12" },
-	                    React.createElement(
-	                        "h2",
-	                        null,
-	                        "Jira tickets"
-	                    ),
-	                    function () {
-	                        if (_this5.state.selectedRelease) {
-	                            if (_this5.state.createdFilterName) {
-	                                return React.createElement(
-	                                    "p",
-	                                    null,
-	                                    "Created JIRA filter: ",
-	                                    React.createElement(
-	                                        "a",
-	                                        { href: _this5.state.createdFilterUrl, target: "_blank", rel: "external" },
-	                                        _this5.state.createdFilterName
-	                                    )
-	                                );
-	                            } else {
-	                                return React.createElement(
-	                                    "div",
-	                                    { className: "row" },
-	                                    React.createElement(
-	                                        "div",
-	                                        { className: "col-md-1" },
-	                                        React.createElement(
-	                                            "div",
-	                                            { className: "btn-group", role: "group" },
-	                                            React.createElement(
-	                                                "button",
-	                                                { className: "btn btn-default", onClick: _this5.handleCreateReleaseFilterClick.bind(_this5) },
-	                                                "Create release filter"
-	                                            )
-	                                        )
-	                                    ),
-	                                    React.createElement(
-	                                        "div",
-	                                        { className: "col-md-1" },
-	                                        React.createElement(_infiniteLoading2.default, { isLoading: _this5.state.isCreatingFilter })
-	                                    )
-	                                );
-	                            }
-	                        }
-	                    }(),
-	                    React.createElement(
-	                        "table",
-	                        { className: "table" },
-	                        React.createElement(
-	                            "thead",
-	                            null,
-	                            React.createElement(
-	                                "tr",
-	                                null,
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "#"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Summary"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Epic"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Git tags"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Date"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Status"
-	                                ),
-	                                React.createElement(
-	                                    "th",
-	                                    null,
-	                                    "Author"
-	                                )
-	                            )
-	                        ),
-	                        React.createElement(
-	                            "tbody",
-	                            null,
-	                            function () {
-	                                if (_this5.state.isLoadingStories) {
-	                                    return React.createElement(
-	                                        "tr",
-	                                        null,
-	                                        React.createElement(
-	                                            "td",
-	                                            { colSpan: "7" },
-	                                            React.createElement(_infiniteLoading2.default, null)
-	                                        )
-	                                    );
-	                                }
-
-	                                if (!_this5.state.jiraTickets || !_this5.state.jiraTickets.length) {
-	                                    return React.createElement(
-	                                        "tr",
-	                                        null,
-	                                        React.createElement(
-	                                            "td",
-	                                            { colSpan: "7" },
-	                                            React.createElement(
-	                                                "p",
-	                                                null,
-	                                                "No JIRA tickets found. Please change search criteria and hit \"Search\" button."
-	                                            )
-	                                        )
-	                                    );
-	                                }
-
-	                                return _this5.state.jiraTickets.map(function (ticket, ticketIndex) {
-	                                    return React.createElement(
-	                                        "tr",
-	                                        { key: ticketIndex },
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            ticketIndex + 1
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            React.createElement(
-	                                                "a",
-	                                                { href: ticket.url, target: "_blank", rel: "external" },
-	                                                ticket.ticketNumber,
-	                                                ": ",
-	                                                ticket.message
-	                                            )
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            function () {
-	                                                if (ticket.epic) {
-	                                                    return React.createElement(
-	                                                        "a",
-	                                                        { href: ticket.epic.url, target: "_blank", rel: "external" },
-	                                                        ticket.epic.ticketNumber,
-	                                                        ": ",
-	                                                        ticket.epic.message
-	                                                    );
-	                                                }
-	                                            }()
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            React.createElement(
-	                                                "ul",
-	                                                { className: "list-unstyled" },
-	                                                (ticket.gitTags || []).map(function (tag, tagIndex) {
-	                                                    return React.createElement(
-	                                                        "li",
-	                                                        { key: tagIndex },
-	                                                        tag
-	                                                    );
-	                                                })
-	                                            )
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            ticket.dateTime.toLocaleString("en-GB")
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            function () {
-	                                                switch (ticket.status) {
-	                                                    case "Dev Ready":
-	                                                    case "Dev Complete":
-	                                                        return React.createElement(
-	                                                            "span",
-	                                                            { className: "label label-danger" },
-	                                                            ticket.status
-	                                                        );
-	                                                    case "In QA":
-	                                                        return React.createElement(
-	                                                            "span",
-	                                                            { className: "label label-warning" },
-	                                                            ticket.status
-	                                                        );
-	                                                    case "QA Complete":
-	                                                    case "Resolved":
-	                                                        return React.createElement(
-	                                                            "span",
-	                                                            { className: "label label-success" },
-	                                                            ticket.status
-	                                                        );
-	                                                    default:
-	                                                        return React.createElement(
-	                                                            "span",
-	                                                            { className: "label label-default" },
-	                                                            ticket.status
-	                                                        );
-	                                                }
-	                                            }()
-	                                        ),
-	                                        React.createElement(
-	                                            "td",
-	                                            null,
-	                                            ticket.author
-	                                        )
-	                                    );
-	                                });
-	                            }()
-	                        )
-	                    )
-	                )
-	            );
-	        }
-	    }]);
-
-	    return TicketsList;
-	}(_baseComponent2.default);
-
-	exports.default = TicketsList;
-
-/***/ },
-/* 179 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 	var _baseComponent = __webpack_require__(2);
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
@@ -34254,7 +33018,7 @@
 	exports.default = ProjectsList;
 
 /***/ },
-/* 180 */
+/* 173 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -34271,25 +33035,25 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _buildsRepository = __webpack_require__(181);
+	var _buildsRepository = __webpack_require__(174);
 
-	var _endReleaseSelector = __webpack_require__(182);
+	var _endReleaseSelector = __webpack_require__(175);
 
 	var _endReleaseSelector2 = _interopRequireDefault(_endReleaseSelector);
 
-	var _errorHandler = __webpack_require__(173);
+	var _errorHandler = __webpack_require__(181);
 
 	var _errorHandler2 = _interopRequireDefault(_errorHandler);
 
-	var _infiniteLoading = __webpack_require__(174);
+	var _infiniteLoading = __webpack_require__(183);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
-	var _startReleaseSelector = __webpack_require__(186);
+	var _startReleaseSelector = __webpack_require__(185);
 
 	var _startReleaseSelector2 = _interopRequireDefault(_startReleaseSelector);
 
-	var _extendedTicketsList = __webpack_require__(187);
+	var _extendedTicketsList = __webpack_require__(186);
 
 	var _extendedTicketsList2 = _interopRequireDefault(_extendedTicketsList);
 
@@ -34398,7 +33162,7 @@
 	exports.default = Releases;
 
 /***/ },
-/* 181 */
+/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -34410,19 +33174,19 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _jquery = __webpack_require__(163);
+	var _jquery = __webpack_require__(165);
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var _q = __webpack_require__(164);
+	var _q = __webpack_require__(166);
 
 	var _q2 = _interopRequireDefault(_q);
 
-	var _baseRepository = __webpack_require__(167);
+	var _baseRepository = __webpack_require__(163);
 
 	var _baseRepository2 = _interopRequireDefault(_baseRepository);
 
-	var _configRepository = __webpack_require__(168);
+	var _configRepository = __webpack_require__(164);
 
 	var _globalEventEmitter = __webpack_require__(170);
 
@@ -34598,7 +33362,7 @@
 	var buildsRepository = exports.buildsRepository = BuildsRepository.instance;
 
 /***/ },
-/* 182 */
+/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -34615,17 +33379,31 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _copyContent = __webpack_require__(183);
+	var _buildNumber = __webpack_require__(176);
+
+	var _buildNumber2 = _interopRequireDefault(_buildNumber);
+
+	var _buildsRepository = __webpack_require__(174);
+
+	var _copyContent = __webpack_require__(178);
 
 	var _copyContent2 = _interopRequireDefault(_copyContent);
 
+	var _deployment = __webpack_require__(179);
+
+	var _deployment2 = _interopRequireDefault(_deployment);
+
+	var _errorHandler = __webpack_require__(181);
+
+	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+
 	var _globalEventEmitter = __webpack_require__(170);
 
-	var _projectVersionsList = __webpack_require__(184);
+	var _projectVersionsList = __webpack_require__(182);
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
-	var _searchFlags = __webpack_require__(185);
+	var _searchFlags = __webpack_require__(184);
 
 	var _searchFlags2 = _interopRequireDefault(_searchFlags);
 
@@ -34637,6 +33415,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var BUILD_REFRESH_INTERVAL = 1000 * 60;
+
 	var EndReleaseSelector = function (_BaseComponent) {
 	    _inherits(EndReleaseSelector, _BaseComponent);
 
@@ -34645,7 +33425,17 @@
 
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(EndReleaseSelector).call(this, props));
 
+	        _this.buildMonitorInterval = null;
 	        _this.state = {
+	            extraColumns: [{
+	                heading: "Build number",
+	                type: "template",
+	                template: _this.renderBuildNumberCell.bind(_this)
+	            }, {
+	                heading: "Actions",
+	                type: "template",
+	                template: _this.renderActionsCell.bind(_this)
+	            }],
 	            searchFlags: _searchFlags2.default.ShowAll,
 	            versions: null
 	        };
@@ -34657,14 +33447,19 @@
 	        value: function componentDidMount() {
 	            _get(Object.getPrototypeOf(EndReleaseSelector.prototype), "componentDidMount", this).call(this);
 
-	            this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
+	            this.startBuildsMonitor();
 
+	            this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
 	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
 	        }
 	    }, {
 	        key: "componentWillUnmount",
 	        value: function componentWillUnmount() {
 	            _get(Object.getPrototypeOf(EndReleaseSelector.prototype), "componentWillUnmount", this).call(this);
+
+	            if (this.buildMonitorInterval) {
+	                clearInterval(this.buildMonitorInterval);
+	            }
 
 	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
 	        }
@@ -34749,9 +33544,29 @@
 	            });
 	        }
 	    }, {
+	        key: "refreshBuildStatuses",
+	        value: function refreshBuildStatuses() {
+	            var _this2 = this;
+
+	            var handleError = function handleError(error) {
+	                if (!_this2.m_isMounted) return;
+
+	                _errorHandler2.default.showErrorMessage(error);
+	            };
+
+	            _buildsRepository.buildsRepository.setRequestManager(this.requestManager);
+	            _buildsRepository.buildsRepository.updateBuildNumbersAndProgress().catch(handleError);
+	        }
+	    }, {
+	        key: "startBuildsMonitor",
+	        value: function startBuildsMonitor() {
+	            this.refreshBuildStatuses();
+	            this.buildMonitorInterval = setInterval(this.refreshBuildStatuses.bind(this), BUILD_REFRESH_INTERVAL);
+	        }
+	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            return React.createElement(
 	                "div",
@@ -34776,7 +33591,7 @@
 	                    )
 	                ),
 	                function () {
-	                    if (_this2.state.versions) {
+	                    if (_this3.state.versions) {
 	                        return React.createElement(
 	                            "div",
 	                            { className: "form-group" },
@@ -34789,12 +33604,12 @@
 	                                    React.createElement(
 	                                        "button",
 	                                        { className: "btn btn-default",
-	                                            onClick: _this2.copyCommandLineScript.bind(_this2), type: "button" },
+	                                            onClick: _this3.copyCommandLineScript.bind(_this3), type: "button" },
 	                                        "Copy 'sm' start script"
 	                                    )
 	                                ),
 	                                React.createElement("input", { id: "commandLineScript", className: "form-control", readOnly: "true",
-	                                    value: _this2.state.commandLineScript, type: "text" })
+	                                    value: _this3.state.commandLineScript, type: "text" })
 	                            )
 	                        );
 	                    }
@@ -34804,8 +33619,19 @@
 	                    { style: { marginTop: !this.state.versions ? "2.55em" : "" } },
 	                    "To versions"
 	                ),
-	                React.createElement(_projectVersionsList2.default, { projects: this.state.versions })
+	                React.createElement(_projectVersionsList2.default, { projects: this.state.versions,
+	                    extraColumns: this.state.extraColumns })
 	            );
+	        }
+	    }, {
+	        key: "renderActionsCell",
+	        value: function renderActionsCell(project) {
+	            return React.createElement(_deployment2.default, { projectName: project.name, version: project.version });
+	        }
+	    }, {
+	        key: "renderBuildNumberCell",
+	        value: function renderBuildNumberCell(project) {
+	            return React.createElement(_buildNumber2.default, { projectName: project.name, version: project.version });
 	        }
 	    }]);
 
@@ -34815,7 +33641,216 @@
 	exports.default = EndReleaseSelector;
 
 /***/ },
-/* 183 */
+/* 176 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+	var _baseComponent = __webpack_require__(2);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _buildsRepository = __webpack_require__(174);
+
+	var _globalEventEmitter = __webpack_require__(170);
+
+	var _projectsRepository = __webpack_require__(162);
+
+	var _requestManager = __webpack_require__(160);
+
+	var _requestManager2 = _interopRequireDefault(_requestManager);
+
+	var _smallSpinner = __webpack_require__(177);
+
+	var _smallSpinner2 = _interopRequireDefault(_smallSpinner);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var BuildNumber = function (_BaseComponent) {
+	    _inherits(BuildNumber, _BaseComponent);
+
+	    function BuildNumber(props) {
+	        _classCallCheck(this, BuildNumber);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(BuildNumber).call(this, props));
+
+	        _this._onProjectsUpdated = _this.onProjectsUpdated.bind(_this);
+	        _this.project = _projectsRepository.projectsRepository.getProjects().find(function (p) {
+	            return p.name == props.projectName;
+	        }) || null;
+	        _this.requestManager = new _requestManager2.default();
+	        return _this;
+	    }
+
+	    _createClass(BuildNumber, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            _get(Object.getPrototypeOf(BuildNumber.prototype), "componentDidMount", this).call(this);
+
+	            _globalEventEmitter.globalEventEmitter.addListener(_globalEventEmitter.Events.PROJECTS_UPDATED, this._onProjectsUpdated);
+	        }
+	    }, {
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            _get(Object.getPrototypeOf(BuildNumber.prototype), "componentWillUnmount", this).call(this);
+
+	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.PROJECTS_UPDATED, this._onProjectsUpdated);
+	        }
+	    }, {
+	        key: "getBuildNumber",
+	        value: function getBuildNumber() {
+	            var project = this.project;
+
+	            return project ? project.getBuildNumber(this.props.version) : "";
+	        }
+	    }, {
+	        key: "getCiBuildJobUrl",
+	        value: function getCiBuildJobUrl() {
+	            return _buildsRepository.buildsRepository.getCiBuildJobUrl(this.props.projectName, this.getBuildNumber());
+	        }
+	    }, {
+	        key: "getCiBuildProjectUrl",
+	        value: function getCiBuildProjectUrl() {
+	            return _buildsRepository.buildsRepository.getCiBuildProjectUrl(this.props.projectName);
+	        }
+	    }, {
+	        key: "handleStartBuildClick",
+	        value: function handleStartBuildClick() {
+	            _buildsRepository.buildsRepository.setRequestManager(this.requestManager);
+	            _buildsRepository.buildsRepository.startBuild(this.props.projectName, this.props.version);
+	        }
+	    }, {
+	        key: "isBuilding",
+	        value: function isBuilding() {
+	            return this.project && this.project.isBuildRunning(this.props.version);
+	        }
+	    }, {
+	        key: "isBuilt",
+	        value: function isBuilt() {
+	            return this.project && this.project.isBuilt(this.props.version);
+	        }
+	    }, {
+	        key: "isPending",
+	        value: function isPending() {
+	            return this.project && this.project.isBuildScheduled(this.props.version);
+	        }
+	    }, {
+	        key: "onProjectsUpdated",
+	        value: function onProjectsUpdated() {
+	            this.forceUpdate();
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            if (this.isPending()) {
+	                return React.createElement(
+	                    "a",
+	                    { href: this.getCiBuildProjectUrl(), target: "_blank", rel: "external" },
+	                    "Build queued"
+	                );
+	            }
+
+	            if (this.isBuilding()) {
+	                return React.createElement(
+	                    "div",
+	                    null,
+	                    React.createElement(
+	                        "a",
+	                        { href: this.getCiBuildJobUrl(), target: "_blank", rel: "external" },
+	                        "Building ",
+	                        React.createElement(_smallSpinner2.default, null)
+	                    )
+	                );
+	            }
+
+	            if (this.isBuilt()) {
+	                return React.createElement(
+	                    "span",
+	                    null,
+	                    this.getBuildNumber()
+	                );
+	            } else {
+	                return React.createElement(
+	                    "button",
+	                    { className: "btn btn-default", onClick: this.handleStartBuildClick.bind(this) },
+	                    "Start build"
+	                );
+	            }
+	        }
+	    }]);
+
+	    return BuildNumber;
+	}(_baseComponent2.default);
+
+	exports.default = BuildNumber;
+
+/***/ },
+/* 177 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _baseComponent = __webpack_require__(2);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var SmallSpinner = function (_BaseComponent) {
+	    _inherits(SmallSpinner, _BaseComponent);
+
+	    function SmallSpinner() {
+	        _classCallCheck(this, SmallSpinner);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(SmallSpinner).apply(this, arguments));
+	    }
+
+	    _createClass(SmallSpinner, [{
+	        key: "render",
+	        value: function render() {
+	            var isLoadingProp = this.props.isLoading;
+
+	            if (isLoadingProp == undefined || isLoadingProp == null || isLoadingProp) {
+	                return React.createElement("i", { className: "glyphicon glyphicon-refresh infinite-spin" });
+	            } else {
+	                return null;
+	            }
+	        }
+	    }]);
+
+	    return SmallSpinner;
+	}(_baseComponent2.default);
+
+	exports.default = SmallSpinner;
+
+/***/ },
+/* 178 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -34860,7 +33895,7 @@
 	}
 
 /***/ },
-/* 184 */
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -34875,7 +33910,252 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
-	var _infiniteLoading = __webpack_require__(174);
+	var _deploymentRepository = __webpack_require__(180);
+
+	var _errorHandler = __webpack_require__(181);
+
+	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+
+	var _globalEventEmitter = __webpack_require__(170);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var SmallSpinner = function (_BaseComponent) {
+	    _inherits(SmallSpinner, _BaseComponent);
+
+	    function SmallSpinner() {
+	        _classCallCheck(this, SmallSpinner);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(SmallSpinner).apply(this, arguments));
+	    }
+
+	    _createClass(SmallSpinner, [{
+	        key: "handleDeployToQA",
+	        value: function handleDeployToQA(event) {
+	            event.preventDefault();
+
+	            _deploymentRepository.deploymentRepository.deployToQA(this.props.projectName, this.props.version).then(function () {
+	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Deployment to QA started.");
+	            }).catch(function (error) {
+	                _errorHandler2.default.showErrorMessage(error);
+	            });
+	        }
+	    }, {
+	        key: "handleDeployToStaging",
+	        value: function handleDeployToStaging(event) {
+	            event.preventDefault();
+
+	            _deploymentRepository.deploymentRepository.deployToStaging(this.props.projectName, this.props.version).then(function () {
+	                _globalEventEmitter.globalEventEmitter.emit(_globalEventEmitter.Events.SHOW_NOTIFICATION, "success", "Deployment to staging started.");
+	            }).catch(function (error) {
+	                _errorHandler2.default.showErrorMessage(error);
+	            });
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            return React.createElement(
+	                "div",
+	                { className: "btn-group" },
+	                React.createElement(
+	                    "button",
+	                    { type: "button", className: "btn btn-default dropdown-toggle", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false" },
+	                    "Deploy ",
+	                    React.createElement("span", { className: "caret" })
+	                ),
+	                React.createElement(
+	                    "ul",
+	                    { className: "dropdown-menu" },
+	                    React.createElement(
+	                        "li",
+	                        null,
+	                        React.createElement(
+	                            "a",
+	                            { href: "#", onClick: this.handleDeployToQA.bind(this) },
+	                            "QA"
+	                        )
+	                    ),
+	                    React.createElement(
+	                        "li",
+	                        null,
+	                        React.createElement(
+	                            "a",
+	                            { href: "#", onClick: this.handleDeployToStaging.bind(this) },
+	                            "Staging"
+	                        )
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return SmallSpinner;
+	}(_baseComponent2.default);
+
+	exports.default = SmallSpinner;
+
+/***/ },
+/* 180 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.deploymentRepository = exports.DeploymentRepository = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _jquery = __webpack_require__(165);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _q = __webpack_require__(166);
+
+	var _q2 = _interopRequireDefault(_q);
+
+	var _baseRepository = __webpack_require__(163);
+
+	var _baseRepository2 = _interopRequireDefault(_baseRepository);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
+	var DeploymentRepository = exports.DeploymentRepository = function (_BaseRepository) {
+	    _inherits(DeploymentRepository, _BaseRepository);
+
+	    function DeploymentRepository(enforcer) {
+	        _classCallCheck(this, DeploymentRepository);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(DeploymentRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton!";
+	        }
+	        return _this;
+	    }
+
+	    _createClass(DeploymentRepository, [{
+	        key: "deployToQA",
+	        value: function deployToQA(projectName, version) {
+	            var _this2 = this;
+
+	            var deferred = _q2.default.defer();
+	            var requestData = {
+	                projectName: projectName,
+	                version: version
+	            };
+
+	            var request = _jquery2.default.post("/deploy-to-qa", requestData).done(function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (error) {
+	                deferred.reject(_this2.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }, {
+	        key: "deployToStaging",
+	        value: function deployToStaging(projectName, version) {
+	            var _this3 = this;
+
+	            var deferred = _q2.default.defer();
+	            var requestData = {
+	                projectName: projectName,
+	                version: version
+	            };
+
+	            var request = _jquery2.default.post("/deploy-to-staging", requestData).done(function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (error) {
+	                deferred.reject(_this3.processRequestFailure(error));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new DeploymentRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
+	        }
+	    }]);
+
+	    return DeploymentRepository;
+	}(_baseRepository2.default);
+
+	var deploymentRepository = exports.deploymentRepository = DeploymentRepository.instance;
+
+/***/ },
+/* 181 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var ErrorHandler = function () {
+	    function ErrorHandler() {
+	        _classCallCheck(this, ErrorHandler);
+	    }
+
+	    _createClass(ErrorHandler, null, [{
+	        key: "showErrorMessage",
+	        value: function showErrorMessage(error) {
+	            alert(error.message);
+	        }
+	    }]);
+
+	    return ErrorHandler;
+	}();
+
+	exports.default = ErrorHandler;
+
+/***/ },
+/* 182 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _baseComponent = __webpack_require__(2);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	var _infiniteLoading = __webpack_require__(183);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 
@@ -35020,7 +34300,70 @@
 	exports.default = ProjectVersionsList;
 
 /***/ },
-/* 185 */
+/* 183 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _baseComponent = __webpack_require__(2);
+
+	var _baseComponent2 = _interopRequireDefault(_baseComponent);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var InfiniteLoading = function (_BaseComponent) {
+	    _inherits(InfiniteLoading, _BaseComponent);
+
+	    function InfiniteLoading() {
+	        _classCallCheck(this, InfiniteLoading);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(InfiniteLoading).apply(this, arguments));
+	    }
+
+	    _createClass(InfiniteLoading, [{
+	        key: "render",
+	        value: function render() {
+	            var isLoadingProp = this.props.isLoading;
+
+	            if (isLoadingProp == undefined || isLoadingProp == null || isLoadingProp) {
+	                return React.createElement(
+	                    "div",
+	                    { className: "progress" },
+	                    React.createElement(
+	                        "div",
+	                        { className: "progress-bar progress-bar-striped active", role: "progressbar", "aria-valuenow": "100", "aria-valuemin": "0", "aria-valuemax": "100", style: { width: "100%" } },
+	                        React.createElement(
+	                            "span",
+	                            { className: "sr-only" },
+	                            "100% Complete"
+	                        )
+	                    )
+	                );
+	            } else {
+	                return null;
+	            }
+	        }
+	    }]);
+
+	    return InfiniteLoading;
+	}(_baseComponent2.default);
+
+	exports.default = InfiniteLoading;
+
+/***/ },
+/* 184 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -35038,7 +34381,7 @@
 	exports.default = SearchFlags;
 
 /***/ },
-/* 186 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35055,11 +34398,11 @@
 
 	var _globalEventEmitter = __webpack_require__(170);
 
-	var _projectVersionsList = __webpack_require__(184);
+	var _projectVersionsList = __webpack_require__(182);
 
 	var _projectVersionsList2 = _interopRequireDefault(_projectVersionsList);
 
-	var _searchFlags = __webpack_require__(185);
+	var _searchFlags = __webpack_require__(184);
 
 	var _searchFlags2 = _interopRequireDefault(_searchFlags);
 
@@ -35266,7 +34609,7 @@
 	exports.default = StartReleaseSelector;
 
 /***/ },
-/* 187 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35283,11 +34626,21 @@
 
 	var _baseComponent2 = _interopRequireDefault(_baseComponent);
 
+	var _errorHandler = __webpack_require__(181);
+
+	var _errorHandler2 = _interopRequireDefault(_errorHandler);
+
 	var _globalEventEmitter = __webpack_require__(170);
 
-	var _searchFlags = __webpack_require__(185);
+	var _infiniteLoading = __webpack_require__(183);
+
+	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
+
+	var _searchFlags = __webpack_require__(184);
 
 	var _searchFlags2 = _interopRequireDefault(_searchFlags);
+
+	var _storiesRepository = __webpack_require__(187);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -35297,27 +34650,36 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var TicketsList = function (_BaseComponent) {
-	    _inherits(TicketsList, _BaseComponent);
+	var ExtendedTicketList = function (_BaseComponent) {
+	    _inherits(ExtendedTicketList, _BaseComponent);
 
-	    function TicketsList(props) {
-	        _classCallCheck(this, TicketsList);
+	    function ExtendedTicketList(props) {
+	        _classCallCheck(this, ExtendedTicketList);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TicketsList).call(this, props));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ExtendedTicketList).call(this, props));
 
 	        _this.state = {
+	            createdFilterName: null,
+	            createdFilterUrl: null,
 	            endReleaseName: null,
-	            searchFlags: _searchFlags2.default.ShowAll,
+	            isCreatingFilter: false,
 	            releases: [],
+	            searchFlags: _searchFlags2.default.ShowAll,
+	            selectedProductionRelease: false,
 	            startReleaseName: null
 	        };
 	        return _this;
 	    }
 
-	    _createClass(TicketsList, [{
+	    _createClass(ExtendedTicketList, [{
+	        key: "canCreateReleaseFilter",
+	        value: function canCreateReleaseFilter() {
+	            return !!(this.state.selectedProductionRelease && this.state.endReleaseName);
+	        }
+	    }, {
 	        key: "componentDidMount",
 	        value: function componentDidMount() {
-	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentDidMount", this).call(this);
+	            _get(Object.getPrototypeOf(ExtendedTicketList.prototype), "componentDidMount", this).call(this);
 
 	            this._onEndReleaseChanged = this.onEndReleaseChanged.bind(this);
 	            this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
@@ -35330,7 +34692,7 @@
 	    }, {
 	        key: "componentWillUnmount",
 	        value: function componentWillUnmount() {
-	            _get(Object.getPrototypeOf(TicketsList.prototype), "componentWillUnmount", this).call(this);
+	            _get(Object.getPrototypeOf(ExtendedTicketList.prototype), "componentWillUnmount", this).call(this);
 
 	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.END_RELEASE_CHANGED, this._onEndReleaseChanged);
 	            _globalEventEmitter.globalEventEmitter.removeListener(_globalEventEmitter.Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
@@ -35392,6 +34754,40 @@
 	            return releases;
 	        }
 	    }, {
+	        key: "handleCreateReleaseFilterClick",
+	        value: function handleCreateReleaseFilterClick() {
+	            var _this3 = this;
+
+	            if (!this.canCreateReleaseFilter()) {
+	                alert("Please select release first.");
+	                return;
+	            }
+
+	            this.setState({
+	                isCreatingFilter: true
+	            });
+
+	            _storiesRepository.storiesRepository.setRequestManager(this.requestManager);
+	            _storiesRepository.storiesRepository.createReleaseFilter(this.state.endReleaseName).then(function (data) {
+	                if (!_this3.m_isMounted) return;
+
+	                _this3.setState({
+	                    createdFilterName: data.name,
+	                    createdFilterUrl: data.url
+	                });
+	            }).catch(function (error) {
+	                if (!_this3.m_isMounted) return;
+
+	                _errorHandler2.default.showErrorMessage(error);
+	            }).finally(function () {
+	                if (!_this3.m_isMounted) return;
+
+	                _this3.setState({
+	                    isCreatingFilter: false
+	                });
+	            });
+	        }
+	    }, {
 	        key: "onEndReleaseChanged",
 	        value: function onEndReleaseChanged(name) {
 	            this.setState({
@@ -35439,6 +34835,7 @@
 	                }
 
 	            this.setState({
+	                selectedProductionRelease: release === true,
 	                startReleaseName: releaseName
 	            });
 
@@ -35484,7 +34881,7 @@
 	    }, {
 	        key: "render",
 	        value: function render() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            return React.createElement(
 	                "div",
@@ -35498,7 +34895,46 @@
 	                        "Jira tickets"
 	                    ),
 	                    function () {
-	                        if (_this3.state.releases.length === 0) {
+	                        if (_this4.canCreateReleaseFilter()) {
+	                            if (_this4.state.createdFilterName) {
+	                                return React.createElement(
+	                                    "p",
+	                                    null,
+	                                    "Created JIRA filter: ",
+	                                    React.createElement(
+	                                        "a",
+	                                        { href: _this4.state.createdFilterUrl, target: "_blank", rel: "external" },
+	                                        _this4.state.createdFilterName
+	                                    )
+	                                );
+	                            } else {
+	                                return React.createElement(
+	                                    "div",
+	                                    { className: "row" },
+	                                    React.createElement(
+	                                        "div",
+	                                        { className: "col-md-1" },
+	                                        React.createElement(
+	                                            "div",
+	                                            { className: "btn-group", role: "group" },
+	                                            React.createElement(
+	                                                "button",
+	                                                { className: "btn btn-default", onClick: _this4.handleCreateReleaseFilterClick.bind(_this4) },
+	                                                "Create release filter"
+	                                            )
+	                                        )
+	                                    ),
+	                                    React.createElement(
+	                                        "div",
+	                                        { className: "col-md-1" },
+	                                        React.createElement(_infiniteLoading2.default, { isLoading: _this4.state.isCreatingFilter })
+	                                    )
+	                                );
+	                            }
+	                        }
+	                    }(),
+	                    function () {
+	                        if (_this4.state.releases.length === 0) {
 	                            return React.createElement(
 	                                "p",
 	                                null,
@@ -35507,7 +34943,7 @@
 	                        }
 	                    }(),
 	                    function () {
-	                        if (_this3.showCombinedList()) {
+	                        if (_this4.showCombinedList()) {
 	                            return React.createElement(
 	                                "table",
 	                                { className: "table tickets-list" },
@@ -35557,11 +34993,11 @@
 	                                React.createElement(
 	                                    "tbody",
 	                                    null,
-	                                    _this3.renderTicketsList(_this3.getCombinedTicketList())
+	                                    _this4.renderTicketsList(_this4.getCombinedTicketList())
 	                                )
 	                            );
 	                        } else {
-	                            return _this3.getFilteredReleases().map(function (release, index) {
+	                            return _this4.getFilteredReleases().map(function (release, index) {
 	                                return React.createElement(
 	                                    "div",
 	                                    { key: index },
@@ -35619,7 +35055,7 @@
 	                                        React.createElement(
 	                                            "tbody",
 	                                            null,
-	                                            _this3.renderTicketsList(release.tickets)
+	                                            _this4.renderTicketsList(release.tickets)
 	                                        )
 	                                    )
 	                                );
@@ -35632,7 +35068,7 @@
 	    }, {
 	        key: "renderTicketsList",
 	        value: function renderTicketsList(tickets) {
-	            var _this4 = this;
+	            var _this5 = this;
 
 	            var filteredTickets = this.filterTickets(tickets);
 
@@ -35677,7 +35113,7 @@
 	                        null,
 	                        function () {
 	                            if (ticket.epicKey) {
-	                                var epic = _this4.findEpicByKey(ticket.epicKey);
+	                                var epic = _this5.findEpicByKey(ticket.epicKey);
 	                                return React.createElement(
 	                                    "a",
 	                                    { href: epic.url, target: "_blank", rel: "external" },
@@ -35754,10 +35190,93 @@
 	        }
 	    }]);
 
-	    return TicketsList;
+	    return ExtendedTicketList;
 	}(_baseComponent2.default);
 
-	exports.default = TicketsList;
+	exports.default = ExtendedTicketList;
+
+/***/ },
+/* 187 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.storiesRepository = exports.StoriesRepository = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _jquery = __webpack_require__(165);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _q = __webpack_require__(166);
+
+	var _q2 = _interopRequireDefault(_q);
+
+	var _baseRepository = __webpack_require__(163);
+
+	var _baseRepository2 = _interopRequireDefault(_baseRepository);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var singleton = Symbol();
+	var singletonEnforcer = Symbol();
+
+	var StoriesRepository = exports.StoriesRepository = function (_BaseRepository) {
+	    _inherits(StoriesRepository, _BaseRepository);
+
+	    function StoriesRepository(enforcer) {
+	        _classCallCheck(this, StoriesRepository);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StoriesRepository).call(this));
+
+	        if (enforcer !== singletonEnforcer) {
+	            throw "Cannot construct singleton";
+	        }
+	        return _this;
+	    }
+
+	    _createClass(StoriesRepository, [{
+	        key: "createReleaseFilter",
+	        value: function createReleaseFilter(releaseName) {
+	            var _this2 = this;
+
+	            var deferred = _q2.default.defer();
+
+	            var request = _jquery2.default.post("/create-release-filter?releaseName=" + releaseName + "&timestamp=" + +new Date()).done(function (data) {
+	                deferred.resolve(data);
+	            }).fail(function (response) {
+	                deferred.reject(_this2.processRequestFailure(response));
+	            });
+
+	            this.safeMonitorRequest(request);
+
+	            return deferred.promise;
+	        }
+	    }], [{
+	        key: "instance",
+	        get: function get() {
+	            if (!this[singleton]) {
+	                this[singleton] = new StoriesRepository(singletonEnforcer);
+	            }
+
+	            return this[singleton];
+	        }
+	    }]);
+
+	    return StoriesRepository;
+	}(_baseRepository2.default);
+
+	var storiesRepository = exports.storiesRepository = StoriesRepository.instance;
 
 /***/ },
 /* 188 */
@@ -35779,7 +35298,7 @@
 
 	var _environments2 = _interopRequireDefault(_environments);
 
-	var _infiniteLoading = __webpack_require__(174);
+	var _infiniteLoading = __webpack_require__(183);
 
 	var _infiniteLoading2 = _interopRequireDefault(_infiniteLoading);
 

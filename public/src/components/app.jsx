@@ -1,7 +1,7 @@
 import BaseComponent from "./base-component"
 import Navigation from "./navigation.jsx";
 import Notifications from "./notifications.jsx";
-import ProjectDetails from "./project-details.jsx";
+//import ProjectDetails from "./project-details.jsx";
 import ProjectsList from "./projects-list.jsx"
 import Releases from "./releases.jsx";
 import Reporting from "./reporting.jsx";
@@ -33,14 +33,14 @@ export default class App extends BaseComponent
         let Child;
         var childProps = {};
 
-        if (/\/project\/(.*)/.test(this.state.route))
-        {
-            Child = ProjectDetails;
-            childProps = {
-                projectName: /\/project\/(.*)/.exec(this.state.route)[1]
-            };
-        }
-        else if (this.state.route == "/releases")
+        // if (/\/project\/(.*)/.test(this.state.route))
+        // {
+        //     Child = ProjectDetails;
+        //     childProps = {
+        //         projectName: /\/project\/(.*)/.exec(this.state.route)[1]
+        //     };
+        // }
+        if (this.state.route == "/releases")
         {
             Child = Releases;
         }

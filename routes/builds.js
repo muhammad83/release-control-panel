@@ -6,8 +6,6 @@ const getSuccessfulBuildsForProjects = require("../actions/get-successful-builds
 const getUpcomingReleases = require("../actions/get-upcoming-releases");
 const startBuild = require("../actions/start-build");
 
-let cachedUpcomingReleases = null;
-
 class Builds
 {
     static getBuildStatuses(request, response)
@@ -35,18 +33,11 @@ class Builds
 
     static getUpcomingReleases(request, response)
     {
-        if (cachedUpcomingReleases && !request.query.force)
-        {
-            response.send(cachedUpcomingReleases);
-            return;
-        }
-
         let projects = getProjectNames();
 
-        getUpcomingReleases(projects)
+        getUpcomingReleases(projects, !!request.query.force)
             .then(data =>
             {
-                cachedUpcomingReleases = data;
                 response.send(data);
             })
             .catch(ex =>

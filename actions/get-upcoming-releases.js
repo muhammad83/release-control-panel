@@ -12,8 +12,17 @@ const q = require("q");
 const semver = require("semver");
 const updateProjects = require("../helpers/update-projects");
 
-module.exports = function getUpcomingReleases(projectNames)
+let cachedUpcomingReleases = null;
+
+module.exports = function getUpcomingReleases(projectNames, refresh)
 {
+    if (cachedUpcomingReleases && !refresh)
+    {
+        let deferred = q.defer();
+        deferred.resolve(cachedUpcomingReleases);
+        return deferred.promise;
+    }
+
     let productionVersionsPromise = getProductionVersions(projectNames);
     let availableReleasesPromise = getAvailableReleases();
     let updateProjectsPromise = updateProjects(projectNames);
@@ -249,5 +258,10 @@ module.exports = function getUpcomingReleases(projectNames)
                     results.epics = epics;
                     return results;
                 });
-        });
+        })
+        .then(results =>
+        {
+            cachedUpcomingReleases = results;
+            return results;
+        })
 };

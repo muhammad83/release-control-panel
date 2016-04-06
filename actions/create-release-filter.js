@@ -5,7 +5,7 @@ const prepareJQLForTickets = require("../helpers/prepare-jql-for-tickets");
 const q = require("q");
 const request = require("request");
 
-module.exports = function createReleaseFilter(releaseName, projectsAndTags)
+module.exports = function createReleaseFilter(releaseName, projectsAndTags, tickets)
 {
     let deferred = q.defer();
     let requestOptions = {
@@ -21,7 +21,7 @@ module.exports = function createReleaseFilter(releaseName, projectsAndTags)
             description: `List of tasks included in '${releaseName}' release.`,
             favourite: true,
             name: releaseName,
-            jql: prepareJQLForTickets(projectsAndTags, [])
+            jql: prepareJQLForTickets(projectsAndTags, tickets)
         }),
         headers:
         {
@@ -33,11 +33,11 @@ module.exports = function createReleaseFilter(releaseName, projectsAndTags)
         if (error)
         {
             deferred.reject(
-                {
-                    data: error,
-                    message: "Unknown error when searching JIRA tickets.",
-                    status: 500
-                });
+            {
+                data: error,
+                message: "Unknown error when searching JIRA tickets.",
+                status: 500
+            });
             return;
         }
 

@@ -1,8 +1,14 @@
 import BaseComponent from "./base-component";
+import BuildNumber from "./build-number.jsx";
+import { buildsRepository } from "../repositories/builds-repository";
 import copyContent from "../utils/copy-content";
+import Deployment from "./deployment.jsx";
+import ErrorHandler from "../handlers/error-handler";
 import { globalEventEmitter, Events } from "../utils/global-event-emitter";
 import ProjectVersionsList from "./project-versions-list.jsx";
 import SearchFlags from "../models/search-flags";
+
+const BUILD_REFRESH_INTERVAL = 1000 * 60;
 
 export default class EndReleaseSelector extends BaseComponent
 {
@@ -10,8 +16,22 @@ export default class EndReleaseSelector extends BaseComponent
     {
         super(props);
 
+        this.buildMonitorInterval = null;
         this.state =
         {
+            extraColumns:
+            [
+                {
+                    heading: "Build number",
+                    type: "template",
+                    template: this.renderBuildNumberCell.bind(this)
+                },
+                {
+                    heading: "Actions",
+                    type: "template",
+                    template: this.renderActionsCell.bind(this)
+                }
+            ],
             searchFlags: SearchFlags.ShowAll,
             versions: null
         };
@@ -21,14 +41,20 @@ export default class EndReleaseSelector extends BaseComponent
     {
         super.componentDidMount();
 
-        this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
+        this.startBuildsMonitor();
 
+        this._onSearchFlagsChanged = this.onSearchFlagsChanged.bind(this);
         globalEventEmitter.addListener(Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
     }
 
     componentWillUnmount()
     {
         super.componentWillUnmount();
+
+        if (this.buildMonitorInterval)
+        {
+            clearInterval(this.buildMonitorInterval);
+        }
 
         globalEventEmitter.removeListener(Events.SEARCH_FLAGS_CHANGED, this._onSearchFlagsChanged);
     }
@@ -124,6 +150,26 @@ export default class EndReleaseSelector extends BaseComponent
         });
     }
 
+    refreshBuildStatuses()
+    {
+        let handleError = error =>
+        {
+            if (!this.m_isMounted)
+                return;
+
+            ErrorHandler.showErrorMessage(error);
+        };
+
+        buildsRepository.setRequestManager(this.requestManager);
+        buildsRepository.updateBuildNumbersAndProgress().catch(handleError);
+    }
+
+    startBuildsMonitor()
+    {
+        this.refreshBuildStatuses();
+        this.buildMonitorInterval = setInterval(this.refreshBuildStatuses.bind(this), BUILD_REFRESH_INTERVAL);
+    }
+
     render()
     {
         return (
@@ -163,8 +209,20 @@ export default class EndReleaseSelector extends BaseComponent
                 }
 
                 <h2 style={{ marginTop: !this.state.versions ? "2.55em" : "" }}>To versions</h2>
-                <ProjectVersionsList projects={this.state.versions} />
+                <ProjectVersionsList projects={this.state.versions}
+                                     extraColumns={this.state.extraColumns} />
             </div>
         );
+    }
+
+    renderActionsCell(project)
+    {
+        return <Deployment projectName={project.name} version={project.version}/>;
+    }
+
+
+    renderBuildNumberCell(project)
+    {
+        return <BuildNumber projectName={project.name} version={project.version} />;
     }
 }

@@ -1,8 +1,11 @@
 import BaseComponent from "./base-component";
+import ErrorHandler from "../handlers/error-handler";
 import {globalEventEmitter, Events} from "../utils/global-event-emitter";
+import InfiniteLoading from "./infinite-loading.jsx";
 import SearchFlags from "../models/search-flags"
+import {storiesRepository} from "../repositories/stories-repository";
 
-export default class TicketsList extends BaseComponent
+export default class ExtendedTicketList extends BaseComponent
 {
     constructor(props)
     {
@@ -10,11 +13,20 @@ export default class TicketsList extends BaseComponent
 
         this.state =
         {
+            createdFilterName: null,
+            createdFilterUrl: null,
             endReleaseName: null,
-            searchFlags: SearchFlags.ShowAll,
+            isCreatingFilter: false,
             releases: [],
+            searchFlags: SearchFlags.ShowAll,
+            selectedProductionRelease: false,
             startReleaseName: null
         };
+    }
+
+    canCreateReleaseFilter()
+    {
+        return !!(this.state.selectedProductionRelease && this.state.endReleaseName)
     }
 
     componentDidMount()
@@ -85,6 +97,51 @@ export default class TicketsList extends BaseComponent
         return releases;
     }
 
+    handleCreateReleaseFilterClick()
+    {
+        if (!this.canCreateReleaseFilter())
+        {
+            alert("Please select release first.");
+            return;
+        }
+
+        this.setState(
+        {
+            isCreatingFilter: true
+        });
+
+        storiesRepository.setRequestManager(this.requestManager);
+        storiesRepository.createReleaseFilter(this.state.endReleaseName)
+            .then(data =>
+            {
+                if (!this.m_isMounted)
+                    return;
+
+                this.setState(
+                {
+                    createdFilterName: data.name,
+                    createdFilterUrl: data.url
+                });
+            })
+            .catch(error =>
+            {
+                if (!this.m_isMounted)
+                    return;
+
+                ErrorHandler.showErrorMessage(error);
+            })
+            .finally(() =>
+            {
+                if (!this.m_isMounted)
+                    return;
+
+                this.setState(
+                {
+                    isCreatingFilter: false
+                });
+            });
+    }
+
     onEndReleaseChanged(name)
     {
         this.setState(
@@ -131,6 +188,7 @@ export default class TicketsList extends BaseComponent
 
         this.setState(
         {
+            selectedProductionRelease: release === true,
             startReleaseName: releaseName
         });
 
@@ -190,10 +248,10 @@ export default class TicketsList extends BaseComponent
             <div className="row">
                 <div className="col-md-12">
                     <h2>Jira tickets</h2>
-                    {/*
+                    {
                         (() =>
                         {
-                            if (this.state.selectedRelease)
+                            if (this.canCreateReleaseFilter())
                             {
                                 if (this.state.createdFilterName)
                                 {
@@ -216,7 +274,7 @@ export default class TicketsList extends BaseComponent
                                 }
                             }
                         })()
-                    */}
+                    }
                     {
                         (() =>
                         {

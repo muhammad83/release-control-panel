@@ -1,7 +1,6 @@
 import BaseComponent from "./base-component";
 import { buildsRepository } from "../repositories/builds-repository";
 import { globalEventEmitter, Events } from "../utils/global-event-emitter";
-import InfiniteLoading from "./infinite-loading.jsx";
 import { projectsRepository } from "../repositories/projects-repository";
 import RequestManager from "../utils/request-manager";
 import SmallSpinner from "./small-spinner.jsx";
@@ -33,7 +32,9 @@ export default class BuildNumber extends BaseComponent
 
     getBuildNumber()
     {
-        return this.project.getBuildNumber(this.props.version);
+        let project = this.project;
+
+        return project ? project.getBuildNumber(this.props.version) : "";
     }
 
     getCiBuildJobUrl()
@@ -54,17 +55,17 @@ export default class BuildNumber extends BaseComponent
 
     isBuilding()
     {
-        return this.project.isBuildRunning(this.props.version);
+        return this.project && this.project.isBuildRunning(this.props.version);
     }
 
     isBuilt()
     {
-        return this.project.isBuilt(this.props.version);
+        return this.project && this.project.isBuilt(this.props.version);
     }
 
     isPending()
     {
-        return this.project.isBuildScheduled(this.props.version);
+        return this.project && this.project.isBuildScheduled(this.props.version);
     }
 
     onProjectsUpdated()
@@ -96,7 +97,5 @@ export default class BuildNumber extends BaseComponent
         {
             return <button className="btn btn-default" onClick={this.handleStartBuildClick.bind(this)}>Start build</button>;
         }
-
-        return null;
     }
 }

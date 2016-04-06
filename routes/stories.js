@@ -1,127 +1,77 @@
 "use strict";
 
 const createReleaseFilter = require("../actions/create-release-filter");
-const getCurrentlyDeployedVersion = require("../actions/get-currently-deployed-version");
-const getStableApplications = require("../actions/get-stable-applications");
-const getStories = require("../actions/get-stories");
-const getTags = require("../actions/get-tags");
+const getProjectNames = require("../helpers/get-project-names");
+const getUpcomingReleases = require("../actions/get-upcoming-releases");
 const q = require("q");
+const semver = require("semver");
 
 class Stories
 {
     static createReleaseFilter(request, response)
     {
-        let version = request.query.version;
-        let projects = (request.query.projects || "").split(",");
+        let releaseName = request.query.releaseName;
+        let projects = getProjectNames();
 
-        Stories.getTagsToFindForVersion(projects, version)
-            .then(projectTags =>
+        getUpcomingReleases(projects, false)
+            .then(result =>
             {
-                return createReleaseFilter(version, projectTags);
-            })
-            .then(data =>
-            {
-                response.send(data);
-            })
-            .catch(error =>
-            {
-                response.status(500).send(error || "Unknown error.");
-            });
-    }
+                let projectsTags = [];
+                let tickets = [];
 
-    static getStories(request, response)
-    {
-        let serviceName = request.query.serviceName;
-        let endTag = request.query.endTag;
-        let startTag = request.query.startTag;
+                let productionReleaseFound = false;
+                let productionVersions = result.productionVersions;
 
-        getTags(serviceName)
-            .then(tags =>
-            {
-                let startTagIndex = tags.indexOf(startTag);
-                let endTagIndex = tags.indexOf(endTag);
-                let tagsToLookUpInJira = tags.slice(endTagIndex, startTagIndex + 1);
-
-                tagsToLookUpInJira = tagsToLookUpInJira.map(tag => tag.replace("release/", ""));
-
-                return getStories([{ name: serviceName, tags: tagsToLookUpInJira }]);
-            })
-            .then(data =>
-            {
-                response.send(data);
-            })
-            .catch(error =>
-            {
-                response.status(500).send(error || "Unknown error.");
-            });
-    }
-
-    static getStoriesForRelease(request, response)
-    {
-        let version = request.query.version;
-        let projects = (request.query.projects || "").split(",");
-
-        Stories.getTagsToFindForVersion(projects, version)
-            .then(projectTags =>
-            {
-                return getStories(projectTags);
-            })
-            .then(data =>
-            {
-                response.send(data);
-            })
-            .catch(ex =>
-            {
-                let data = (ex && ex.data) || null;
-                let message = (ex && ex.message) || "Something went wrong.";
-                let status = (ex && ex.status) || 500;
-                let responseData =
+                for (let release of result.upcomingReleases)
                 {
-                    message: message,
-                    data: data
+                    if (!productionReleaseFound)
+                    {
+                        productionReleaseFound = productionVersions.every(pv => release.projects.some(rp => rp.name === pv.name && rp.version === pv.version));
+
+                        if (!productionReleaseFound)
+                            continue;
+                    }
+
+                    // Insert tickets
+                    tickets = tickets.concat(release.tickets);
+
+                    // Insert tags
+                    for (let projectTags of release.tags)
+                    {
+                        let combinedProjectTags = projectsTags.find(project => project.name === projectTags.name);
+                        if (!combinedProjectTags)
+                        {
+                            combinedProjectTags =
+                            {
+                                name: projectTags.name,
+                                tags: []
+                            };
+                            projectsTags.push(combinedProjectTags);
+                        }
+
+                        combinedProjectTags.tags = combinedProjectTags.tags.concat(projectTags.tags);
+                    }
+
+                    if (release.release === releaseName)
+                        break;
+                }
+
+                return {
+                    projectsTags: projectsTags,
+                    tickets: tickets
                 };
-
-                response.status(status).send(responseData);
-            });
-    }
-
-    static getTagsToFindForVersion(projects, version)
-    {
-        let versions;
-        let projectProdReleaseNumbers;
-
-        return getStableApplications(version)
-            .then(projectsVersions =>
-            {
-                versions = projects.map(project =>
-                {
-                    return "release/" + projectsVersions.find(pv => pv.name == project).version;
-                });
-
-                let promises = projects.map(project => getCurrentlyDeployedVersion(project));
-                return q.all(promises);
             })
-            .then(prodVersions =>
+            .then(result =>
             {
-                projectProdReleaseNumbers = prodVersions;
-
-                let promises = projects.map(project => getTags(project));
-                return q.all(promises);
+                return createReleaseFilter(releaseName, result.projectsTags, result.tickets);
             })
-            .then(allTags =>
+            .then(result =>
             {
-                return allTags.map((tags, projectIndex) =>
-                {
-                    let tagsToFind = tags.slice(
-                        tags.indexOf(versions[projectIndex]),
-                        tags.indexOf(projectProdReleaseNumbers[projectIndex]) + 1
-                    ).map(tag => tag.replace("release/", ""));
-
-                    return {
-                        name: projects[projectIndex],
-                        tags: tagsToFind
-                    };
-                });
+                response.send(result);
+            })
+            .catch(error =>
+            {
+                response.status(500).send(error || "Unknown error.");
             });
     }
 }
